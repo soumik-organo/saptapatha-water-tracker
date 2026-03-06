@@ -652,7 +652,6 @@ function buildYrGrid() {
 
 function buildYrTableSkeleton() {
   const rows = [
-    ['occ-r','Occupancy %','%'],
     ['occ-v','Occupied Villas','nos.'],
     ['occ-pop','Population','persons'],
     ['occ-dom','Annual Domestic Demand','ML/yr'],
@@ -663,12 +662,37 @@ function buildYrTableSkeleton() {
     ['occ-bal','Annual Balance','ML/yr'],
   ];
   const tb = $('yr-tbody'); tb.innerHTML = '';
+
+  // Occupancy % row — editable inputs
+  tb.innerHTML += `<tr style="background:#e8f5e9">
+    <td class="lbl" style="font-weight:700">Occupancy %</td>
+    ${[0,1,2,3,4].map(i=>`
+      <td><input type="number" id="occ-r-${i}" value="${(occRates[i]*100).toFixed(0)}"
+        min="0" max="100" class="occ-tbl-inp"
+        style="min-width:70px;text-align:center;background:#d4edda;color:#155724;font-weight:700;border-color:#7fbf7f">
+      </td>`).join('')}
+    <td class="unit">%</td>
+  </tr>`;
+
+  // Remaining calculated rows
   rows.forEach(([id, label, unit]) => {
     tb.innerHTML += `<tr>
       <td class="lbl">${label}</td>
       ${[0,1,2,3,4].map(i=>`<td id="${id}-${i}">—</td>`).join('')}
       <td class="unit">${unit}</td>
     </tr>`;
+  });
+
+  // Wire inputs
+  document.querySelectorAll('.occ-tbl-inp').forEach(el => {
+    el.addEventListener('input', e => {
+      const i = +e.target.id.replace('occ-r-','');
+      occRates[i] = (parseFloat(e.target.value)||0)/100;
+      // Sync yr-grid card inputs
+      const card = document.querySelector(`.occ-inp[data-i="${i}"]`);
+      if (card) card.value = e.target.value;
+      recalc();
+    });
   });
 }
 
@@ -837,7 +861,7 @@ function recalc() {
     const ySupply = totalSupplyYr;
     const yBal    = ySupply - yTotDem;
 
-    set(`occ-r-${i}`, (rate*100).toFixed(0)+'%');
+    // occ-r inputs are user-controlled — do not overwrite
     set(`occ-v-${i}`, fmtN(villas));
     set(`occ-pop-${i}`, fmtN(popYr));
     set(`occ-dom-${i}`, (yDom/1000000).toFixed(3));
