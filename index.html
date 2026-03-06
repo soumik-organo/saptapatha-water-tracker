@@ -375,14 +375,14 @@
       <div class="sub">
         <div class="sub-title">1. Project Profile</div>
         <table>
-          <thead><tr><th>Parameter</th><th class="proj">Your Value</th><th class="ref">Antharam Ref</th><th>Unit</th></tr></thead>
+          <thead><tr><th>Parameter</th><th class="proj">Your Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">Total Site Area</td><td><input type="number" id="p-site" value="70"></td><td><span class="cc ri">60</span></td><td class="unit">acres</td></tr>
-            <tr><td class="lbl">Total Houses</td><td><input type="number" id="p-houses" value="280"></td><td><span class="cc ri">182</span></td><td class="unit">nos.</td></tr>
-            <tr><td class="lbl">Avg Occupants / House</td><td><input type="number" id="p-occ" value="4"></td><td><span class="cc ri">4</span></td><td class="unit">persons</td></tr>
-            <tr><td class="lbl">Farming Area</td><td><input type="number" id="p-farm" value="7" step="0.1"></td><td><span class="cc ri">7</span></td><td class="unit">acres</td></tr>
-            <tr><td class="lbl">Afforestation Area</td><td><input type="number" id="p-afforest" value="10" step="0.1"></td><td><span class="cc ri">8.5</span></td><td class="unit">acres</td></tr>
-            <tr class="tot"><td>Total Population (auto)</td><td><span class="cc" id="p-pop">—</span></td><td><span class="cc ri">728</span></td><td class="unit">persons</td></tr>
+            <tr><td class="lbl">Total Site Area</td><td><input type="number" id="p-site" value="70"></td><td class="unit">acres</td></tr>
+            <tr><td class="lbl">Total Houses</td><td><input type="number" id="p-houses" value="280"></td><td class="unit">nos.</td></tr>
+            <tr><td class="lbl">Avg Occupants / House</td><td><input type="number" id="p-occ" value="4"></td><td class="unit">persons</td></tr>
+            <tr><td class="lbl">Farming Area</td><td><input type="number" id="p-farm" value="7" step="0.1"></td><td class="unit">acres</td></tr>
+            <tr><td class="lbl">Afforestation Area</td><td><input type="number" id="p-afforest" value="10" step="0.1"></td><td class="unit">acres</td></tr>
+            <tr class="tot"><td>Total Population (auto)</td><td><span class="cc" id="p-pop">—</span></td><td class="unit">persons</td></tr>
           </tbody>
         </table>
       </div>
@@ -392,16 +392,16 @@
         <div class="sub-title">2. Demand Inputs (Override)</div>
         <p style="font-size:11px;color:var(--grey);margin-bottom:8px">Leave blank → uses Antharam benchmark ratios automatically.</p>
         <table>
-          <thead><tr><th>Parameter</th><th class="proj">Value</th><th class="ref">Antharam Ref</th><th>Unit</th></tr></thead>
+          <thead><tr><th>Parameter</th><th class="proj">Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">Domestic LPCD</td><td><input type="number" id="p-lpcd" value="68.46" step="0.01"></td><td><span class="cc ri">68.46</span></td><td class="unit">L/person/day</td></tr>
-            <tr><td class="lbl">Domestic Water / Month (override)</td><td><input type="number" id="p-dom-ovr" placeholder="auto"></td><td><span class="cc ri" id="pi-ref-dom">—</span></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Irrigation / Month (override)</td><td><input type="number" id="p-irr-ovr" placeholder="auto"></td><td><span class="cc ri" id="pi-ref-irr">—</span></td><td class="unit">L/mo</td></tr>
-            <tr style="background:#f1f8e9"><td class="lbl" style="font-weight:600">🌾 Farming Water / Month</td><td><input type="number" id="p-farm-water" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Swimming Pool Top-up</td><td><input type="number" id="p-pool" value="526000"></td><td><span class="cc ri" id="pi-ref-pool">526,000</span></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Animal Husbandry / Goshala</td><td><input type="number" id="p-animal" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Landscaping (non-farm)</td><td><input type="number" id="p-landscape" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Other Consumption</td><td><input type="number" id="p-other-dem" value="83555"></td><td><span class="cc ri" id="pi-ref-other">83,555</span></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Domestic LPCD</td><td><input type="number" id="p-lpcd" value="68.46" step="0.01"></td><td class="unit">L/person/day</td></tr>
+            <tr><td class="lbl">Domestic Water / Month (override)</td><td><input type="number" id="p-dom-ovr" placeholder="auto"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Irrigation / Month (override)</td><td><input type="number" id="p-irr-ovr" placeholder="auto"></td><td class="unit">L/mo</td></tr>
+            <tr style="background:#f1f8e9"><td class="lbl" style="font-weight:600">🌾 Farming Water / Month</td><td><input type="number" id="p-farm-water" placeholder="0"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Swimming Pool Top-up</td><td><input type="number" id="p-pool" value="526000"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Animal Husbandry / Goshala</td><td><input type="number" id="p-animal" placeholder="0"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Landscaping (non-farm)</td><td><input type="number" id="p-landscape" placeholder="0"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Other Consumption</td><td><input type="number" id="p-other-dem" value="83555"></td><td class="unit">L/mo</td></tr>
           </tbody>
         </table>
       </div>
