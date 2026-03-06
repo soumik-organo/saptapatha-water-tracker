@@ -181,7 +181,7 @@
       <tbody>
         <tr><td class="lbl">🏠 Domestic</td><td id="db-dom-d">—</td><td id="db-dom-s">—</td><td id="db-dom-g">—</td><td id="db-dom-st">—</td></tr>
         <tr><td class="lbl">🌾 Irrigation / Farming</td><td id="db-irr-d">—</td><td id="db-irr-s">—</td><td id="db-irr-g">—</td><td id="db-irr-st">—</td></tr>
-        <tr><td class="lbl">🏊 Amenities / Other</td><td id="db-oth-d">—</td><td>—</td><td id="db-oth-g">—</td><td><span class="badge warn">⚠️ In total</span></td></tr>
+        <tr><td class="lbl">🏊 Amenities / Other</td><td id="db-oth-d">—</td><td id="db-oth-s">—</td><td id="db-oth-g">—</td><td id="db-oth-st"><span class="badge warn">⚠️ In total</span></td></tr>
         <tr class="tot"><td>⚖️ TOTAL</td><td id="db-tot-d">—</td><td id="db-tot-s">—</td><td id="db-tot-g">—</td><td id="db-tot-st">—</td></tr>
       </tbody>
     </table>
@@ -980,15 +980,21 @@ function recalc() {
   set('kpi-dep',fmtP(extDep));
   $('kpi-dep-card').className='kpi '+(extDep>0.3?'r':'g');
 
-  // Supply allocation: External → Domestic | BW+RWH+Recycled → Irrigation/Farming
-  const domSupplyAnn  = muniMo*12;
-  const irrSupplyAnn  = bwMo*12 + annRwhUsable + recMo*12;
+  // Supply allocation:
+  //   Domestic       ← Municipal/External only
+  //   Amenities      ← RWH (first priority on stored rainwater)
+  //   Irrigation     ← BW + remaining RWH (after amenities) + STP Recycled
+  const amenRwhAnn   = Math.min(annAmenSeasoned, annRwhUsable); // RWH to amenities (capped at demand)
+  const irrRwhAnn    = annRwhUsable - amenRwhAnn;               // leftover RWH to irrigation
+  const domSupplyAnn = muniMo*12;
+  const irrSupplyAnn = bwMo*12 + irrRwhAnn + recMo*12;
+  const othSupplyAnn = amenRwhAnn;
   const domGap = domSupplyAnn - annDomSeasoned;
-  const irrGap = irrSupplyAnn - annIrrSeasoned; // Irrigation/Farming includes farmGrp
-  const othGap = -annAmenSeasoned;
+  const irrGap = irrSupplyAnn - annIrrSeasoned;
+  const othGap = othSupplyAnn - annAmenSeasoned;
   set('db-dom-d',fmtL(Math.round(annDomSeasoned))); set('db-dom-s',fmtL(Math.round(domSupplyAnn))); set('db-dom-g',fmtL(Math.round(domGap))); $('db-dom-st').innerHTML=badge(domGap);
   set('db-irr-d',fmtL(Math.round(annIrrSeasoned))); set('db-irr-s',fmtL(Math.round(irrSupplyAnn))); set('db-irr-g',fmtL(Math.round(irrGap))); $('db-irr-st').innerHTML=badge(irrGap);
-  set('db-oth-d',fmtL(Math.round(annAmenSeasoned))); set('db-oth-g',fmtL(Math.round(othGap)));
+  set('db-oth-d',fmtL(Math.round(annAmenSeasoned))); set('db-oth-s',fmtL(Math.round(othSupplyAnn))); set('db-oth-g',fmtL(Math.round(othGap))); $('db-oth-st').innerHTML=badge(othGap);
   set('db-tot-d',fmtL(Math.round(annTotalDemSeasoned))); set('db-tot-s',fmtL(Math.round(totalSupplyYr))); set('db-tot-g',fmtL(Math.round(totalGap))); $('db-tot-st').innerHTML=badge(totalGap);
 
   // Alerts
