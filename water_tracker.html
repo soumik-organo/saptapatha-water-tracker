@@ -982,7 +982,7 @@ function recalc() {
 
   // Supply allocation: External → Domestic | BW+RWH+Recycled → Irrigation/Farming
   const domSupplyAnn  = muniMo*12;
-  const irrSupplyAnn  = bwMo*12 + annRainL + recMo*12;
+  const irrSupplyAnn  = bwMo*12 + annRwhUsable + recMo*12;
   const domGap = domSupplyAnn - annDomSeasoned;
   const irrGap = irrSupplyAnn - annIrrSeasoned; // Irrigation/Farming includes farmGrp
   const othGap = -annAmenSeasoned;
