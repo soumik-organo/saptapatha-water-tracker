@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Estimation Tracker — Demand vs Supply</title>
+<style>
+  :root {
+    --blue: #1a6fa8;
+    --blue-light: #e8f4fd;
+    --blue-input: #d0eaff;
+    --green: #2e7d32;
+    --green-light: #e8f5e9;
+    --red: #c62828;
+    --red-light: #ffebee;
+    --orange: #e65100;
+    --orange-light: #fff3e0;
+    --grey: #546e7a;
+    --grey-light: #eceff1;
+    --border: #b0bec5;
+    --white: #ffffff;
+    --bg: #f4f7f9;
+    --header-bg: #0d3f6b;
+    --section-title: #1a3a5c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #263238; font-size: 13px; }
+
+  /* ── NAV ── */
+  header {
+    background: var(--header-bg);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  header h1 { font-size: 17px; font-weight: 600; letter-spacing: 0.3px; }
+  header span { font-size: 12px; opacity: 0.75; }
+  nav {
+    background: #1a5280;
+    display: flex;
+    gap: 2px;
+    padding: 0 24px;
+    overflow-x: auto;
+    position: sticky;
+    top: 52px;
+    z-index: 99;
+  }
+  nav a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  nav a:hover, nav a.active { color: white; border-bottom-color: #4fc3f7; }
+
+  /* ── LAYOUT ── */
+  main { max-width: 1300px; margin: 0 auto; padding: 24px 16px 60px; }
+  .section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .section-header {
+    background: var(--section-title);
+    color: white;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-body { padding: 20px; }
+  .subsection { margin-bottom: 20px; }
+  .subsection-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--grey);
+    border-bottom: 2px solid var(--grey-light);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: #eceff1;
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--grey);
+    border-bottom: 2px solid var(--border);
+  }
+  th.ref-col { background: #e3f2fd; color: #1565c0; }
+  th.proj-col { background: #e8f5e9; color: #2e7d32; }
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #eceff1;
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  .row-label { font-weight: 500; color: #37474f; }
+  .row-unit { font-size: 11px; color: #90a4ae; }
+  .row-notes { font-size: 11px; color: #78909c; max-width: 200px; }
+  tr.total-row td { font-weight: 700; background: #f5f5f5; border-top: 2px solid var(--border); }
+  tr.sub-row td { padding-left: 28px; color: #546e7a; font-size: 12px; }
+
+  /* ── INPUTS ── */
+  input[type="number"], input[type="text"], select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #b0bec5;
+    border-radius: 4px;
+    font-size: 13px;
+    background: var(--blue-input);
+    color: #1a237e;
+    font-weight: 600;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    min-width: 110px;
+  }
+  input[type="number"]:focus, input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(26,111,168,0.15);
+  }
+  input.ref-input {
+    background: #e3f2fd;
+    color: #0d47a1;
+  }
+  .calc-cell {
+    font-weight: 600;
+    color: #263238;
+    background: #f9f9f9;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 110px;
+    display: inline-block;
+    text-align: right;
+  }
+
+  /* ── DASHBOARD ── */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    border-radius: 8px;
+    padding: 16px 18px;
+    border-left: 4px solid var(--blue);
+    background: var(--blue-light);
+  }
+  .kpi-card.green { border-left-color: var(--green); background: var(--green-light); }
+  .kpi-card.red { border-left-color: var(--red); background: var(--red-light); }
+  .kpi-card.orange { border-left-color: var(--orange); background: var(--orange-light); }
+  .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--grey); margin-bottom: 4px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: var(--section-title); }
+  .kpi-sub { font-size: 11px; color: var(--grey); margin-top: 2px; }
+
+  .balance-table th.demand { background: #ffebee; color: #c62828; }
+  .balance-table th.supply { background: #e8f5e9; color: #2e7d32; }
+  .balance-table th.gap { background: #fff3e0; color: #e65100; }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .status-ok { background: var(--green-light); color: var(--green); }
+  .status-deficit { background: var(--red-light); color: var(--red); }
+  .status-warn { background: var(--orange-light); color: var(--orange); }
+
+  /* ── SEASONAL TABLE ── */
+  .seasonal-table td.peak { background: #ffebee; }
+  .seasonal-table td.ok { background: #e8f5e9; }
+  .seasonal-table td.warn { background: #fff3e0; }
+
+  /* ── OCCUPANCY ── */
+  .occ-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .occ-year {
+    background: var(--blue-light);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .occ-year label { display: block; font-size: 11px; font-weight: 700; color: var(--grey); margin-bottom: 6px; }
+  .occ-year .occ-derived { font-size: 11px; color: #546e7a; margin-top: 8px; line-height: 1.6; }
+
+  /* ── ALERTS ── */
+  .alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-radius: 6px; margin-bottom: 10px; }
+  .alert.ok { background: var(--green-light); border-left: 3px solid var(--green); }
+  .alert.error { background: var(--red-light); border-left: 3px solid var(--red); }
+  .alert.warn { background: var(--orange-light); border-left: 3px solid var(--orange); }
+  .alert-icon { font-size: 16px; line-height: 1; }
+  .alert-text { font-size: 12px; font-weight: 500; }
+
+  /* ── HELP LEGEND ── */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--grey); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width: 768px) {
+    .dash-grid { grid-template-columns: 1fr 1fr; }
+    .occ-grid { grid-template-columns: 1fr 1fr; }
+    nav { padding: 0 8px; }
+    nav a { padding: 8px 10px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>💧 Water Estimation Tracker — Demand vs Supply</h1>
+    <span>Saptapatha Dashboard &nbsp;|&nbsp; Reference: Organo Antharam (182 houses, 60 acres)</span>
+  </div>
+</header>
+<nav>
+  <a href="#dashboard" class="active">Dashboard</a>
+  <a href="#reference">Reference Data</a>
+  <a href="#inputs">Project Inputs</a>
+  <a href="#demand">Water Demand</a>
+  <a href="#supply">Water Supply</a>
+  <a href="#balance">Water Balance</a>
+  <a href="#occupancy">Occupancy & Rainfall</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════ DASHBOARD ══════════════════════════════════════════ -->
+<section class="section" id="dashboard">
+  <div class="section-header">🎯 Dashboard — Demand vs Supply at a Glance</div>
+  <div class="section-body">
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--blue-input)"></div> Editable Input (Project)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e3f2fd"></div> Reference Input (Antharam)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f9f9f9;border:1px solid #ccc"></div> Auto-Calculated</div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="kpi-card" id="kpi-demand-card">
+        <div class="kpi-label">Total Monthly Demand</div>
+        <div class="kpi-value" id="kpi-total-demand">—</div>
+        <div class="kpi-sub">Litres / month</div>
+      </div>
+      <div class="kpi-card green" id="kpi-supply-card">
+        <div class="kpi-label">Total Monthly Supply</div>
+        <div class="kpi-value" id="kpi-total-supply">—</div>
+        <div class="kpi-sub">Litres / month</div>
+      </div>
+      <div class="kpi-card" id="kpi-gap-card">
+        <div class="kpi-label">Net Water Gap</div>
+        <div class="kpi-value" id="kpi-gap">—</div>
+        <div class="kpi-sub" id="kpi-gap-status">—</div>
+      </div>
+      <div class="kpi-card" id="kpi-sufficiency-card">
+        <div class="kpi-label">Self-Sufficiency Ratio</div>
+        <div class="kpi-value" id="kpi-sufficiency">—</div>
+        <div class="kpi-sub">Supply ÷ Demand</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">LPCD (Project)</div>
+        <div class="kpi-value" id="kpi-lpcd">—</div>
+        <div class="kpi-sub">Litres/person/day &nbsp;|&nbsp; Antharam ref: 68.46</div>
+      </div>
+      <div class="kpi-card" id="kpi-dep-card">
+        <div class="kpi-label">External Water Dependency</div>
+        <div class="kpi-value" id="kpi-dependency">—</div>
+        <div class="kpi-sub">% of supply from external sources</div>
+      </div>
+    </div>
+
+    <!-- Balance Table -->
+    <table class="balance-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th class="demand">Demand (L/mo)</th>
+          <th class="supply">Supply (L/mo)</th>
+          <th class="gap">Gap (L/mo)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">🏠 Domestic Water</td>
+          <td id="db-dom-demand">—</td>
+          <td id="db-dom-supply">—</td>
+          <td id="db-dom-gap">—</td>
+          <td id="db-dom-status">—</td>
+        </tr>
+        <tr>
+          <td class="row-label">🌾 Irrigation / Farming</td>
+          <td id="db-irr-demand">—</td>
+          <td id="db-irr-supply">—</td>
+          <td id="db-irr-gap">—</td>
+          <td id="db-irr-status">—</td>
+        </tr>
+        <tr>
+          <td class="row-label">🏊 Other / Amenities</td>
+          <td id="db-other-demand">—</td>
+          <td id="db-other-supply">—</td>
+          <td id="db-other-gap">—</td>
+          <td id="db-other-status">—</td>
+        </tr>
+        <tr class="total-row">
+          <td>⚖️ TOTAL</td>
+          <td id="db-total-demand">—</td>
+          <td id="db-total-supply">—</td>
+          <td id="db-total-gap">—</td>
+          <td id="db-total-status">—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div id="alerts-container" style="margin-top:16px;"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ REFERENCE DATA ══════════════════════════════════════════ -->
+<section class="section" id="reference">
+  <div class="section-header">📚 Reference Data — Organo Antharam (Editable)</div>
+  <div class="section-body">
+    <p style="font-size:12px;color:var(--grey);margin-bottom:16px;">Verified benchmark from Antharam. You may update with newer actuals. These values are used as fallback ratios when project-specific data is not entered.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <!-- Left: Project Profile -->
+      <div class="subsection">
+        <div class="subsection-title">1. Project Profile</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="ref-col">Antharam Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="row-label">Total Site Area</td><td><input class="ref-input" type="number" id="ref-site-area" value="60"></td><td class="row-unit">acres</td></tr>
+            <tr><td class="row-label">Total Houses</td><td><input class="ref-input" type="number" id="ref-houses" value="182"></td><td class="row-unit">nos.</td></tr>
+            <tr><td class="row-label">Avg Occupants/House</td><td><input class="ref-input" type="number" id="ref-occupants" value="4"></td><td class="row-unit">persons</td></tr>
+            <tr><td class="row-label">Farming Area</td><td><input class="ref-input" type="number" id="ref-farm-area" value="7"></td><td class="row-unit">acres</td></tr>
+            <tr><td class="row-label">Afforestation Area</td><td><input class="ref-input" type="number" id="ref-afforest" value="8.5"></td><td class="row-unit">acres</td></tr>
+            <tr class="total-row"><td>Total Population</td><td><span class="calc-cell" id="ref-pop">728</span></td><td class="row-unit">persons</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right: Key Ratios -->
+      <div class="subsection">
+        <div class="subsection-title">2. Benchmark Ratios (Actuals)</div>
+        <table>
+          <thead><tr><th>Ratio</th><th class="ref-col">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="row-label">LPCD (Projected)</td><td><input class="ref-input" type="number" id="ref-lpcd-proj" value="169.35" step="0.01"></td><td class="row-unit">L/person/day</td></tr>
+            <tr><td class="row-label">LPCD (Actual Measured)</td><td><input class="ref-input" type="number" id="ref-lpcd-actual" value="68.46" step="0.01"></td><td class="row-unit">L/person/day</td></tr>
+            <tr><td class="row-label">Domestic/House/Month</td><td><input class="ref-input" type="number" id="ref-dom-per-house" value="8215"></td><td class="row-unit">L/house/mo</td></tr>
+            <tr><td class="row-label">Irrigation/Acre/Month</td><td><input class="ref-input" type="number" id="ref-irr-per-acre" value="238095"></td><td class="row-unit">L/acre/mo</td></tr>
+            <tr><td class="row-label">RWH Storage/House</td><td><input class="ref-input" type="number" id="ref-rwh-per-house" value="65934"></td><td class="row-unit">L/house</td></tr>
+            <tr><td class="row-label">Rainfall/Acre/Year</td><td><input class="ref-input" type="number" id="ref-rain-per-acre" value="3000000"></td><td class="row-unit">L/acre/yr</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Measured Actuals Jan-Feb -->
+    <div class="subsection" style="margin-top:8px;">
+      <div class="subsection-title">3. Measured Actuals — Jan & Feb Avg (Antharam)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="ref-col">January (KL)</th>
+            <th class="ref-col">February (KL)</th>
+            <th class="ref-col">Avg (KL/mo)</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="row-label">Domestic — Per Villa</td><td><input class="ref-input" type="number" id="ref-dom-villa-jan" value="8.8" step="0.01"></td><td><input class="ref-input" type="number" id="ref-dom-villa-feb" value="7.63" step="0.01"></td><td><span class="calc-cell" id="ref-dom-villa-avg">8.22</span></td><td class="row-notes">KL per villa/mo</td></tr>
+          <tr><td class="row-label">Irrigation — Per Villa</td><td><input class="ref-input" type="number" id="ref-irr-villa-jan" value="17.7" step="0.01"></td><td><input class="ref-input" type="number" id="ref-irr-villa-feb" value="11.225" step="0.01"></td><td><span class="calc-cell" id="ref-irr-villa-avg">14.46</span></td><td class="row-notes">KL per villa/mo</td></tr>
+          <tr><td class="row-label">Swimming Pool Top-up</td><td><input class="ref-input" type="number" id="ref-pool-jan" value="549"></td><td><input class="ref-input" type="number" id="ref-pool-feb" value="503"></td><td><span class="calc-cell" id="ref-pool-avg">526</span></td><td class="row-notes">KL/month</td></tr>
+          <tr><td class="row-label">Rurban Hive (Common Area)</td><td><input class="ref-input" type="number" id="ref-rurban-jan" value="86.41" step="0.01"></td><td><input class="ref-input" type="number" id="ref-rurban-feb" value="62.7" step="0.01"></td><td><span class="calc-cell" id="ref-rurban-avg">74.56</span></td><td class="row-notes">KL/month</td></tr>
+          <tr><td class="row-label">GOO (Guest/Office)</td><td><input class="ref-input" type="number" id="ref-goo-jan" value="11"></td><td><input class="ref-input" type="number" id="ref-goo-feb" value="7"></td><td><span class="calc-cell" id="ref-goo-avg">9</span></td><td class="row-notes">KL/month</td></tr>
+          <tr class="total-row"><td>TOTAL (All categories)</td><td><span class="calc-cell" id="ref-total-jan">—</span></td><td><span class="calc-cell" id="ref-total-feb">—</span></td><td><span class="calc-cell" id="ref-total-avg">—</span></td><td class="row-notes">KL/month total site</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ PROJECT INPUTS ══════════════════════════════════════════ -->
+<section class="section" id="inputs">
+  <div class="section-header">📝 Project Inputs — Master Configuration</div>
+  <div class="section-body">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- 1. Project Profile -->
+      <div class="subsection">
+        <div class="subsection-title">1. Project Profile</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="proj-col">Your Value</th><th class="ref-col">Antharam Ref</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="row-label">Total Site Area</td><td><input type="number" id="proj-site-area" value="70"></td><td><span class="calc-cell ref-input" id="pi-ref-site-area">60</span></td><td class="row-unit">acres</td></tr>
+            <tr><td class="row-label">Total Houses</td><td><input type="number" id="proj-houses" value="280"></td><td><span class="calc-cell ref-input" id="pi-ref-houses">182</span></td><td class="row-unit">nos.</td></tr>
+            <tr><td class="row-label">Undivided Share/House</td><td><input type="number" id="proj-uds" value="1050"></td><td><span class="calc-cell ref-input">900</span></td><td class="row-unit">sq yards</td></tr>
+            <tr><td class="row-label">Built-up Area/House</td><td><input type="number" id="proj-bua" value="4200"></td><td><span class="calc-cell ref-input">2700</span></td><td class="row-unit">sft</td></tr>
+            <tr><td class="row-label">BHK Configuration</td><td><input type="text" id="proj-bhk" value="3 BHK"></td><td><span class="calc-cell ref-input">3 BHK</span></td><td class="row-unit"></td></tr>
+            <tr><td class="row-label">Avg Occupants/House</td><td><input type="number" id="proj-occupants" value="4"></td><td><span class="calc-cell ref-input" id="pi-ref-occ">4</span></td><td class="row-unit">persons</td></tr>
+            <tr><td class="row-label">Farming Area</td><td><input type="number" id="proj-farm-area" value="7" step="0.1"></td><td><span class="calc-cell ref-input" id="pi-ref-farm">7</span></td><td class="row-unit">acres</td></tr>
+            <tr><td class="row-label">Afforestation Area</td><td><input type="number" id="proj-afforest" value="10" step="0.1"></td><td><span class="calc-cell ref-input">8.5</span></td><td class="row-unit">acres</td></tr>
+            <tr class="total-row"><td>Total Population (auto)</td><td><span class="calc-cell" id="proj-pop">—</span></td><td><span class="calc-cell ref-input" id="pi-ref-pop">728</span></td><td class="row-unit">persons</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 2. Water Demand Known Values -->
+      <div class="subsection">
+        <div class="subsection-title">2. Water Demand Inputs (Override)</div>
+        <p style="font-size:11px;color:var(--grey);margin-bottom:10px;">Leave blank to use Antharam benchmark ratios. Entering a value overrides the ratio-based estimate.</p>
+        <table>
+          <thead><tr><th>Parameter</th><th class="proj-col">Measured Value</th><th class="ref-col">Antharam Ref</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="row-label">Domestic Water / Month</td><td><input type="number" id="proj-dom-override" placeholder="auto-calc"></td><td><span class="calc-cell ref-input" id="pi-ref-dom">3,750,000</span></td><td class="row-unit">L/mo</td></tr>
+            <tr><td class="row-label">Domestic LPCD</td><td><input type="number" id="proj-lpcd" value="68.46" step="0.01"></td><td><span class="calc-cell ref-input" id="pi-ref-lpcd">68.46</span></td><td class="row-unit">L/person/day</td></tr>
+            <tr><td class="row-label">Irrigation / Month</td><td><input type="number" id="proj-irr-override" placeholder="auto-calc"></td><td><span class="calc-cell ref-input" id="pi-ref-irr">1,666,667</span></td><td class="row-unit">L/mo</td></tr>
+            <tr><td class="row-label">Swimming Pool Top-up</td><td><input type="number" id="proj-pool" value="526000"></td><td><span class="calc-cell ref-input">526,000</span></td><td class="row-unit">L/mo</td></tr>
+            <tr><td class="row-label">Landscaping (non-farm)</td><td><input type="number" id="proj-landscape" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/mo</td></tr>
+            <tr><td class="row-label">Animal Husbandry</td><td><input type="number" id="proj-animal" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/mo</td></tr>
+            <tr><td class="row-label">Other Consumption</td><td><input type="number" id="proj-other" value="83555"></td><td><span class="calc-cell ref-input">83,555</span></td><td class="row-unit">L/mo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. Water Supply Inputs -->
+    <div class="subsection">
+      <div class="subsection-title">3. Water Supply Sources</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th class="proj-col">Your Capacity</th>
+            <th class="ref-col">Antharam Ref</th>
+            <th>Unit</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="row-label">Borewell 1 — Yield</td><td><input type="number" id="proj-bw1" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/day</td><td class="row-notes">Enter daily yield</td></tr>
+          <tr><td class="row-label">Borewell 2 — Yield</td><td><input type="number" id="proj-bw2" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/day</td><td></td></tr>
+          <tr><td class="row-label">Borewell 3 — Yield</td><td><input type="number" id="proj-bw3" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/day</td><td></td></tr>
+          <tr><td class="row-label">Dug Well / Sump 1 (capacity)</td><td><input type="number" id="proj-dw1" value="5000000"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L capacity</td><td class="row-notes">Storage capacity</td></tr>
+          <tr><td class="row-label">Dug Well / Sump 2 (capacity)</td><td><input type="number" id="proj-dw2" value="5000000"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L capacity</td><td></td></tr>
+          <tr><td class="row-label">Municipal / External Supply</td><td><input type="number" id="proj-municipal" value="60000"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/day</td><td class="row-notes">Tanker or civic supply</td></tr>
+          <tr><td class="row-label">RWH Storage (total installed)</td><td><input type="number" id="proj-rwh" value="12000000"></td><td><span class="calc-cell ref-input">12,000,000</span></td><td class="row-unit">L total</td><td></td></tr>
+          <tr><td class="row-label">STP Capacity</td><td><input type="number" id="proj-stp-cap" value="60000"></td><td><span class="calc-cell ref-input">60,000</span></td><td class="row-unit">L/day</td><td></td></tr>
+          <tr><td class="row-label">STP Recovery Rate</td><td><input type="number" id="proj-stp-recovery" value="85" min="0" max="100"></td><td><span class="calc-cell ref-input">85</span></td><td class="row-unit">%</td><td class="row-notes">Typically 80–90%</td></tr>
+          <tr><td class="row-label">Greywater Recycling</td><td><input type="number" id="proj-grey" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/day</td><td></td></tr>
+          <tr><td class="row-label">Lake / Pond Storage</td><td><input type="number" id="proj-lake" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L total</td><td></td></tr>
+          <tr><td class="row-label">Other Supply Source</td><td><input type="number" id="proj-other-supply" placeholder="0"></td><td><span class="calc-cell ref-input">—</span></td><td class="row-unit">L/day</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 4. Farming/Irrigation Detail -->
+    <div class="subsection">
+      <div class="subsection-title">4. Farming / Irrigation Detail (Optional)</div>
+      <table>
+        <thead><tr><th>Parameter</th><th class="proj-col">Your Value</th><th class="ref-col">Antharam Ref</th><th>Unit</th></tr></thead>
+        <tbody>
+          <tr><td class="row-label">Farming Area</td><td><input type="number" id="proj-farm-sft" value="100000"></td><td><span class="calc-cell ref-input">155,823</span></td><td class="row-unit">sft</td></tr>
+          <tr><td class="row-label">3-Line Drippers / Bed</td><td><input type="number" id="proj-drip3" value="50000"></td><td><span class="calc-cell ref-input">47,921</span></td><td class="row-unit">nos.</td></tr>
+          <tr><td class="row-label">2-Line Drippers / Bed</td><td><input type="number" id="proj-drip2" value="40000"></td><td><span class="calc-cell ref-input">31,041</span></td><td class="row-unit">nos.</td></tr>
+          <tr><td class="row-label">Number of Sprinklers</td><td><input type="number" id="proj-sprinklers" value="200"></td><td><span class="calc-cell ref-input">129</span></td><td class="row-unit">nos.</td></tr>
+          <tr><td class="row-label">Dripper Flow Rate</td><td><input type="number" id="proj-drip-flow" value="4" step="0.1"></td><td><span class="calc-cell ref-input">4</span></td><td class="row-unit">L/hour</td></tr>
+          <tr><td class="row-label">Dripper Runtime / Day</td><td><input type="number" id="proj-drip-time" value="30"></td><td><span class="calc-cell ref-input">30</span></td><td class="row-unit">minutes</td></tr>
+          <tr class="total-row"><td>Total Drippers</td><td><span class="calc-cell" id="proj-total-drip">—</span></td><td><span class="calc-cell ref-input">78,962</span></td><td class="row-unit">nos.</td></tr>
+          <tr class="total-row"><td>Dripper Water / Day</td><td><span class="calc-cell" id="proj-drip-water-day">—</span></td><td><span class="calc-cell ref-input">157,924</span></td><td class="row-unit">L/day</td></tr>
+          <tr class="total-row"><td>Dripper Water / Month (cross-check)</td><td><span class="calc-cell" id="proj-drip-water-mo">—</span></td><td><span class="calc-cell ref-input">4,737,720</span></td><td class="row-unit">L/mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ WATER DEMAND ══════════════════════════════════════════ -->
+<section class="section" id="demand">
+  <div class="section-header">💧 Water Demand — All Consumption Points</div>
+  <div class="section-body">
+
+    <!-- A. Domestic -->
+    <div class="subsection">
+      <div class="subsection-title">A. Domestic Water Demand</div>
+      <table>
+        <thead><tr><th>End Use</th><th class="proj-col">Project (L/mo)</th><th class="ref-col">Antharam Ref (L/mo)</th><th>Method</th></tr></thead>
+        <tbody>
+          <tr><td class="row-label">Benchmark LPCD Used</td><td><span class="calc-cell" id="dem-lpcd">—</span></td><td><span class="calc-cell ref-input">68.46</span></td><td class="row-notes">Override / auto ratio</td></tr>
+          <tr class="total-row"><td>Total Domestic Water</td><td><span class="calc-cell" id="dem-dom-total">—</span></td><td><span class="calc-cell ref-input" id="dem-ref-dom">—</span></td><td class="row-notes">LPCD × Pop × 30</td></tr>
+          <tr class="sub-row"><td>↳ Drinking & Cooking (7%)</td><td><span class="calc-cell" id="dem-drink">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+          <tr class="sub-row"><td>↳ Bathing (33%)</td><td><span class="calc-cell" id="dem-bath">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+          <tr class="sub-row"><td>↳ Flushing (22%)</td><td><span class="calc-cell" id="dem-flush">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+          <tr class="sub-row"><td>↳ Laundry (15%)</td><td><span class="calc-cell" id="dem-laundry">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+          <tr class="sub-row"><td>↳ Cleaning (7%)</td><td><span class="calc-cell" id="dem-clean">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+          <tr class="sub-row"><td>↳ Garden / Misc (16%)</td><td><span class="calc-cell" id="dem-garden">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- B. Irrigation -->
+    <div class="subsection">
+      <div class="subsection-title">B. Irrigation & Farming Demand</div>
+      <table>
+        <thead><tr><th>Category</th><th class="proj-col">Project (L/mo)</th><th class="ref-col">Antharam Ref (L/mo)</th><th>Method</th></tr></thead>
+        <tbody>
+          <tr><td class="row-label">Farm Irrigation (ratio-based)</td><td><span class="calc-cell" id="dem-irr-ratio">—</span></td><td><span class="calc-cell ref-input" id="dem-ref-irr">—</span></td><td class="row-notes">per-acre ratio × farm acres</td></tr>
+          <tr><td class="row-label">Dripper-Based Cross-Check</td><td><span class="calc-cell" id="dem-irr-drip">—</span></td><td><span class="calc-cell ref-input">4,737,720</span></td><td class="row-notes">From dripper inputs</td></tr>
+          <tr class="total-row"><td>Irrigation Used in Balance</td><td><span class="calc-cell" id="dem-irr-used">—</span></td><td><span class="calc-cell ref-input">—</span></td><td class="row-notes">Override or ratio-based</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- C. Amenities -->
+    <div class="subsection">
+      <div class="subsection-title">C. Amenities & Other Demand</div>
+      <table>
+        <thead><tr><th>Category</th><th class="proj-col">Project (L/mo)</th><th class="ref-col">Antharam Ref (L/mo)</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="row-label">Swimming Pool Top-up</td><td><span class="calc-cell" id="dem-pool">—</span></td><td><span class="calc-cell ref-input">526,000</span></td><td></td></tr>
+          <tr><td class="row-label">Animal Husbandry / Goshala</td><td><span class="calc-cell" id="dem-animal">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+          <tr><td class="row-label">Landscaping (non-farm)</td><td><span class="calc-cell" id="dem-landscape">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+          <tr><td class="row-label">Other Consumption</td><td><span class="calc-cell" id="dem-other">—</span></td><td><span class="calc-cell ref-input">83,555</span></td><td class="row-notes">Rurban Hive + GOO</td></tr>
+          <tr class="total-row"><td>Total Other Demand</td><td><span class="calc-cell" id="dem-other-total">—</span></td><td><span class="calc-cell ref-input">609,555</span></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total Demand Summary -->
+    <div class="subsection">
+      <div class="subsection-title">Total Water Demand Summary</div>
+      <table>
+        <thead><tr><th>Category</th><th class="proj-col">Monthly (L)</th><th class="proj-col">Annual (L)</th><th class="proj-col">Daily (L)</th><th class="ref-col">Antharam Monthly (L)</th></tr></thead>
+        <tbody>
+          <tr><td class="row-label">Domestic</td><td><span class="calc-cell" id="dem-sum-dom-mo">—</span></td><td><span class="calc-cell" id="dem-sum-dom-yr">—</span></td><td><span class="calc-cell" id="dem-sum-dom-day">—</span></td><td><span class="calc-cell ref-input" id="dem-ref-dom2">—</span></td></tr>
+          <tr><td class="row-label">Irrigation / Farming</td><td><span class="calc-cell" id="dem-sum-irr-mo">—</span></td><td><span class="calc-cell" id="dem-sum-irr-yr">—</span></td><td><span class="calc-cell" id="dem-sum-irr-day">—</span></td><td><span class="calc-cell ref-input" id="dem-ref-irr2">—</span></td></tr>
+          <tr><td class="row-label">Other / Amenities</td><td><span class="calc-cell" id="dem-sum-oth-mo">—</span></td><td><span class="calc-cell" id="dem-sum-oth-yr">—</span></td><td><span class="calc-cell" id="dem-sum-oth-day">—</span></td><td><span class="calc-cell ref-input">609,555</span></td></tr>
+          <tr class="total-row"><td>TOTAL DEMAND</td><td><span class="calc-cell" id="dem-sum-total-mo">—</span></td><td><span class="calc-cell" id="dem-sum-total-yr">—</span></td><td><span class="calc-cell" id="dem-sum-total-day">—</span></td><td><span class="calc-cell ref-input" id="dem-ref-total">—</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ WATER SUPPLY ══════════════════════════════════════════ -->
+<section class="section" id="supply">
+  <div class="section-header">💧 Water Supply — All Sources</div>
+  <div class="section-body">
+    <table>
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th class="proj-col">L/Day</th>
+          <th class="proj-col">L/Month</th>
+          <th class="ref-col">Antharam Ref (L/mo)</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="row-label" colspan="5" style="background:#f5f5f5;font-weight:700;padding:8px 12px;">A. Groundwater (Borewells)</td></tr>
+        <tr><td class="row-label">Borewell 1</td><td><span class="calc-cell" id="sup-bw1-day">—</span></td><td><span class="calc-cell" id="sup-bw1-mo">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+        <tr><td class="row-label">Borewell 2</td><td><span class="calc-cell" id="sup-bw2-day">—</span></td><td><span class="calc-cell" id="sup-bw2-mo">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+        <tr><td class="row-label">Borewell 3</td><td><span class="calc-cell" id="sup-bw3-day">—</span></td><td><span class="calc-cell" id="sup-bw3-mo">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+        <tr class="total-row"><td>Total Groundwater</td><td><span class="calc-cell" id="sup-bw-total-day">—</span></td><td><span class="calc-cell" id="sup-bw-total-mo">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+
+        <tr><td class="row-label" colspan="5" style="background:#f5f5f5;font-weight:700;padding:8px 12px;">B. Rainwater Harvesting</td></tr>
+        <tr><td class="row-label">RWH — Dug Well Storage</td><td>—</td><td><span class="calc-cell" id="sup-rwh-mo">—</span></td><td><span class="calc-cell ref-input">12,000,000</span></td><td class="row-notes">Total capacity</td></tr>
+        <tr><td class="row-label">Annual Rainfall Capture (estimated)</td><td>—</td><td><span class="calc-cell" id="sup-rain-mo">—</span></td><td><span class="calc-cell ref-input">1,750,000</span></td><td class="row-notes">10% of annual rainfall, monthly avg</td></tr>
+        <tr class="total-row"><td>Monthly RWH Supply (usable)</td><td>—</td><td><span class="calc-cell" id="sup-rwh-usable">—</span></td><td><span class="calc-cell ref-input">1,750,000</span></td><td></td></tr>
+
+        <tr><td class="row-label" colspan="5" style="background:#f5f5f5;font-weight:700;padding:8px 12px;">C. Recycled / Treated Water</td></tr>
+        <tr><td class="row-label">STP Treated Water</td><td><span class="calc-cell" id="sup-stp-day">—</span></td><td><span class="calc-cell" id="sup-stp-mo">—</span></td><td><span class="calc-cell ref-input">1,650,000</span></td><td class="row-notes">Capacity × recovery %</td></tr>
+        <tr><td class="row-label">Greywater Recycling</td><td><span class="calc-cell" id="sup-grey-day">—</span></td><td><span class="calc-cell" id="sup-grey-mo">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+        <tr class="total-row"><td>Total Recycled</td><td><span class="calc-cell" id="sup-rec-total-day">—</span></td><td><span class="calc-cell" id="sup-rec-total-mo">—</span></td><td><span class="calc-cell ref-input">1,650,000</span></td><td></td></tr>
+
+        <tr><td class="row-label" colspan="5" style="background:#f5f5f5;font-weight:700;padding:8px 12px;">D. External / Purchased Water</td></tr>
+        <tr><td class="row-label">Municipal / Tanker Supply</td><td><span class="calc-cell" id="sup-mun-day">—</span></td><td><span class="calc-cell" id="sup-mun-mo">—</span></td><td><span class="calc-cell ref-input">1,800,000</span></td><td></td></tr>
+        <tr><td class="row-label">Other External</td><td><span class="calc-cell" id="sup-ext-day">—</span></td><td><span class="calc-cell" id="sup-ext-mo">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+        <tr class="total-row"><td>Total External</td><td><span class="calc-cell" id="sup-ext-total-day">—</span></td><td><span class="calc-cell" id="sup-ext-total-mo">—</span></td><td><span class="calc-cell ref-input">1,800,000</span></td><td></td></tr>
+
+        <tr class="total-row" style="border-top:3px solid var(--blue);">
+          <td style="font-size:14px;">⚡ TOTAL SUPPLY</td>
+          <td><span class="calc-cell" id="sup-grand-day" style="font-size:14px;font-weight:700;">—</span></td>
+          <td><span class="calc-cell" id="sup-grand-mo" style="font-size:14px;font-weight:700;">—</span></td>
+          <td><span class="calc-cell ref-input">5,200,000</span></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ WATER BALANCE ══════════════════════════════════════════ -->
+<section class="section" id="balance">
+  <div class="section-header">⚖️ Water Balance — Demand vs Supply</div>
+  <div class="section-body">
+
+    <div class="subsection">
+      <div class="subsection-title">Monthly Water Balance</div>
+      <table class="balance-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="demand">Demand (L/mo)</th>
+            <th class="supply">Supply (L/mo)</th>
+            <th class="gap">Gap (L/mo)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="row-label">A. Domestic</td><td><span class="calc-cell" id="bal-dom-dem">—</span></td><td><span class="calc-cell" id="bal-dom-sup">—</span></td><td><span class="calc-cell" id="bal-dom-gap">—</span></td><td id="bal-dom-st">—</td></tr>
+          <tr><td class="row-label">B. Irrigation / Farming</td><td><span class="calc-cell" id="bal-irr-dem">—</span></td><td><span class="calc-cell" id="bal-irr-sup">—</span></td><td><span class="calc-cell" id="bal-irr-gap">—</span></td><td id="bal-irr-st">—</td></tr>
+          <tr><td class="row-label">C. Other / Amenities</td><td><span class="calc-cell" id="bal-oth-dem">—</span></td><td>—</td><td><span class="calc-cell" id="bal-oth-gap">—</span></td><td id="bal-oth-st">—</td></tr>
+          <tr class="total-row"><td>TOTAL</td><td><span class="calc-cell" id="bal-total-dem">—</span></td><td><span class="calc-cell" id="bal-total-sup">—</span></td><td><span class="calc-cell" id="bal-total-gap">—</span></td><td id="bal-total-st">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="subsection">
+        <div class="subsection-title">Key Metrics</div>
+        <table>
+          <thead><tr><th>Metric</th><th class="proj-col">Project</th><th class="ref-col">Antharam</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="row-label">Overall Self-Sufficiency</td><td><span class="calc-cell" id="met-self">—</span></td><td><span class="calc-cell ref-input">—</span></td><td id="met-self-st">—</td></tr>
+            <tr><td class="row-label">Domestic Self-Sufficiency</td><td><span class="calc-cell" id="met-dom-self">—</span></td><td><span class="calc-cell ref-input">—</span></td><td id="met-dom-self-st">—</td></tr>
+            <tr><td class="row-label">Irrigation Self-Sufficiency</td><td><span class="calc-cell" id="met-irr-self">—</span></td><td><span class="calc-cell ref-input">—</span></td><td id="met-irr-self-st">—</td></tr>
+            <tr><td class="row-label">External Water Dependency</td><td><span class="calc-cell" id="met-ext-dep">—</span></td><td><span class="calc-cell ref-input">—</span></td><td id="met-ext-dep-st">—</td></tr>
+            <tr><td class="row-label">Monthly Deficit</td><td><span class="calc-cell" id="met-deficit">—</span></td><td><span class="calc-cell ref-input">—</span></td><td></td></tr>
+            <tr><td class="row-label">LPCD</td><td><span class="calc-cell" id="met-lpcd">—</span></td><td><span class="calc-cell ref-input">68.46</span></td><td id="met-lpcd-st">—</td></tr>
+            <tr><td class="row-label">Water / House / Month</td><td><span class="calc-cell" id="met-per-house">—</span></td><td><span class="calc-cell ref-input">8,215</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="subsection">
+        <div class="subsection-title">RWH Sizing Guidance</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="proj-col">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="row-label">Antharam RWH / House</td><td><span class="calc-cell ref-input">65,934</span></td><td class="row-unit">L/house</td></tr>
+            <tr><td class="row-label">Suggested RWH (Antharam ratio)</td><td><span class="calc-cell" id="rwh-suggested">—</span></td><td class="row-unit">L total</td></tr>
+            <tr><td class="row-label">RWH to Cover 3 Months Demand</td><td><span class="calc-cell" id="rwh-3mo">—</span></td><td class="row-unit">L</td></tr>
+            <tr><td class="row-label">Your RWH Capacity</td><td><span class="calc-cell" id="rwh-capacity">—</span></td><td class="row-unit">L</td></tr>
+            <tr><td class="row-label">Months of Demand Covered</td><td><span class="calc-cell" id="rwh-months">—</span></td><td class="row-unit">months</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="balance-alerts" style="margin-top:8px;"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════ OCCUPANCY & RAINFALL ══════════════════════════════════════════ -->
+<section class="section" id="occupancy">
+  <div class="section-header">📈 Occupancy Ramp-Up & Monthly Rainfall</div>
+  <div class="section-body">
+
+    <!-- Occupancy Inputs -->
+    <div class="subsection">
+      <div class="subsection-title">1. Occupancy Ramp-Up (5-Year)</div>
+      <div class="occ-grid" id="occ-grid">
+        <!-- generated by JS -->
+      </div>
+    </div>
+
+    <!-- Occupancy demand table -->
+    <div class="subsection">
+      <div class="subsection-title">Projected Demand by Year</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th class="proj-col">Year 1</th>
+            <th class="proj-col">Year 2</th>
+            <th class="proj-col">Year 3</th>
+            <th class="proj-col">Year 4</th>
+            <th class="proj-col">Year 5</th>
+            <th>Unit</th>
+          </tr>
+        </thead>
+        <tbody id="occ-demand-tbody">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Monthly Rainfall -->
+    <div class="subsection">
+      <div class="subsection-title">2. Monthly Rainfall — Chevella Mandal, Rangareddy (IMD Normals)</div>
+      <table class="seasonal-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th class="proj-col">Rainfall (mm)</th>
+            <th>Season</th>
+            <th>Demand Pressure</th>
+            <th>RWH Potential</th>
+            <th class="proj-col">RWH Harvest (ML)</th>
+          </tr>
+        </thead>
+        <tbody id="rainfall-tbody">
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Annual Total</td>
+            <td><span class="calc-cell" id="rain-annual">812</span> mm</td>
+            <td colspan="3"></td>
+            <td><span class="calc-cell" id="rain-harvest-annual">—</span> ML</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Year 1 Seasonal Analysis -->
+    <div class="subsection">
+      <div class="subsection-title">3. Year 1 — Monthly Demand vs RWH Harvest</div>
+      <table class="seasonal-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Demand Factor</th>
+            <th class="proj-col">Monthly Demand (ML)</th>
+            <th class="proj-col">RWH Harvest (ML)</th>
+            <th>Net Gap (ML)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="seasonal-tbody">
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Annual Total (Year 1)</td>
+            <td>—</td>
+            <td><span class="calc-cell" id="seas-dem-total">—</span></td>
+            <td><span class="calc-cell" id="seas-rwh-total">—</span></td>
+            <td><span class="calc-cell" id="seas-gap-total">—</span></td>
+            <td>ML/year</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const fmt = (n, decimals=0) => {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-IN', {maximumFractionDigits: decimals});
+};
+const fmtL = n => {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 10000000) return (n/10000000).toFixed(2) + ' Cr L';
+  if (abs >= 100000)   return (n/100000).toFixed(2) + ' L lac';
+  if (abs >= 1000)     return (n/1000).toFixed(1) + ' KL';
+  return fmt(n, 0) + ' L';
+};
+const fmtPct = n => isNaN(n) ? '—' : (n*100).toFixed(1) + '%';
+const fmtRatio = n => isNaN(n) ? '—' : n.toFixed(3);
+const val = id => parseFloat($(id)?.value) || 0;
+const valOpt = id => { const v = parseFloat($(id)?.value); return isNaN(v) ? null : v; };
+const set = (id, v) => { const el = $(id); if(el) el.textContent = v; };
+const setC = (id, v, colorClass) => {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = v;
+  el.style.color = colorClass === 'red' ? '#c62828' : colorClass === 'green' ? '#2e7d32' : colorClass === 'orange' ? '#e65100' : '';
+};
+
+function statusBadge(gap) {
+  if (gap >= 0) return `<span class="status-badge status-ok">✅ Met</span>`;
+  if (gap < -500000) return `<span class="status-badge status-deficit">🔴 Deficit</span>`;
+  return `<span class="status-badge status-warn">⚠️ Near</span>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RAINFALL DATA (Editable via inputs)
+// ═══════════════════════════════════════════════════════════
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let rainfallData = [8,10,13,18,30,80,163,179,158,90,38,25];
+const DEMAND_FACTOR = [1,1,1.2,1.2,1.2,1.2,0.85,0.85,0.85,1,1,1];
+const SEASONS = ['Dry Season','Dry Season','Pre-summer','Pre-summer','Pre-monsoon','Monsoon onset','SW Monsoon','SW Monsoon','SW Monsoon','NE Monsoon','Retreating','Dry Season'];
+const DEMAND_PRESSURE = ['🔴 PEAK','🔴 PEAK','⚠️ PEAK','🔴 PEAK','🔴 PEAK','⚠️ High','✅ Low','✅ Low','✅ Low','⚠️ Moderate','⚠️ Moderate','🔴 High'];
+const RWH_POT = ['🔴 Nil','🔴 Nil','🔴 Minimal','🔴 Very Low','⚠️ Low','⚠️ Moderate','✅ HIGH','✅ PEAK','✅ HIGH','⚠️ Moderate','⚠️ Low','🔴 Low'];
+
+function buildRainfallTable() {
+  const tbody = $('rainfall-tbody');
+  tbody.innerHTML = '';
+  rainfallData.forEach((mm, i) => {
+    const siteArea = val('proj-site-area');
+    const harvest = mm * siteArea * 4046.86 * 0.75 / 1000000;
+    const rowClass = i >= 2 && i <= 5 ? 'peak' : i >= 6 && i <= 8 ? 'ok' : 'warn';
+    tbody.innerHTML += `<tr>
+      <td class="${rowClass}" style="font-weight:500">${MONTHS[i]}</td>
+      <td><input type="number" class="rainfall-input" data-idx="${i}" value="${mm}" style="min-width:80px;"></td>
+      <td>${SEASONS[i]}</td>
+      <td>${DEMAND_PRESSURE[i]}</td>
+      <td>${RWH_POT[i]}</td>
+      <td class="${rowClass}">${harvest.toFixed(3)}</td>
+    </tr>`;
+  });
+  document.querySelectorAll('.rainfall-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      rainfallData[+e.target.dataset.idx] = parseFloat(e.target.value)||0;
+      recalc();
+    });
+  });
+  const annualRain = rainfallData.reduce((a,b)=>a+b,0);
+  set('rain-annual', annualRain);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  OCCUPANCY GRID
+// ═══════════════════════════════════════════════════════════
+let occRates = [0.10, 0.25, 0.50, 0.75, 1.00];
+
+function buildOccGrid() {
+  const grid = $('occ-grid');
+  grid.innerHTML = '';
+  occRates.forEach((rate, i) => {
+    const houses = val('proj-houses');
+    const occ = val('proj-occupants');
+    const villas = Math.round(houses * rate);
+    const pop = villas * occ;
+    grid.innerHTML += `<div class="occ-year">
+      <label>Year ${i+1}</label>
+      <input type="number" class="occ-input" data-idx="${i}" value="${(rate*100).toFixed(0)}" min="0" max="100" style="text-align:center;">
+      <div style="font-size:10px;color:var(--grey);margin-top:4px;">% Occupancy</div>
+      <div class="occ-derived">
+        <b id="occ-villas-${i}">${fmt(villas)}</b> villas<br>
+        <b id="occ-pop-${i}">${fmt(pop)}</b> persons
+      </div>
+    </div>`;
+  });
+  document.querySelectorAll('.occ-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      occRates[+e.target.dataset.idx] = (parseFloat(e.target.value)||0)/100;
+      recalc();
+    });
+  });
+}
+
+function updateOccGrid() {
+  const houses = val('proj-houses');
+  const occ = val('proj-occupants');
+  occRates.forEach((rate, i) => {
+    const villas = Math.round(houses * rate);
+    const pop = villas * occ;
+    set(`occ-villas-${i}`, fmt(villas));
+    set(`occ-pop-${i}`, fmt(pop));
+  });
+}
+
+function buildOccDemandTable() {
+  const tbody = $('occ-demand-tbody');
+  tbody.innerHTML = `
+    <tr><td class="row-label">Occupancy Rate</td>${occRates.map((_,i)=>`<td id="occ-rate-${i}">—</td>`).join('')}<td class="row-unit">%</td></tr>
+    <tr><td class="row-label">Occupied Villas</td>${occRates.map((_,i)=>`<td id="occ-villa-${i}">—</td>`).join('')}<td class="row-unit">nos.</td></tr>
+    <tr><td class="row-label">Occupied Population</td>${occRates.map((_,i)=>`<td id="occ-pop2-${i}">—</td>`).join('')}<td class="row-unit">persons</td></tr>
+    <tr><td class="row-label">Monthly Domestic Demand</td>${occRates.map((_,i)=>`<td id="occ-dom-${i}">—</td>`).join('')}<td class="row-unit">ML/mo</td></tr>
+    <tr><td class="row-label">Irrigation + Common</td>${occRates.map((_,i)=>`<td id="occ-irr-${i}">—</td>`).join('')}<td class="row-unit">ML/mo (fixed)</td></tr>
+    <tr><td class="row-label">Amenities (scaled)</td>${occRates.map((_,i)=>`<td id="occ-amen-${i}">—</td>`).join('')}<td class="row-unit">ML/mo</td></tr>
+    <tr class="total-row"><td>Total Monthly Demand</td>${occRates.map((_,i)=>`<td id="occ-total-${i}">—</td>`).join('')}<td class="row-unit">ML/mo</td></tr>
+  `;
+}
+
+function buildSeasonalTable() {
+  const tbody = $('seasonal-tbody');
+  tbody.innerHTML = '';
+  MONTHS.forEach((m, i) => {
+    const rowClass = i >= 2 && i <= 5 ? 'peak' : i >= 6 && i <= 8 ? 'ok' : '';
+    tbody.innerHTML += `<tr class="${rowClass}">
+      <td style="font-weight:500">${m}</td>
+      <td id="seas-factor-${i}">—</td>
+      <td id="seas-dem-${i}">—</td>
+      <td id="seas-rwh-${i}">—</td>
+      <td id="seas-gap-${i}">—</td>
+      <td id="seas-st-${i}">—</td>
+    </tr>`;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MAIN RECALCULATE
+// ═══════════════════════════════════════════════════════════
+function recalc() {
+  // ── Reference values
+  const refHouses = val('ref-houses');
+  const refOcc = val('ref-occupants');
+  const refFarm = val('ref-farm-area');
+  const refPop = refHouses * refOcc;
+  set('ref-pop', fmt(refPop));
+  const refLpcdActual = val('ref-lpcd-actual');
+  const refIrrPerAcre = val('ref-irr-per-acre');
+  const refRwhPerHouse = val('ref-rwh-per-house');
+
+  // Ref actuals table
+  const domVillaJan = val('ref-dom-villa-jan'), domVillaFeb = val('ref-dom-villa-feb');
+  const irrVillaJan = val('ref-irr-villa-jan'), irrVillaFeb = val('ref-irr-villa-feb');
+  const poolJan = val('ref-pool-jan'), poolFeb = val('ref-pool-feb');
+  const rurbanJan = val('ref-rurban-jan'), rurbanFeb = val('ref-rurban-feb');
+  const gooJan = val('ref-goo-jan'), gooFeb = val('ref-goo-feb');
+  set('ref-dom-villa-avg', ((domVillaJan+domVillaFeb)/2).toFixed(2));
+  set('ref-irr-villa-avg', ((irrVillaJan+irrVillaFeb)/2).toFixed(2));
+  set('ref-pool-avg', ((poolJan+poolFeb)/2).toFixed(0));
+  set('ref-rurban-avg', ((rurbanJan+rurbanFeb)/2).toFixed(2));
+  set('ref-goo-avg', ((gooJan+gooFeb)/2).toFixed(0));
+  const refTotalJan = (domVillaJan+irrVillaJan)*refHouses + poolJan + rurbanJan + gooJan;
+  const refTotalFeb = (domVillaFeb+irrVillaFeb)*refHouses + poolFeb + rurbanFeb + gooFeb;
+  set('ref-total-jan', fmt(refTotalJan, 1));
+  set('ref-total-feb', fmt(refTotalFeb, 1));
+  set('ref-total-avg', fmt((refTotalJan+refTotalFeb)/2, 1));
+
+  // Mirror reference values in Project Inputs panel
+  set('pi-ref-site-area', val('ref-site-area'));
+  set('pi-ref-houses', val('ref-houses'));
+  set('pi-ref-occ', val('ref-occupants'));
+  set('pi-ref-farm', val('ref-farm-area'));
+  set('pi-ref-pop', fmt(refPop));
+  const refDomMo = refPop * refLpcdActual * 30;
+  const refIrrMo = refFarm * refIrrPerAcre;
+  set('pi-ref-dom', fmt(Math.round(refDomMo)));
+  set('pi-ref-irr', fmt(Math.round(refIrrMo)));
+  set('pi-ref-lpcd', refLpcdActual);
+
+  // ── Project: Profile
+  const projHouses = val('proj-houses');
+  const projOcc = val('proj-occupants');
+  const projFarmAcres = val('proj-farm-area');
+  const projPop = projHouses * projOcc;
+  set('proj-pop', fmt(projPop));
+
+  // ── Project: Demand
+  const projLpcd = val('proj-lpcd');
+  const domOverride = valOpt('proj-dom-override');
+  const domCalc = projLpcd * projPop * 30;
+  const domUsed = domOverride !== null ? domOverride : domCalc;
+
+  const irrOverride = valOpt('proj-irr-override');
+  const irrRatio = projFarmAcres * refIrrPerAcre;
+  const irrUsed = irrOverride !== null ? irrOverride : irrRatio;
+
+  const poolDem = val('proj-pool') || 0;
+  const landscape = val('proj-landscape') || 0;
+  const animal = val('proj-animal') || 0;
+  const otherDem = val('proj-other') || 0;
+  const otherTotal = poolDem + landscape + animal + otherDem;
+
+  const totalDemand = domUsed + irrUsed + otherTotal;
+
+  // Farming detail
+  const drip3 = val('proj-drip3'), drip2 = val('proj-drip2');
+  const totalDrip = drip3 + drip2;
+  const dripFlow = val('proj-drip-flow');
+  const dripTime = val('proj-drip-time');
+  const dripWaterDay = totalDrip * dripFlow * (dripTime/60);
+  const dripWaterMo = dripWaterDay * 30;
+  set('proj-total-drip', fmt(totalDrip));
+  set('proj-drip-water-day', fmt(Math.round(dripWaterDay)));
+  set('proj-drip-water-mo', fmt(Math.round(dripWaterMo)));
+
+  // ── Demand sheet
+  set('dem-lpcd', projLpcd);
+  set('dem-dom-total', fmt(Math.round(domUsed)));
+  set('dem-drink', fmt(Math.round(domUsed*0.07)));
+  set('dem-bath', fmt(Math.round(domUsed*0.33)));
+  set('dem-flush', fmt(Math.round(domUsed*0.22)));
+  set('dem-laundry', fmt(Math.round(domUsed*0.15)));
+  set('dem-clean', fmt(Math.round(domUsed*0.07)));
+  set('dem-garden', fmt(Math.round(domUsed*0.16)));
+  set('dem-ref-dom', fmt(Math.round(refDomMo)));
+
+  set('dem-irr-ratio', fmt(Math.round(irrRatio)));
+  set('dem-irr-drip', fmt(Math.round(dripWaterMo)));
+  set('dem-irr-used', fmt(Math.round(irrUsed)));
+  set('dem-ref-irr', fmt(Math.round(refIrrMo)));
+
+  set('dem-pool', fmt(poolDem));
+  set('dem-animal', fmt(animal));
+  set('dem-landscape', fmt(landscape));
+  set('dem-other', fmt(otherDem));
+  set('dem-other-total', fmt(Math.round(otherTotal)));
+
+  set('dem-sum-dom-mo', fmtL(domUsed));
+  set('dem-sum-dom-yr', fmtL(domUsed*12));
+  set('dem-sum-dom-day', fmtL(domUsed/30));
+  set('dem-sum-irr-mo', fmtL(irrUsed));
+  set('dem-sum-irr-yr', fmtL(irrUsed*12));
+  set('dem-sum-irr-day', fmtL(irrUsed/30));
+  set('dem-sum-oth-mo', fmtL(otherTotal));
+  set('dem-sum-oth-yr', fmtL(otherTotal*12));
+  set('dem-sum-oth-day', fmtL(otherTotal/30));
+  set('dem-sum-total-mo', fmtL(totalDemand));
+  set('dem-sum-total-yr', fmtL(totalDemand*12));
+  set('dem-sum-total-day', fmtL(totalDemand/30));
+  const refTotalDemMo = refDomMo + refIrrMo;
+  set('dem-ref-dom2', fmtL(refDomMo));
+  set('dem-ref-irr2', fmtL(refIrrMo));
+  set('dem-ref-total', fmtL(refTotalDemMo + 609555));
+
+  // ── Supply calculations
+  const bw1 = val('proj-bw1'), bw2 = val('proj-bw2'), bw3 = val('proj-bw3');
+  const bwDayTotal = bw1+bw2+bw3;
+  const bwMoTotal = bwDayTotal*30;
+  set('sup-bw1-day', fmt(bw1)); set('sup-bw1-mo', fmt(bw1*30));
+  set('sup-bw2-day', fmt(bw2)); set('sup-bw2-mo', fmt(bw2*30));
+  set('sup-bw3-day', fmt(bw3)); set('sup-bw3-mo', fmt(bw3*30));
+  set('sup-bw-total-day', fmt(bwDayTotal)); set('sup-bw-total-mo', fmtL(bwMoTotal));
+
+  const rwhCapacity = val('proj-rwh');
+  const annualRainMM = rainfallData.reduce((a,b)=>a+b,0);
+  const siteArea = val('proj-site-area');
+  const annualRainCapture = annualRainMM * siteArea * 4046.86 * 0.75;
+  const rwhMonthly = Math.min(rwhCapacity, annualRainCapture/12);
+  set('sup-rwh-mo', fmtL(rwhCapacity));
+  set('sup-rain-mo', fmtL(Math.round(annualRainCapture)));
+  set('sup-rwh-usable', fmtL(Math.round(rwhMonthly)));
+
+  const stpCap = val('proj-stp-cap');
+  const stpRec = val('proj-stp-recovery')/100;
+  const stpDay = stpCap * stpRec;
+  const stpMo = stpDay * 30;
+  const greyDay = val('proj-grey') || 0;
+  const greyMo = greyDay * 30;
+  const recTotal = stpDay + greyDay;
+  const recMoTotal = stpMo + greyMo;
+  set('sup-stp-day', fmt(Math.round(stpDay))); set('sup-stp-mo', fmtL(stpMo));
+  set('sup-grey-day', fmt(greyDay)); set('sup-grey-mo', fmtL(greyMo));
+  set('sup-rec-total-day', fmt(Math.round(recTotal))); set('sup-rec-total-mo', fmtL(recMoTotal));
+
+  const munDay = val('proj-municipal');
+  const munMo = munDay * 30;
+  const extOtherDay = val('proj-other-supply') || 0;
+  const extOtherMo = extOtherDay * 30;
+  const extTotalDay = munDay + extOtherDay;
+  const extTotalMo = munMo + extOtherMo;
+  set('sup-mun-day', fmt(munDay)); set('sup-mun-mo', fmtL(munMo));
+  set('sup-ext-day', fmt(extOtherDay)); set('sup-ext-mo', fmtL(extOtherMo));
+  set('sup-ext-total-day', fmt(extTotalDay)); set('sup-ext-total-mo', fmtL(extTotalMo));
+
+  const totalSupplyDay = bwDayTotal + stpDay + greyDay + extTotalDay;
+  const totalSupplyMo = bwMoTotal + rwhMonthly + recMoTotal + extTotalMo;
+  set('sup-grand-day', fmt(Math.round(totalSupplyDay)));
+  set('sup-grand-mo', fmtL(Math.round(totalSupplyMo)));
+
+  // ── Balance
+  const domSupply = extTotalMo; // External allocated to domestic
+  const irrSupply = bwMoTotal + rwhMonthly + recMoTotal;
+  const domGap = domSupply - domUsed;
+  const irrGap = irrSupply - irrUsed;
+  const totalGap = totalSupplyMo - totalDemand;
+
+  set('bal-dom-dem', fmtL(Math.round(domUsed)));
+  set('bal-dom-sup', fmtL(Math.round(domSupply)));
+  set('bal-dom-gap', fmtL(Math.round(domGap)));
+  $('bal-dom-st').innerHTML = statusBadge(domGap);
+
+  set('bal-irr-dem', fmtL(Math.round(irrUsed)));
+  set('bal-irr-sup', fmtL(Math.round(irrSupply)));
+  set('bal-irr-gap', fmtL(Math.round(irrGap)));
+  $('bal-irr-st').innerHTML = statusBadge(irrGap);
+
+  set('bal-oth-dem', fmtL(Math.round(otherTotal)));
+  set('bal-oth-gap', fmtL(Math.round(-otherTotal)));
+  $('bal-oth-st').innerHTML = `<span class="status-badge status-warn">⚠️ Allocate</span>`;
+
+  set('bal-total-dem', fmtL(Math.round(totalDemand)));
+  set('bal-total-sup', fmtL(Math.round(totalSupplyMo)));
+  set('bal-total-gap', fmtL(Math.round(totalGap)));
+  $('bal-total-st').innerHTML = statusBadge(totalGap);
+
+  // ── Metrics
+  const selfSuf = totalSupplyMo > 0 ? totalSupplyMo/totalDemand : 0;
+  const domSelf = domSupply > 0 ? domSupply/domUsed : 0;
+  const irrSelf = irrSupply > 0 ? irrSupply/irrUsed : 0;
+  const extDep = totalSupplyMo > 0 ? extTotalMo/totalSupplyMo : 0;
+
+  set('met-self', fmtRatio(selfSuf));
+  $('met-self-st').innerHTML = selfSuf >= 1 ? `<span class="status-badge status-ok">✅ Self-Sufficient</span>` : `<span class="status-badge status-deficit">🔴 Deficit</span>`;
+  set('met-dom-self', fmtRatio(domSelf));
+  $('met-dom-self-st').innerHTML = domSelf >= 1 ? `<span class="status-badge status-ok">✅</span>` : `<span class="status-badge status-deficit">🔴</span>`;
+  set('met-irr-self', fmtRatio(irrSelf));
+  $('met-irr-self-st').innerHTML = irrSelf >= 1 ? `<span class="status-badge status-ok">✅</span>` : `<span class="status-badge status-deficit">🔴</span>`;
+  set('met-ext-dep', fmtPct(extDep));
+  $('met-ext-dep-st').innerHTML = extDep > 0.3 ? `<span class="status-badge status-deficit">🔴 High</span>` : `<span class="status-badge status-ok">✅ Low</span>`;
+  set('met-deficit', totalGap < 0 ? fmtL(Math.abs(totalGap)) : '0 (Surplus)');
+  set('met-lpcd', projLpcd.toFixed(2));
+  $('met-lpcd-st').innerHTML = projLpcd > 100 ? `<span class="status-badge status-warn">⚠️ High</span>` : `<span class="status-badge status-ok">✅ Efficient</span>`;
+  const waterPerHouse = projHouses > 0 ? domUsed/projHouses : 0;
+  set('met-per-house', fmt(Math.round(waterPerHouse)));
+
+  // RWH
+  const rwhSuggested = projHouses * refRwhPerHouse;
+  const rwh3mo = totalDemand * 3;
+  set('rwh-suggested', fmtL(Math.round(rwhSuggested)));
+  set('rwh-3mo', fmtL(Math.round(rwh3mo)));
+  set('rwh-capacity', fmtL(rwhCapacity));
+  set('rwh-months', totalDemand > 0 ? (rwhCapacity/totalDemand).toFixed(2) : '—');
+
+  // ── Dashboard KPIs
+  set('kpi-total-demand', fmtL(Math.round(totalDemand)));
+  set('kpi-total-supply', fmtL(Math.round(totalSupplyMo)));
+  set('kpi-gap', fmtL(Math.round(totalGap)));
+  set('kpi-gap-status', totalGap >= 0 ? '✅ Surplus' : '🔴 Deficit');
+  $('kpi-gap-card').className = 'kpi-card ' + (totalGap >= 0 ? 'green' : 'red');
+  set('kpi-sufficiency', fmtRatio(selfSuf));
+  $('kpi-sufficiency-card').className = 'kpi-card ' + (selfSuf >= 1 ? 'green' : 'red');
+  set('kpi-lpcd', projLpcd.toFixed(1));
+  set('kpi-dependency', fmtPct(extDep));
+  $('kpi-dep-card').className = 'kpi-card ' + (extDep > 0.3 ? 'red' : 'green');
+
+  // Dashboard balance table
+  set('db-dom-demand', fmtL(Math.round(domUsed)));
+  set('db-dom-supply', fmtL(Math.round(domSupply)));
+  set('db-dom-gap', fmtL(Math.round(domGap)));
+  $('db-dom-status').innerHTML = statusBadge(domGap);
+  set('db-irr-demand', fmtL(Math.round(irrUsed)));
+  set('db-irr-supply', fmtL(Math.round(irrSupply)));
+  set('db-irr-gap', fmtL(Math.round(irrGap)));
+  $('db-irr-status').innerHTML = statusBadge(irrGap);
+  set('db-other-demand', fmtL(Math.round(otherTotal)));
+  set('db-other-supply', '—');
+  set('db-other-gap', fmtL(Math.round(-otherTotal)));
+  $('db-other-status').innerHTML = `<span class="status-badge status-warn">⚠️ Allocate</span>`;
+  set('db-total-demand', fmtL(Math.round(totalDemand)));
+  set('db-total-supply', fmtL(Math.round(totalSupplyMo)));
+  set('db-total-gap', fmtL(Math.round(totalGap)));
+  $('db-total-status').innerHTML = statusBadge(totalGap);
+
+  // Alerts
+  const alertsEl = $('alerts-container');
+  const balAlertsEl = $('balance-alerts');
+  let alerts = '';
+  if (totalGap < 0) alerts += `<div class="alert error"><div class="alert-icon">🔴</div><div class="alert-text">Water deficit of <b>${fmtL(Math.abs(totalGap))}/month</b>. Add more supply sources or reduce demand.</div></div>`;
+  else alerts += `<div class="alert ok"><div class="alert-icon">✅</div><div class="alert-text">Supply meets total demand. Surplus of <b>${fmtL(totalGap)}/month</b>.</div></div>`;
+  if (extDep > 0.3) alerts += `<div class="alert warn"><div class="alert-icon">⚠️</div><div class="alert-text">External water dependency is <b>${fmtPct(extDep)}</b> — consider adding borewells or expanding RWH.</div></div>`;
+  if (rwhCapacity < rwh3mo) alerts += `<div class="alert warn"><div class="alert-icon">⚠️</div><div class="alert-text">RWH capacity covers only <b>${(rwhCapacity/totalDemand).toFixed(1)} months</b> of total demand. Recommended: ≥3 months buffer.</div></div>`;
+  alertsEl.innerHTML = alerts;
+  balAlertsEl.innerHTML = alerts;
+
+  // ── Occupancy
+  updateOccGrid();
+  occRates.forEach((rate, i) => {
+    const villas = Math.round(projHouses * rate);
+    const pop = villas * projOcc;
+    const domYr = projLpcd * pop * 30 / 1000000;
+    const irrFixed = irrUsed / 1000000;
+    const amenScale = otherTotal * rate / 1000000;
+    const totalMo = domYr + irrFixed + amenScale;
+    set(`occ-rate-${i}`, (rate*100).toFixed(0)+'%');
+    set(`occ-villa-${i}`, fmt(villas));
+    set(`occ-pop2-${i}`, fmt(pop));
+    set(`occ-dom-${i}`, domYr.toFixed(3));
+    set(`occ-irr-${i}`, irrFixed.toFixed(3));
+    set(`occ-amen-${i}`, amenScale.toFixed(3));
+    set(`occ-total-${i}`, totalMo.toFixed(3));
+  });
+
+  // ── Seasonal (Year 1)
+  const rate0 = occRates[0];
+  const villas0 = Math.round(projHouses * rate0);
+  const pop0 = villas0 * projOcc;
+  const baseDomMo = projLpcd * pop0 * 30;
+  const baseIrr = irrUsed;
+  const baseAmen = otherTotal * rate0;
+  const baseTotalMo = baseDomMo + baseIrr + baseAmen;
+  const runoffCoeff = 0.75;
+
+  let seaDemTotal = 0, seaRwhTotal = 0, seaGapTotal = 0;
+  MONTHS.forEach((m, i) => {
+    const factor = DEMAND_FACTOR[i];
+    const dem = baseTotalMo * factor / 1000000;
+    const harvestMM = rainfallData[i];
+    const harvest = harvestMM * siteArea * 4046.86 * runoffCoeff / 1000000;
+    const gap = dem - harvest;
+    set(`seas-factor-${i}`, factor.toFixed(2));
+    set(`seas-dem-${i}`, dem.toFixed(3));
+    set(`seas-rwh-${i}`, harvest.toFixed(3));
+    set(`seas-gap-${i}`, gap.toFixed(3));
+    $(`seas-st-${i}`).innerHTML = gap <= 0 ? `<span class="status-badge status-ok">✅ Met</span>` : `<span class="status-badge status-deficit">🔴 Gap: ${gap.toFixed(3)} ML</span>`;
+    seaDemTotal += dem;
+    seaRwhTotal += harvest;
+    seaGapTotal += gap;
+  });
+  set('seas-dem-total', seaDemTotal.toFixed(3));
+  set('seas-rwh-total', seaRwhTotal.toFixed(3));
+  set('seas-gap-total', seaGapTotal.toFixed(3));
+
+  // RWH harvest total in rainfall footer
+  const annualHarvest = rainfallData.reduce((sum, mm) => sum + mm * siteArea * 4046.86 * runoffCoeff / 1000000, 0);
+  set('rain-harvest-annual', annualHarvest.toFixed(2));
+  set('rain-annual', rainfallData.reduce((a,b)=>a+b,0));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  NAV SCROLL HIGHLIGHT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  const sections = document.querySelectorAll('section[id]');
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
+  document.querySelectorAll('nav a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#'+cur);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+buildOccGrid();
+buildOccDemandTable();
+buildRainfallTable();
+buildSeasonalTable();
+recalc();
+
+// Listen to all inputs
+document.querySelectorAll('input').forEach(inp => {
+  inp.addEventListener('input', () => {
+    if (inp.classList.contains('occ-input') || inp.classList.contains('rainfall-input')) return; // handled separately
+    recalc();
+  });
+});
+</script>
+</body>
+</html>
