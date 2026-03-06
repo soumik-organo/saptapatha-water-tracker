@@ -106,6 +106,16 @@
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
   .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--grey)}
   .ldot{width:11px;height:11px;border-radius:3px}
+
+  /* persistence toolbar */
+  .persist-bar{background:#0a2f4f;display:flex;align-items:center;gap:8px;padding:6px 20px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08)}
+  .persist-btn{background:rgba(255,255,255,.12);color:#e0e0e0;border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+  .persist-btn:hover{background:rgba(255,255,255,.22)}
+  .persist-btn.green{background:#2e7d32;border-color:#43a047;color:#fff}
+  .persist-btn.green:hover{background:#388e3c}
+  .persist-btn.danger{background:rgba(198,40,40,.5);border-color:#e57373;color:#fff}
+  .persist-btn.danger:hover{background:rgba(198,40,40,.7)}
+  #save-indicator{margin-left:auto;font-size:11px;font-weight:600;color:rgba(255,255,255,.5);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -127,6 +137,16 @@
   <a href="#balance">⚖️ Balance & Metrics</a>
   <a href="#reference">📚 Reference Data</a>
 </nav>
+
+<!-- Persistence toolbar -->
+<div class="persist-bar">
+  <span style="font-size:12px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:.3px">💾 DATA</span>
+  <button class="persist-btn green" onclick="copyShareURL()">🔗 Copy Share Link</button>
+  <button class="persist-btn" onclick="exportJSON()">⬇️ Export JSON</button>
+  <label class="persist-btn" style="cursor:pointer">⬆️ Import JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(this.files[0]);this.value=''"></label>
+  <button class="persist-btn danger" onclick="clearSavedData()">🗑️ Reset</button>
+  <span id="save-indicator">💾 Auto-save on</span>
+</div>
 
 <main>
 
@@ -1018,6 +1038,7 @@ function recalc() {
   if(rwhCap<rwh3mo) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text">RWH storage covers only <b>${(rwhCap/((domBase+irrBase+amenBase))).toFixed(1)} months</b> of demand. Recommended minimum: 3 months.</div></div>`;
   $('dash-alerts').innerHTML = al;
   $('balance-alerts').innerHTML = al;
+  scheduleAutoSave();
 }
 
 function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, houses, totalSupplyYr) {
@@ -1163,20 +1184,178 @@ function resetAutoFills() {
   autoFillFromRef();
 }
 
-// Initial call
+// ── Persistence: localStorage + URL sharing + JSON export/import ─────────────
+const STORAGE_KEY = 'saptapatha_water_v1';
+
+function getAllInputValues() {
+  const data = { _activeYr: activeYr, _manualOverrides: [...manualOverrides] };
+  // All regular inputs with IDs (skip occ/rain — handled separately)
+  document.querySelectorAll('input[type=number], input[type=text]').forEach(el => {
+    if (el.id && !el.classList.contains('occ-inp') && !el.classList.contains('rain-inp'))
+      data[el.id] = el.value;
+  });
+  // 5-year occupancy inputs (data-i = 0..4)
+  document.querySelectorAll('.occ-inp').forEach(el => { data[`occ_${el.dataset.i}`] = el.value; });
+  // Rainfall inputs (data-i = 0..11)
+  document.querySelectorAll('.rain-inp').forEach(el => { data[`rain_${el.dataset.i}`] = el.value; });
+  return data;
+}
+
+function applyInputValues(data) {
+  if (!data) return;
+  // Regular inputs
+  Object.entries(data).forEach(([key, val]) => {
+    if (key.startsWith('_') || key.startsWith('occ_') || key.startsWith('rain_')) return;
+    const el = document.getElementById(key);
+    if (el) el.value = val;
+  });
+  // 5-year occupancy
+  for (let i = 0; i < 5; i++) {
+    const v = data[`occ_${i}`];
+    if (v !== undefined) {
+      const el = document.querySelector(`.occ-inp[data-i="${i}"]`);
+      if (el) { el.value = v; occRates[i] = (parseFloat(v) || 0) / 100; }
+    }
+  }
+  // Rainfall
+  for (let i = 0; i < 12; i++) {
+    const v = data[`rain_${i}`];
+    if (v !== undefined) {
+      const el = document.querySelector(`.rain-inp[data-i="${i}"]`);
+      if (el) { el.value = v; RAIN_MM[i] = parseFloat(v) || RAIN_MM[i]; }
+    }
+  }
+  // Active year button
+  if (data._activeYr !== undefined) {
+    activeYr = +data._activeYr;
+    document.querySelectorAll('.yr-btn').forEach(btn =>
+      btn.classList.toggle('active', +btn.dataset.yr === activeYr));
+  }
+  // Restore manual overrides & backgrounds
+  if (data._manualOverrides) {
+    data._manualOverrides.forEach(id => {
+      manualOverrides.add(id);
+      const el = document.getElementById(id);
+      if (el) el.style.background = '#fff9c4'; // yellow = user-set
+    });
+  }
+  // Green background for auto-filled fields not manually overridden
+  AUTO_FIELDS.forEach(id => {
+    if (!manualOverrides.has(id)) {
+      const el = document.getElementById(id);
+      if (el) el.style.background = '#e8f5e9';
+    }
+  });
+}
+
+// ── localStorage ──
+let autoSaveTimer;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getAllInputValues()));
+      showSaveStatus('✅ Saved', '#4caf50');
+    } catch(e) { showSaveStatus('⚠️ Save failed', '#ef9a9a'); }
+  }, 1000);
+}
+
+function loadFromLocalStorage() {
+  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; }
+  catch(e) { return null; }
+}
+
+function clearSavedData() {
+  if (!confirm('Reset all inputs to defaults and clear saved data?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  history.replaceState(null, '', location.pathname);
+  location.reload();
+}
+
+// ── URL sharing ──
+function generateShareURL() {
+  const json = JSON.stringify(getAllInputValues());
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  return `${location.origin}${location.pathname}?d=${encodeURIComponent(b64)}`;
+}
+
+function copyShareURL() {
+  const url = generateShareURL();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url)
+      .then(() => showSaveStatus('🔗 Link copied!', '#4fc3f7'))
+      .catch(() => prompt('Copy this link:', url));
+  } else { prompt('Copy this link:', url); }
+}
+
+function loadFromURL() {
+  try {
+    const d = new URLSearchParams(location.search).get('d');
+    if (!d) return null;
+    return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(d)))));
+  } catch(e) { return null; }
+}
+
+// ── JSON export / import ──
+function exportJSON() {
+  const data = getAllInputValues();
+  data._exported = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: `saptapatha_water_${new Date().toISOString().slice(0,10)}.json`
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+  showSaveStatus('⬇️ Exported!', '#80cbc4');
+}
+
+function importJSON(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      applyInputValues(JSON.parse(e.target.result));
+      recalc();
+      showSaveStatus('⬆️ Imported & saved!', '#80cbc4');
+    } catch(err) { alert('Invalid file. Use a JSON exported from this dashboard.'); }
+  };
+  reader.readAsText(file);
+}
+
+// ── Status indicator ──
+let statusTimer;
+function showSaveStatus(msg, color) {
+  const el = document.getElementById('save-indicator');
+  if (!el) return;
+  el.textContent = msg; el.style.color = color || 'rgba(255,255,255,.5)';
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => {
+    el.textContent = '💾 Auto-save on'; el.style.color = 'rgba(255,255,255,.5)';
+  }, 3000);
+}
+
+// ── Init sequence ──
+// 1. First run autoFillFromRef → builds dynamic DOM elements (rain-inp, occ-inp) via recalc()
 autoFillFromRef();
+// 2. Load saved data: URL params take priority over localStorage
+const _savedData = loadFromURL() || loadFromLocalStorage();
+if (_savedData) {
+  applyInputValues(_savedData);
+  recalc(); // re-run with restored values
+  showSaveStatus('✅ Restored', '#4caf50');
+} else {
+  showSaveStatus('💾 Auto-save on', 'rgba(255,255,255,.5)');
+}
 
 // Attach change listeners — smart version
 document.querySelectorAll('input[type=number],input[type=text],select').forEach(el => {
   if (el.classList.contains('occ-inp') || el.classList.contains('rain-inp')) return;
   el.addEventListener('input', e => {
     const id = e.target.id;
-    // If user directly edits an auto-fill field, mark it as a manual override
     if (AUTO_FIELDS.includes(id) && !isAutoFilling) {
       manualOverrides.add(id);
-      $(id).style.background = '#fff9c4'; // light yellow = manually overridden
+      $(id).style.background = '#fff9c4';
     }
-    // Key scale inputs or any reference input → re-run auto-fill (auto-fill calls recalc)
     if (SCALE_INPUTS.includes(id) || id.startsWith('ref-')) {
       autoFillFromRef();
     } else {
