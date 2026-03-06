@@ -194,6 +194,10 @@
 <section class="section" id="inputs">
   <div class="section-header">📝 Project Inputs</div>
   <div class="section-body">
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:13px;color:#2e7d32;flex:1">🔗 <b>Auto-fill from Reference:</b> Set Houses &amp; Occupancy above → Demand &amp; Supply fields auto-scale from Antharam benchmarks. Edit any field manually to override.</span>
+      <button onclick="resetAutoFills()" style="background:#43a047;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:600">🔄 Reset All to Auto</button>
+    </div>
 
     <div class="g2">
       <!-- Profile -->
@@ -1105,12 +1109,67 @@ document.querySelectorAll('.yr-btn').forEach(btn => btn.addEventListener('click'
 buildRainfallTable();
 buildYrGrid();
 buildYrTableSkeleton();
-recalc();
+// ── Auto-fill system ──────────────────────────────────────────────────────────
+// Fields that can be auto-derived from reference benchmarks.
+const AUTO_FIELDS = ['p-lpcd','p-pool','p-other-dem','p-stp','p-muni','p-rwh'];
+// Scale inputs: changing these triggers auto-fill.
+const SCALE_INPUTS = ['p-houses','p-occ','p-site','p-farm'];
+// Fields whose changes should re-trigger auto-fill (reference data).
+// Any id starting with "ref-" also triggers.
+const manualOverrides = new Set(); // fields the user has manually edited
+let isAutoFilling = false;
 
-// Attach change listeners
+function autoFillFromRef() {
+  isAutoFilling = true;
+  const refPop  = val('ref-houses') * val('ref-occ');
+  const projPop = val('p-houses')   * val('p-occ');
+  const popScale = refPop > 0 ? projPop / refPop : 1;
+
+  const targets = {
+    'p-lpcd':     val('ref-lpcd'),                                          // same LPCD standard
+    'p-pool':     val('ref-pool-mo'),                                       // same pool (fixed asset)
+    'p-other-dem': Math.round(val('ref-other-mo') * popScale),             // scales with population
+    'p-stp':      Math.round(val('ref-stp-monthly') / 30 * popScale),     // STP capacity → daily
+    'p-muni':     Math.round(val('ref-muni-monthly') / 30 * popScale),    // municipal → daily
+    'p-rwh':      Math.round(val('ref-rwh-h') * val('p-houses')),         // RWH storage per house
+  };
+
+  Object.entries(targets).forEach(([id, v]) => {
+    if (!manualOverrides.has(id)) {
+      $(id).value = v;
+      $(id).style.background = '#e8f5e9'; // light green = auto-computed
+    }
+  });
+  isAutoFilling = false;
+  recalc();
+}
+
+function resetAutoFills() {
+  manualOverrides.clear();
+  AUTO_FIELDS.forEach(id => { $(id).style.background = ''; }); // clear before re-fill
+  autoFillFromRef();
+}
+
+// Initial call
+autoFillFromRef();
+
+// Attach change listeners — smart version
 document.querySelectorAll('input[type=number],input[type=text],select').forEach(el => {
   if (el.classList.contains('occ-inp') || el.classList.contains('rain-inp')) return;
-  el.addEventListener('input', recalc);
+  el.addEventListener('input', e => {
+    const id = e.target.id;
+    // If user directly edits an auto-fill field, mark it as a manual override
+    if (AUTO_FIELDS.includes(id) && !isAutoFilling) {
+      manualOverrides.add(id);
+      $(id).style.background = '#fff9c4'; // light yellow = manually overridden
+    }
+    // Key scale inputs or any reference input → re-run auto-fill (auto-fill calls recalc)
+    if (SCALE_INPUTS.includes(id) || id.startsWith('ref-')) {
+      autoFillFromRef();
+    } else {
+      recalc();
+    }
+  });
 });
 </script>
 </body>
