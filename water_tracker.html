@@ -401,10 +401,10 @@
         <table>
           <thead><tr><th>Category</th><th class="proj">L/Month</th><th class="ref">Antharam Ref</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">Farm Irrigation (ratio-based)</td><td><span class="cc" id="dd-irr-ratio">—</span></td><td><span class="cc ri" id="dd-ref-irr">—</span></td></tr>
-            <tr><td class="lbl">Dripper Cross-check</td><td><span class="cc" id="dd-irr-drip">—</span></td><td><span class="cc ri" id="dd-ref-drip">—</span></td></tr>
-            <tr class="tot"><td>Irrigation Used</td><td><span class="cc" id="dd-irr-used">—</span></td><td></td></tr>
-            <tr><td class="lbl">🌾 Farming Water</td><td><span class="cc" id="dd-farm-water">—</span></td><td><span class="cc ri">—</span></td></tr>
+            <tr><td class="lbl" id="dd-irr-method-lbl">Farm Irrigation (dripper-based)</td><td><span class="cc" id="dd-irr-ratio">—</span></td><td><span class="cc ri" id="dd-ref-irr">—</span></td></tr>
+            <tr><td class="lbl">Dripper Cross-check Total</td><td><span class="cc" id="dd-irr-drip">—</span></td><td><span class="cc ri" id="dd-ref-drip">—</span></td></tr>
+            <tr class="tot"><td>Farm Irrigation Used</td><td><span class="cc" id="dd-irr-used">—</span></td><td></td></tr>
+            <tr><td class="lbl">🌾 Additional Farming Water</td><td><span class="cc" id="dd-farm-water">—</span></td><td><span class="cc ri">—</span></td></tr>
             <tr><td class="lbl">Swimming Pool Top-up</td><td><span class="cc" id="dd-pool">—</span></td><td><span class="cc ri" id="dd-ref-pool">—</span></td></tr>
             <tr><td class="lbl">Animal Husbandry</td><td><span class="cc" id="dd-animal">—</span></td><td><span class="cc ri">—</span></td></tr>
             <tr><td class="lbl">Landscaping</td><td><span class="cc" id="dd-land">—</span></td><td><span class="cc ri">—</span></td></tr>
@@ -800,27 +800,30 @@ function recalc() {
   const pop    = houses*occ;
   set('p-pop', fmtN(pop));
 
-  // Irrigation base (full occupancy, average month — pure field irrigation)
-  const irrBase = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr') : farmAcres*refIrrPerAcre;
-  // Farming group (shown under Irrigation/Farming in dashboard)
-  const farmWater = val('p-farm-water')||0;
-  const animal    = val('p-animal')||0;
-  const land      = val('p-landscape')||0;
-  const farmGrp   = farmWater+animal+land; // these are farm/land-use demand
-  // Amenities group (pool + other — facility demand)
-  const pool      = val('p-pool')||0;
-  const otherD    = val('p-other-dem')||0;
-  const amenBase  = pool+otherD;
-
   // Domestic base (full occupancy, average month — before seasonal factor)
   const lpcd   = val('p-lpcd');
   const domOvr = opt('p-dom-ovr');
   const domBase = domOvr !== null ? domOvr : lpcd*pop*30;
 
-  // Dripper cross-check
+  // Dripper cross-check — compute FIRST so it can drive irrBase
   const totalDrip = val('p-drip3')+val('p-drip2');
   const dripWaterMo = totalDrip * val('p-dflow') * (val('p-dtime')/60) * 30;
   set('p-drip-mo', fmtL(Math.round(dripWaterMo)));
+
+  // Irrigation base — priority: manual override > dripper-based > ratio-based
+  // Dripper water IS the farming water (bottom-up actual); ratio is fallback only.
+  const irrBase = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr')
+                : dripWaterMo > 0              ? dripWaterMo
+                :                                farmAcres*refIrrPerAcre;
+  // Farming group (shown under Irrigation/Farming in dashboard)
+  const farmWater = val('p-farm-water')||0; // any additional farming water beyond drip irrigation
+  const animal    = val('p-animal')||0;
+  const land      = val('p-landscape')||0;
+  const farmGrp   = farmWater+animal+land;
+  // Amenities group (pool + other — facility demand)
+  const pool      = val('p-pool')||0;
+  const otherD    = val('p-other-dem')||0;
+  const amenBase  = pool+otherD;
 
   // ── Supply constants (per month, not RWH)
   const bwDay = val('p-bw1')+val('p-bw2')+val('p-bw3');
@@ -888,9 +891,15 @@ function recalc() {
   set('dd-laundry',fmtL(Math.round(domBase*0.15)));
   set('dd-clean',fmtL(Math.round(domBase*0.07)));
   set('dd-garden',fmtL(Math.round(domBase*0.16)));
-  set('dd-irr-ratio',fmtL(Math.round(farmAcres*refIrrPerAcre)));
+  // Show which method is driving irrigation, and label accordingly
+  const usingDrip = opt('p-irr-ovr') === null && dripWaterMo > 0;
+  const usingOvr  = opt('p-irr-ovr') !== null;
+  $('dd-irr-method-lbl').textContent = usingOvr  ? 'Farm Irrigation (manual override)'
+                                     : usingDrip ? 'Farm Irrigation (dripper-based ✓)'
+                                     :              'Farm Irrigation (ratio-based fallback)';
+  set('dd-irr-ratio', fmtL(Math.round(irrBase)));   // show the actual value being used
   set('dd-ref-irr',fmtL(Math.round(refIrrMo)));
-  set('dd-irr-drip',fmtL(Math.round(dripWaterMo)));
+  set('dd-irr-drip',fmtL(Math.round(dripWaterMo))); // always show dripper calc for reference
   set('dd-irr-used',fmtL(Math.round(irrBase)));
   set('dd-farm-water',fmtL(farmWater));
   set('dd-pool',fmtL(pool)); set('dd-animal',fmtL(animal)); set('dd-land',fmtL(land)); set('dd-other',fmtL(otherD));
@@ -1036,7 +1045,11 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   const tb = $('monthly-tbody'); tb.innerHTML='';
   let totRain=0, totDom=0, totIrr=0, totAmen=0, totDem=0, totGW=0, totRWH=0, totSTP=0, totExt=0, totSup=0, totBal=0;
 
-  const irrBaseM = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr') : val('p-farm')*val('ref-irr-am');
+  // Same priority as recalc(): override > dripper-based > ratio-based
+  const dripMo = (val('p-drip3')+val('p-drip2')) * val('p-dflow') * (val('p-dtime')/60) * 30;
+  const irrBaseM = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr')
+                 : dripMo > 0                  ? dripMo
+                 :                               val('p-farm')*val('ref-irr-am');
   MONTHS.forEach((m, i) => {
     const domMo   = domScaled * DOM_FACTOR[i];
     // Irrigation/Farming = field irrigation + farming water + landscaping (seasonal) + animal (flat)
