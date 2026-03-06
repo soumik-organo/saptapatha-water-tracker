@@ -222,6 +222,7 @@
             <tr><td class="lbl">Domestic LPCD</td><td><input type="number" id="p-lpcd" value="68.46" step="0.01"></td><td><span class="cc ri">68.46</span></td><td class="unit">L/person/day</td></tr>
             <tr><td class="lbl">Domestic Water / Month (override)</td><td><input type="number" id="p-dom-ovr" placeholder="auto"></td><td><span class="cc ri" id="pi-ref-dom">—</span></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Irrigation / Month (override)</td><td><input type="number" id="p-irr-ovr" placeholder="auto"></td><td><span class="cc ri" id="pi-ref-irr">—</span></td><td class="unit">L/mo</td></tr>
+            <tr style="background:#f1f8e9"><td class="lbl" style="font-weight:600">🌾 Farming Water / Month</td><td><input type="number" id="p-farm-water" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Swimming Pool Top-up</td><td><input type="number" id="p-pool" value="526000"></td><td><span class="cc ri">526,000</span></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Animal Husbandry / Goshala</td><td><input type="number" id="p-animal" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Landscaping (non-farm)</td><td><input type="number" id="p-landscape" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
@@ -401,6 +402,7 @@
             <tr><td class="lbl">Farm Irrigation (ratio-based)</td><td><span class="cc" id="dd-irr-ratio">—</span></td><td><span class="cc ri" id="dd-ref-irr">—</span></td></tr>
             <tr><td class="lbl">Dripper Cross-check</td><td><span class="cc" id="dd-irr-drip">—</span></td><td><span class="cc ri">4,737,720</span></td></tr>
             <tr class="tot"><td>Irrigation Used</td><td><span class="cc" id="dd-irr-used">—</span></td><td></td></tr>
+            <tr><td class="lbl">🌾 Farming Water</td><td><span class="cc" id="dd-farm-water">—</span></td><td><span class="cc ri">—</span></td></tr>
             <tr><td class="lbl">Swimming Pool Top-up</td><td><span class="cc" id="dd-pool">—</span></td><td><span class="cc ri">526,000</span></td></tr>
             <tr><td class="lbl">Animal Husbandry</td><td><span class="cc" id="dd-animal">—</span></td><td><span class="cc ri">—</span></td></tr>
             <tr><td class="lbl">Landscaping</td><td><span class="cc" id="dd-land">—</span></td><td><span class="cc ri">—</span></td></tr>
@@ -745,11 +747,12 @@ function recalc() {
   // Irrigation base (full occupancy, average month)
   const irrBase = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr') : farmAcres*refIrrPerAcre;
   // Amenities base (full occupancy, average month)
-  const pool   = val('p-pool')||0;
-  const animal = val('p-animal')||0;
-  const land   = val('p-landscape')||0;
-  const otherD = val('p-other-dem')||0;
-  const amenBase = pool+animal+land+otherD;
+  const pool      = val('p-pool')||0;
+  const farmWater = val('p-farm-water')||0;
+  const animal    = val('p-animal')||0;
+  const land      = val('p-landscape')||0;
+  const otherD    = val('p-other-dem')||0;
+  const amenBase  = pool+farmWater+animal+land+otherD;
 
   // Domestic base (full occupancy, average month — before seasonal factor)
   const lpcd   = val('p-lpcd');
@@ -824,6 +827,7 @@ function recalc() {
   set('dd-ref-irr',fmtL(Math.round(refIrrMo)));
   set('dd-irr-drip',fmtL(Math.round(dripWaterMo)));
   set('dd-irr-used',fmtL(Math.round(irrBase)));
+  set('dd-farm-water',fmtL(farmWater));
   set('dd-pool',fmtL(pool)); set('dd-animal',fmtL(animal)); set('dd-land',fmtL(land)); set('dd-other',fmtL(otherD));
   set('dd-amen-tot',fmtL(amenBase));
   set('dds-dom-mo',fmtL(domBase)); set('dds-dom-yr',fmtL(domBase*12)); set('dds-dom-day',fmtL(domBase/30));
@@ -851,7 +855,7 @@ function recalc() {
     // Seasonal sum for this year's population
     let yDom=0, yIrr=0, yAmen=0;
     const domOvrY = domOvr !== null ? domOvr * (popYr/pop) : lpcd*popYr*30;
-    const amenScaled = (pool+otherD) + (animal+land)*rate; // pool is fixed, others scale
+    const amenScaled = (pool+otherD+farmWater) + (animal+land)*rate; // pool & farming fixed, others scale
     MONTHS.forEach((_,m) => {
       yDom  += domOvrY * DOM_FACTOR[m];
       yIrr  += irrBase * IRR_FACTOR[m];
@@ -939,8 +943,8 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   // Scale domestic demand by occupancy
   const domScaled = domOvr !== null ? domOvr*(pop/fullPop) : lpcd*pop*30;
   // Amenities: pool+other are somewhat fixed (facility exists), scale partly
-  const pool=val('p-pool'), animal=val('p-animal'), land=val('p-landscape'), otherD=val('p-other-dem');
-  const amenScaled = (pool+otherD) + (animal+land)*rate;
+  const pool=val('p-pool'), farmWaterM=val('p-farm-water')||0, animal=val('p-animal'), land=val('p-landscape'), otherD=val('p-other-dem');
+  const amenScaled = (pool+farmWaterM+otherD) + (animal+land)*rate;
 
   const bwDay=val('p-bw1')+val('p-bw2')+val('p-bw3');
   const stpDay=val('p-stp')*(val('p-stp-rec')/100);
