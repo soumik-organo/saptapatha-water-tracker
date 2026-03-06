@@ -223,10 +223,10 @@
             <tr><td class="lbl">Domestic Water / Month (override)</td><td><input type="number" id="p-dom-ovr" placeholder="auto"></td><td><span class="cc ri" id="pi-ref-dom">—</span></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Irrigation / Month (override)</td><td><input type="number" id="p-irr-ovr" placeholder="auto"></td><td><span class="cc ri" id="pi-ref-irr">—</span></td><td class="unit">L/mo</td></tr>
             <tr style="background:#f1f8e9"><td class="lbl" style="font-weight:600">🌾 Farming Water / Month</td><td><input type="number" id="p-farm-water" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Swimming Pool Top-up</td><td><input type="number" id="p-pool" value="526000"></td><td><span class="cc ri">526,000</span></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Swimming Pool Top-up</td><td><input type="number" id="p-pool" value="526000"></td><td><span class="cc ri" id="pi-ref-pool">526,000</span></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Animal Husbandry / Goshala</td><td><input type="number" id="p-animal" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Landscaping (non-farm)</td><td><input type="number" id="p-landscape" placeholder="0"></td><td><span class="cc ri">—</span></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Other Consumption</td><td><input type="number" id="p-other-dem" value="83555"></td><td><span class="cc ri">83,555</span></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Other Consumption</td><td><input type="number" id="p-other-dem" value="83555"></td><td><span class="cc ri" id="pi-ref-other">83,555</span></td><td class="unit">L/mo</td></tr>
           </tbody>
         </table>
       </div>
@@ -245,11 +245,9 @@
           </tbody>
         </table>
         <table>
-          <thead><tr><th>RWH & Storage</th><th class="proj">Value</th><th>Unit</th></tr></thead>
+          <thead><tr><th>RWH / Dugwell Storage</th><th class="proj">Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">RWH Storage (total installed)</td><td><input type="number" id="p-rwh" value="12000000"></td><td class="unit">L capacity</td></tr>
-            <tr><td class="lbl">Dug Well / Sump 1</td><td><input type="number" id="p-dw1" value="5000000"></td><td class="unit">L capacity</td></tr>
-            <tr><td class="lbl">Dug Well / Sump 2</td><td><input type="number" id="p-dw2" value="5000000"></td><td class="unit">L capacity</td></tr>
+            <tr><td class="lbl">RWH / Dugwell Storage (total)</td><td><input type="number" id="p-rwh" value="12000000"></td><td class="unit">L capacity</td></tr>
             <tr><td class="lbl">Runoff Coefficient</td><td><input type="number" id="p-runoff" value="0.75" step="0.01" min="0" max="1"></td><td class="unit">0–1</td></tr>
           </tbody>
         </table>
@@ -400,14 +398,14 @@
           <thead><tr><th>Category</th><th class="proj">L/Month</th><th class="ref">Antharam Ref</th></tr></thead>
           <tbody>
             <tr><td class="lbl">Farm Irrigation (ratio-based)</td><td><span class="cc" id="dd-irr-ratio">—</span></td><td><span class="cc ri" id="dd-ref-irr">—</span></td></tr>
-            <tr><td class="lbl">Dripper Cross-check</td><td><span class="cc" id="dd-irr-drip">—</span></td><td><span class="cc ri">4,737,720</span></td></tr>
+            <tr><td class="lbl">Dripper Cross-check</td><td><span class="cc" id="dd-irr-drip">—</span></td><td><span class="cc ri" id="dd-ref-drip">—</span></td></tr>
             <tr class="tot"><td>Irrigation Used</td><td><span class="cc" id="dd-irr-used">—</span></td><td></td></tr>
             <tr><td class="lbl">🌾 Farming Water</td><td><span class="cc" id="dd-farm-water">—</span></td><td><span class="cc ri">—</span></td></tr>
-            <tr><td class="lbl">Swimming Pool Top-up</td><td><span class="cc" id="dd-pool">—</span></td><td><span class="cc ri">526,000</span></td></tr>
+            <tr><td class="lbl">Swimming Pool Top-up</td><td><span class="cc" id="dd-pool">—</span></td><td><span class="cc ri" id="dd-ref-pool">—</span></td></tr>
             <tr><td class="lbl">Animal Husbandry</td><td><span class="cc" id="dd-animal">—</span></td><td><span class="cc ri">—</span></td></tr>
             <tr><td class="lbl">Landscaping</td><td><span class="cc" id="dd-land">—</span></td><td><span class="cc ri">—</span></td></tr>
-            <tr><td class="lbl">Other Consumption</td><td><span class="cc" id="dd-other">—</span></td><td><span class="cc ri">83,555</span></td></tr>
-            <tr class="tot"><td>Total Amenities</td><td><span class="cc" id="dd-amen-tot">—</span></td><td><span class="cc ri">609,555</span></td></tr>
+            <tr><td class="lbl">Other Consumption</td><td><span class="cc" id="dd-other">—</span></td><td><span class="cc ri" id="dd-ref-other">—</span></td></tr>
+            <tr class="tot"><td>Total Amenities (Pool + Other)</td><td><span class="cc" id="dd-amen-tot">—</span></td><td><span class="cc ri" id="dd-ref-amen-tot">—</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -419,7 +417,7 @@
         <tbody>
           <tr><td class="lbl">Domestic</td><td><span class="cc" id="dds-dom-mo">—</span></td><td><span class="cc" id="dds-dom-yr">—</span></td><td><span class="cc" id="dds-dom-day">—</span></td><td><span class="cc ri" id="dds-ref-dom">—</span></td></tr>
           <tr><td class="lbl">Irrigation</td><td><span class="cc" id="dds-irr-mo">—</span></td><td><span class="cc" id="dds-irr-yr">—</span></td><td><span class="cc" id="dds-irr-day">—</span></td><td><span class="cc ri" id="dds-ref-irr">—</span></td></tr>
-          <tr><td class="lbl">Amenities</td><td><span class="cc" id="dds-amen-mo">—</span></td><td><span class="cc" id="dds-amen-yr">—</span></td><td><span class="cc" id="dds-amen-day">—</span></td><td><span class="cc ri">609,555</span></td></tr>
+          <tr><td class="lbl">Amenities (Pool+Other)</td><td><span class="cc" id="dds-amen-mo">—</span></td><td><span class="cc" id="dds-amen-yr">—</span></td><td><span class="cc" id="dds-amen-day">—</span></td><td><span class="cc ri" id="dds-ref-amen">—</span></td></tr>
           <tr class="tot"><td>TOTAL</td><td><span class="cc" id="dds-tot-mo">—</span></td><td><span class="cc" id="dds-tot-yr">—</span></td><td><span class="cc" id="dds-tot-day">—</span></td><td><span class="cc ri" id="dds-ref-tot">—</span></td></tr>
         </tbody>
       </table>
@@ -441,26 +439,26 @@
         <tr class="tot"><td>Total Groundwater</td><td id="sd-bw-d">—</td><td id="sd-bw-m">—</td><td id="sd-bw-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
 
         <tr><td colspan="6" style="background:#f5f5f5;font-weight:700;padding:7px 11px">B. Rainwater Harvesting</td></tr>
-        <tr><td class="lbl">Annual Rainfall Capture (est.)</td><td>—</td><td id="sd-rwh-m">—</td><td id="sd-rwh-y">—</td><td><span class="cc ri">1,750,000</span></td><td class="note">Rainfall × Site Area × Runoff</td></tr>
-        <tr><td class="lbl">RWH Storage Capacity</td><td>—</td><td>—</td><td id="sd-rwh-cap">—</td><td><span class="cc ri">12,000,000</span></td><td class="note">Total installed</td></tr>
+        <tr><td class="lbl">Annual Rainfall Capture (est.)</td><td>—</td><td id="sd-rwh-m">—</td><td id="sd-rwh-y">—</td><td><span class="cc ri" id="sd-ref-rwh-mo">—</span></td><td class="note">Rainfall × Site Area × Runoff</td></tr>
+        <tr><td class="lbl">RWH Storage Capacity</td><td>—</td><td>—</td><td id="sd-rwh-cap">—</td><td><span class="cc ri" id="sd-ref-rwh-cap">—</span></td><td class="note">Total installed</td></tr>
         <tr class="tot"><td>RWH Months Coverage</td><td>—</td><td>—</td><td id="sd-rwh-cov">—</td><td></td><td class="note">Storage ÷ Monthly demand</td></tr>
 
         <tr><td colspan="6" style="background:#f5f5f5;font-weight:700;padding:7px 11px">C. Recycled / Treated</td></tr>
-        <tr><td class="lbl">STP Treated Water</td><td id="sd-stp-d">—</td><td id="sd-stp-m">—</td><td id="sd-stp-y">—</td><td><span class="cc ri">1,650,000</span></td><td class="note">Capacity × Recovery %</td></tr>
+        <tr><td class="lbl">STP Treated Water</td><td id="sd-stp-d">—</td><td id="sd-stp-m">—</td><td id="sd-stp-y">—</td><td><span class="cc ri" id="sd-ref-stp">—</span></td><td class="note">Capacity × Recovery %</td></tr>
         <tr><td class="lbl">Greywater Recycling</td><td id="sd-grey-d">—</td><td id="sd-grey-m">—</td><td id="sd-grey-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-        <tr class="tot"><td>Total Recycled</td><td id="sd-rec-d">—</td><td id="sd-rec-m">—</td><td id="sd-rec-y">—</td><td><span class="cc ri">1,650,000</span></td><td></td></tr>
+        <tr class="tot"><td>Total Recycled</td><td id="sd-rec-d">—</td><td id="sd-rec-m">—</td><td id="sd-rec-y">—</td><td><span class="cc ri" id="sd-ref-rec">—</span></td><td></td></tr>
 
         <tr><td colspan="6" style="background:#f5f5f5;font-weight:700;padding:7px 11px">D. External / Purchased</td></tr>
-        <tr><td class="lbl">Municipal / Tanker</td><td id="sd-mun-d">—</td><td id="sd-mun-m">—</td><td id="sd-mun-y">—</td><td><span class="cc ri">1,800,000</span></td><td></td></tr>
+        <tr><td class="lbl">Municipal / Tanker</td><td id="sd-mun-d">—</td><td id="sd-mun-m">—</td><td id="sd-mun-y">—</td><td><span class="cc ri" id="sd-ref-muni">—</span></td><td></td></tr>
         <tr><td class="lbl">Other External</td><td id="sd-ext-d">—</td><td id="sd-ext-m">—</td><td id="sd-ext-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-        <tr class="tot"><td>Total External</td><td id="sd-extot-d">—</td><td id="sd-extot-m">—</td><td id="sd-extot-y">—</td><td><span class="cc ri">1,800,000</span></td><td></td></tr>
+        <tr class="tot"><td>Total External</td><td id="sd-extot-d">—</td><td id="sd-extot-m">—</td><td id="sd-extot-y">—</td><td><span class="cc ri" id="sd-ref-ext">—</span></td><td></td></tr>
 
         <tr class="tot" style="border-top:3px solid var(--blue)">
           <td style="font-size:14px">⚡ TOTAL SUPPLY</td>
           <td id="sd-tot-d" style="font-size:14px;font-weight:800"></td>
           <td id="sd-tot-m" style="font-size:14px;font-weight:800"></td>
           <td id="sd-tot-y" style="font-size:14px;font-weight:800"></td>
-          <td><span class="cc ri">5,200,000</span></td><td></td>
+          <td><span class="cc ri" id="sd-ref-tot-sup">—</span></td><td></td>
         </tr>
       </tbody>
     </table>
@@ -509,7 +507,7 @@
   <div class="section-header">📚 Reference Data — Organo Antharam Benchmarks (Editable)</div>
   <div class="section-body">
     <p style="font-size:12px;color:var(--grey);margin-bottom:14px">Benchmark ratios derived from Antharam actuals. Used as fallback when project-specific overrides are not entered.</p>
-    <div class="g2">
+    <div class="g3">
       <div class="sub">
         <div class="sub-title">Project Profile</div>
         <table>
@@ -524,18 +522,42 @@
         </table>
       </div>
       <div class="sub">
-        <div class="sub-title">Benchmark Ratios</div>
+        <div class="sub-title">Demand Ratios & Benchmarks</div>
         <table>
-          <thead><tr><th>Ratio</th><th class="ref">Value</th><th>Unit</th></tr></thead>
+          <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
           <tbody>
             <tr><td class="lbl">LPCD (Actual Measured)</td><td><input class="ri" type="number" id="ref-lpcd" value="68.46" step="0.01"></td><td class="unit">L/person/day</td></tr>
             <tr><td class="lbl">Domestic / House / Month</td><td><input class="ri" type="number" id="ref-dom-hm" value="8215"></td><td class="unit">L/house/mo</td></tr>
             <tr><td class="lbl">Irrigation / Acre / Month</td><td><input class="ri" type="number" id="ref-irr-am" value="238095"></td><td class="unit">L/acre/mo</td></tr>
-            <tr><td class="lbl">RWH Storage / House</td><td><input class="ri" type="number" id="ref-rwh-h" value="65934"></td><td class="unit">L/house</td></tr>
-            <tr><td class="lbl">Rainfall / Acre / Year</td><td><input class="ri" type="number" id="ref-rain-a" value="3000000"></td><td class="unit">L/acre/yr</td></tr>
+            <tr><td class="lbl">Swimming Pool Top-up</td><td><input class="ri" type="number" id="ref-pool-mo" value="526000"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Other Consumption</td><td><input class="ri" type="number" id="ref-other-mo" value="83555"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Dripper Crosscheck Total</td><td><input class="ri" type="number" id="ref-drip-xcheck" value="4737720"></td><td class="unit">L/mo</td></tr>
           </tbody>
         </table>
       </div>
+      <div class="sub">
+        <div class="sub-title">Supply Benchmarks</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">RWH Storage / House</td><td><input class="ri" type="number" id="ref-rwh-h" value="65934"></td><td class="unit">L/house</td></tr>
+            <tr><td class="lbl">RWH Total Storage</td><td><input class="ri" type="number" id="ref-rwh-total" value="12000000"></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">RWH Monthly Supply (avg)</td><td><input class="ri" type="number" id="ref-rwh-monthly" value="1750000"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">STP Monthly Supply</td><td><input class="ri" type="number" id="ref-stp-monthly" value="1650000"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Municipal / External</td><td><input class="ri" type="number" id="ref-muni-monthly" value="1800000"></td><td class="unit">L/mo</td></tr>
+            <tr class="tot"><td>Total Supply (monthly)</td><td><span class="cc ri" id="ref-sup-total">—</span></td><td class="unit">L/mo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="sub" style="margin-top:4px">
+      <div class="sub-title">Rainfall / Acre / Year</div>
+      <table style="max-width:340px">
+        <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
+        <tbody>
+          <tr><td class="lbl">Rainfall / Acre / Year</td><td><input class="ri" type="number" id="ref-rain-a" value="3000000"></td><td class="unit">L/acre/yr</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Rainfall inputs -->
@@ -729,30 +751,62 @@ function calcDemandMonthly(month, pop, irrBase, amenBase) {
 }
 
 function recalc() {
-  // ── Reference
-  const refHouses = val('ref-houses'), refOcc = val('ref-occ'), refFarm = val('ref-farm');
-  const refLpcd   = val('ref-lpcd'), refIrrPerAcre = val('ref-irr-am'), refRwhPerH = val('ref-rwh-h');
+  // ── Reference — read ALL from inputs
+  const refHouses     = val('ref-houses'), refOcc = val('ref-occ'), refFarm = val('ref-farm');
+  const refLpcd       = val('ref-lpcd'), refIrrPerAcre = val('ref-irr-am'), refRwhPerH = val('ref-rwh-h');
+  const refPoolMo     = val('ref-pool-mo');
+  const refOtherMo    = val('ref-other-mo');
+  const refDripXcheck = val('ref-drip-xcheck');
+  const refRwhTotal   = val('ref-rwh-total');
+  const refRwhMonthly = val('ref-rwh-monthly');
+  const refStpMonthly = val('ref-stp-monthly');
+  const refMuniMo     = val('ref-muni-monthly');
+  const refTotSupMo   = refRwhMonthly + refStpMonthly + refMuniMo;
+
   const refPop    = refHouses*refOcc;
   set('ref-pop', fmtN(refPop));
+  set('ref-sup-total', fmtL(Math.round(refTotSupMo)));
+
   const refDomMo  = refLpcd*refPop*30;
   const refIrrMo  = refFarm*refIrrPerAcre;
+  const refAmenMo = refPoolMo + refOtherMo;
+
+  // Push ref values into display spans throughout the page
   set('pi-ref-dom', fmtN(Math.round(refDomMo)));
   set('pi-ref-irr', fmtN(Math.round(refIrrMo)));
+  set('pi-ref-pool', fmtL(refPoolMo));
+  set('pi-ref-other', fmtL(refOtherMo));
+  set('dd-ref-drip', fmtL(refDripXcheck));
+  set('dd-ref-pool', fmtL(refPoolMo));
+  set('dd-ref-other', fmtL(refOtherMo));
+  set('dd-ref-amen-tot', fmtL(refAmenMo));
+  set('dds-ref-amen', fmtL(refAmenMo));
+  set('sd-ref-rwh-mo', fmtL(refRwhMonthly));
+  set('sd-ref-rwh-cap', fmtL(refRwhTotal));
+  set('sd-ref-stp', fmtL(refStpMonthly));
+  set('sd-ref-rec', fmtL(refStpMonthly));
+  set('sd-ref-muni', fmtL(refMuniMo));
+  set('sd-ref-ext', fmtL(refMuniMo));
+  set('sd-ref-tot-sup', fmtL(Math.round(refTotSupMo)));
+  // Farming detail cross-check ref
+  const p_drip_ref = $('p-drip-mo'); // the dripper crosscheck is project-computed, not ref
 
   // ── Project profile
   const houses = val('p-houses'), occ = val('p-occ'), farmAcres = val('p-farm');
   const pop    = houses*occ;
   set('p-pop', fmtN(pop));
 
-  // Irrigation base (full occupancy, average month)
+  // Irrigation base (full occupancy, average month — pure field irrigation)
   const irrBase = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr') : farmAcres*refIrrPerAcre;
-  // Amenities base (full occupancy, average month)
-  const pool      = val('p-pool')||0;
+  // Farming group (shown under Irrigation/Farming in dashboard)
   const farmWater = val('p-farm-water')||0;
   const animal    = val('p-animal')||0;
   const land      = val('p-landscape')||0;
+  const farmGrp   = farmWater+animal+land; // these are farm/land-use demand
+  // Amenities group (pool + other — facility demand)
+  const pool      = val('p-pool')||0;
   const otherD    = val('p-other-dem')||0;
-  const amenBase  = pool+farmWater+animal+land+otherD;
+  const amenBase  = pool+otherD;
 
   // Domestic base (full occupancy, average month — before seasonal factor)
   const lpcd   = val('p-lpcd');
@@ -786,11 +840,13 @@ function recalc() {
   const annTotalDemBase = annDomBase+annIrrBase+annAmenBase;
 
   // ── Annual with seasonal weighting (sum of 12 months)
+  // Irrigation/Farming row = irrBase (IRR_FACTOR) + farmWater+land (IRR_FACTOR) + animal (flat)
+  // Amenities row = pool + otherD (flat / DOM_FACTOR)
   let annDomSeasoned=0, annIrrSeasoned=0, annAmenSeasoned=0;
   MONTHS.forEach((_,i) => {
     annDomSeasoned  += domBase * DOM_FACTOR[i];
-    annIrrSeasoned  += irrBase * IRR_FACTOR[i];
-    annAmenSeasoned += amenBase * DOM_FACTOR[i];
+    annIrrSeasoned  += (irrBase + farmWater + land) * IRR_FACTOR[i] + animal; // farming group
+    annAmenSeasoned += amenBase * DOM_FACTOR[i]; // pool + other
   });
   const annTotalDemSeasoned = annDomSeasoned+annIrrSeasoned+annAmenSeasoned;
 
@@ -830,15 +886,18 @@ function recalc() {
   set('dd-farm-water',fmtL(farmWater));
   set('dd-pool',fmtL(pool)); set('dd-animal',fmtL(animal)); set('dd-land',fmtL(land)); set('dd-other',fmtL(otherD));
   set('dd-amen-tot',fmtL(amenBase));
+  // Irrigation/Farming total for summary = irrBase + farmGrp
+  const irrFarmBase = irrBase + farmGrp;
+  const totalBase = domBase + irrFarmBase + amenBase;
   set('dds-dom-mo',fmtL(domBase)); set('dds-dom-yr',fmtL(domBase*12)); set('dds-dom-day',fmtL(domBase/30));
-  set('dds-irr-mo',fmtL(irrBase)); set('dds-irr-yr',fmtL(irrBase*12)); set('dds-irr-day',fmtL(irrBase/30));
+  set('dds-irr-mo',fmtL(irrFarmBase)); set('dds-irr-yr',fmtL(irrFarmBase*12)); set('dds-irr-day',fmtL(irrFarmBase/30));
   set('dds-amen-mo',fmtL(amenBase)); set('dds-amen-yr',fmtL(amenBase*12)); set('dds-amen-day',fmtL(amenBase/30));
-  set('dds-tot-mo',fmtL(domBase+irrBase+amenBase));
-  set('dds-tot-yr',fmtL((domBase+irrBase+amenBase)*12));
-  set('dds-tot-day',fmtL((domBase+irrBase+amenBase)/30));
+  set('dds-tot-mo',fmtL(totalBase));
+  set('dds-tot-yr',fmtL(totalBase*12));
+  set('dds-tot-day',fmtL(totalBase/30));
   set('dds-ref-dom',fmtL(Math.round(refDomMo)));
   set('dds-ref-irr',fmtL(Math.round(refIrrMo)));
-  set('dds-ref-tot',fmtL(Math.round(refDomMo+refIrrMo+609555)));
+  set('dds-ref-tot',fmtL(Math.round(refDomMo+refIrrMo+refAmenMo)));
 
   // ── Rainfall annual
   const annRainMM = RAIN_MM.reduce((s,m)=>s+m,0);
@@ -855,11 +914,11 @@ function recalc() {
     // Seasonal sum for this year's population
     let yDom=0, yIrr=0, yAmen=0;
     const domOvrY = domOvr !== null ? domOvr * (popYr/pop) : lpcd*popYr*30;
-    const amenScaled = (pool+otherD+farmWater) + (animal+land)*rate; // pool & farming fixed, others scale
+    const farmGrpScaled = farmWater + land + animal*rate; // farming group (fixed farm, scaled animal)
     MONTHS.forEach((_,m) => {
       yDom  += domOvrY * DOM_FACTOR[m];
-      yIrr  += irrBase * IRR_FACTOR[m];
-      yAmen += amenScaled * DOM_FACTOR[m];
+      yIrr  += (irrBase + farmWater + land) * IRR_FACTOR[m] + animal; // irrigation + farming group
+      yAmen += (pool+otherD) * DOM_FACTOR[m]; // amenities only
     });
     const yTotDem = yDom+yIrr+yAmen;
     const ySupply = totalSupplyYr;
@@ -916,11 +975,14 @@ function recalc() {
   set('kpi-dep',fmtP(extDep));
   $('kpi-dep-card').className='kpi '+(extDep>0.3?'r':'g');
 
-  const domGap = (muniMo*12) - annDomSeasoned;
-  const irrGap = (bwMo*12+annRainL+recMo*12) - annIrrSeasoned;
+  // Supply allocation: External → Domestic | BW+RWH+Recycled → Irrigation/Farming
+  const domSupplyAnn  = muniMo*12;
+  const irrSupplyAnn  = bwMo*12 + annRainL + recMo*12;
+  const domGap = domSupplyAnn - annDomSeasoned;
+  const irrGap = irrSupplyAnn - annIrrSeasoned; // Irrigation/Farming includes farmGrp
   const othGap = -annAmenSeasoned;
-  set('db-dom-d',fmtL(Math.round(annDomSeasoned))); set('db-dom-s',fmtL(Math.round(muniMo*12))); set('db-dom-g',fmtL(Math.round(domGap))); $('db-dom-st').innerHTML=badge(domGap);
-  set('db-irr-d',fmtL(Math.round(annIrrSeasoned))); set('db-irr-s',fmtL(Math.round(bwMo*12+annRainL+recMo*12))); set('db-irr-g',fmtL(Math.round(irrGap))); $('db-irr-st').innerHTML=badge(irrGap);
+  set('db-dom-d',fmtL(Math.round(annDomSeasoned))); set('db-dom-s',fmtL(Math.round(domSupplyAnn))); set('db-dom-g',fmtL(Math.round(domGap))); $('db-dom-st').innerHTML=badge(domGap);
+  set('db-irr-d',fmtL(Math.round(annIrrSeasoned))); set('db-irr-s',fmtL(Math.round(irrSupplyAnn))); set('db-irr-g',fmtL(Math.round(irrGap))); $('db-irr-st').innerHTML=badge(irrGap);
   set('db-oth-d',fmtL(Math.round(annAmenSeasoned))); set('db-oth-g',fmtL(Math.round(othGap)));
   set('db-tot-d',fmtL(Math.round(annTotalDemSeasoned))); set('db-tot-s',fmtL(Math.round(totalSupplyYr))); set('db-tot-g',fmtL(Math.round(totalGap))); $('db-tot-st').innerHTML=badge(totalGap);
 
@@ -942,9 +1004,9 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   const lpcd = val('p-lpcd');
   // Scale domestic demand by occupancy
   const domScaled = domOvr !== null ? domOvr*(pop/fullPop) : lpcd*pop*30;
-  // Amenities: pool+other are somewhat fixed (facility exists), scale partly
-  const pool=val('p-pool'), farmWaterM=val('p-farm-water')||0, animal=val('p-animal'), land=val('p-landscape'), otherD=val('p-other-dem');
-  const amenScaled = (pool+farmWaterM+otherD) + (animal+land)*rate;
+  // Farming group (irrigation/farming in dashboard) — fixed farm water, scale animal/land partly
+  const pool=val('p-pool'), farmWaterM=val('p-farm-water')||0, animalM=val('p-animal'), landM=val('p-landscape'), otherD=val('p-other-dem');
+  const amenScaled = (pool+otherD); // amenities only = pool + other
 
   const bwDay=val('p-bw1')+val('p-bw2')+val('p-bw3');
   const stpDay=val('p-stp')*(val('p-stp-rec')/100);
@@ -958,10 +1020,12 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   const tb = $('monthly-tbody'); tb.innerHTML='';
   let totRain=0, totDom=0, totIrr=0, totAmen=0, totDem=0, totGW=0, totRWH=0, totSTP=0, totExt=0, totSup=0, totBal=0;
 
+  const irrBaseM = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr') : val('p-farm')*val('ref-irr-am');
   MONTHS.forEach((m, i) => {
     const domMo   = domScaled * DOM_FACTOR[i];
-    const irrMo   = irrBase   * IRR_FACTOR[i];
-    const amenMo  = amenScaled* DOM_FACTOR[i];
+    // Irrigation/Farming = field irrigation + farming water + landscaping (seasonal) + animal (flat)
+    const irrMo   = (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM;
+    const amenMo  = amenScaled * DOM_FACTOR[i]; // pool + other
     const demMo   = domMo+irrMo+amenMo;
     const rwhHarv = RAIN_MM[i]*siteA*4046.86*runoff;
     const gwMo    = bwDay*30;
