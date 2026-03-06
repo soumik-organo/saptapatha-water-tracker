@@ -154,7 +154,7 @@
 <section class="section" id="reference">
   <div class="section-header">📚 Reference Data — Organo Antharam Benchmarks (Editable)</div>
   <div class="section-body">
-    <p style="font-size:12px;color:var(--grey);margin-bottom:14px">Benchmark ratios derived from Antharam actuals. Used as fallback when project-specific overrides are not entered.</p>
+    <p style="font-size:12px;color:var(--grey);margin-bottom:14px">Benchmark ratios derived from Antharam actuals. <b style="color:#e65100">⚠️ Readings were captured at ~10% occupancy (~73 of 728 planned residents).</b> LPCD & per-house figures are normalised to full design capacity for planning — the 5-Year Projection ramps up automatically. Used as fallback when project-specific overrides are not entered.</p>
     <div class="g3">
       <div class="sub">
         <div class="sub-title">Project Profile</div>
@@ -164,8 +164,10 @@
             <tr><td class="lbl">Total Site Area</td><td><input class="ri" type="number" id="ref-site" value="60"></td><td class="unit">acres</td></tr>
             <tr><td class="lbl">Total Houses</td><td><input class="ri" type="number" id="ref-houses" value="182"></td><td class="unit">nos.</td></tr>
             <tr><td class="lbl">Avg Occupants / House</td><td><input class="ri" type="number" id="ref-occ" value="4"></td><td class="unit">persons</td></tr>
+            <tr><td class="lbl" style="color:#e65100">Measured at Occupancy</td><td><input class="ri" type="number" id="ref-curr-occ" value="10" min="1" max="100" step="1" style="background:#fff3e0;color:#bf360c;font-weight:700"></td><td class="unit" style="color:#e65100">%</td></tr>
             <tr><td class="lbl">Farming Area</td><td><input class="ri" type="number" id="ref-farm" value="7"></td><td class="unit">acres</td></tr>
-            <tr class="tot"><td>Total Population</td><td><span class="cc ri" id="ref-pop">728</span></td><td class="unit">persons</td></tr>
+            <tr class="tot"><td>Design Population (100%)</td><td><span class="cc ri" id="ref-pop">728</span></td><td class="unit">persons</td></tr>
+            <tr><td class="lbl" style="color:#e65100;font-size:12px">↳ Actual at Measurement</td><td><span class="cc" id="ref-curr-pop" style="background:#fff3e0;color:#bf360c">73</span></td><td class="unit" style="color:#e65100">persons (10%)</td></tr>
           </tbody>
         </table>
       </div>
@@ -174,7 +176,7 @@
         <table>
           <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">LPCD (Actual Measured)</td><td><input class="ri" type="number" id="ref-lpcd" value="169.35" step="0.01"></td><td class="unit">L/person/day</td></tr>
+            <tr><td class="lbl">LPCD (Planning Basis)</td><td><input class="ri" type="number" id="ref-lpcd" value="169.35" step="0.01"></td><td class="unit">L/person/day</td></tr>
             <tr><td class="lbl">Domestic / House / Month</td><td><input class="ri" type="number" id="ref-dom-hm" value="20604"></td><td class="unit">L/house/mo</td></tr>
             <tr><td class="lbl">Irrigation / Acre / Month</td><td><input class="ri" type="number" id="ref-irr-am" value="238095"></td><td class="unit">L/acre/mo</td></tr>
             <tr><td class="lbl">Swimming Pool Top-up</td><td><input class="ri" type="number" id="ref-pool-mo" value="526000"></td><td class="unit">L/mo</td></tr>
@@ -261,7 +263,7 @@
       <div class="kpi">
         <div class="kpi-label">LPCD (Project)</div>
         <div class="kpi-val" id="kpi-lpcd">—</div>
-        <div class="kpi-sub">L/person/day &nbsp;|&nbsp; Antharam ref: 169.4</div>
+        <div class="kpi-sub">L/person/day &nbsp;|&nbsp; Antharam ref: 169.4 <span title="Normalised to design capacity; measured at 10% occupancy" style="cursor:help;color:#90a4ae">(planning basis ⓘ)</span></div>
       </div>
       <div class="kpi" id="kpi-dep-card">
         <div class="kpi-label">External Water Dependency</div>
@@ -325,7 +327,7 @@
       </div>
       <div style="display:none;padding:18px 20px;background:#f9fbff">
 
-        <p style="font-size:12px;color:#546e7a;margin-bottom:14px">All reference values come from <b>actual measured data at Organo Antharam</b> — 182 houses, 60 acres, Chevella taluk, Telangana. These benchmarks drive the auto-fill and scaling for your project.</p>
+        <p style="font-size:12px;color:#546e7a;margin-bottom:14px">All reference values come from <b>actual measured data at Organo Antharam</b> — 182 houses, 60 acres, Chevella taluk, Telangana. <b style="color:#e65100">⚠️ Important: Readings were captured at ~10% occupancy (~73 of 728 planned residents present at the time of measurement.</b> LPCD and per-house figures below are normalised to full design capacity (728 persons) for planning purposes — multiply current actuals by ~10× to estimate full-occupancy demand. The 5-Year Projection tab handles this ramp-up automatically via the occupancy % slider.</p>
 
         <!-- Demand Reference -->
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#37474f;border-bottom:2px solid #e0e0e0;padding-bottom:4px;margin-bottom:10px">Demand Benchmarks</div>
@@ -335,12 +337,12 @@
             <tr>
               <td class="lbl">LPCD</td>
               <td><span class="cc">169.35 L/person/day</span></td>
-              <td style="font-size:12px;color:#546e7a">= Annual domestic (4.5 Cr L) ÷ (728 persons × 365 days) = 4,50,00,000 ÷ 2,65,720 = 169.35. Includes drinking, cooking, bathing, cleaning & in-house garden.</td>
+              <td style="font-size:12px;color:#546e7a">= Annual domestic (4.5 Cr L, measured at <b>10% occupancy</b>) ÷ (design population 728 × 365 days) = 4,50,00,000 ÷ 2,65,720 = <b>169.35 (planning basis)</b>. Includes drinking, cooking, bathing, cleaning & in-house garden. <br><span style="color:#e65100">Note: Actual per-resident rate at measurement = 4.5 Cr ÷ 73 persons ÷ 365 = <b>1,685 LPCD</b> — high because fixed infrastructure (common areas, clubhouse, roads) is shared by fewer residents at low occupancy.</span></td>
             </tr>
             <tr>
               <td class="lbl">Domestic / House / Month</td>
               <td><span class="cc">20,604 L/house/month</span></td>
-              <td style="font-size:12px;color:#546e7a">= Annual domestic (4.5 Cr L) ÷ (182 houses × 12 months) = 4,50,00,000 ÷ 2,184 = 20,604. Cross-check: LPCD × 4 persons × 30 = 169.35 × 4 × 30 = 20,322 ≈ 20,604 ✓</td>
+              <td style="font-size:12px;color:#546e7a">= Annual domestic (4.5 Cr L, measured at <b>10% occupancy</b>) ÷ (design 182 houses × 12 months) = 4,50,00,000 ÷ 2,184 = <b>20,604 L/house/month (planning basis)</b>. Cross-check: LPCD × 4 persons × 30 = 169.35 × 4 × 30 = 20,322 ≈ 20,604 ✓ <br><span style="color:#e65100">At 10% occupancy: 4.5 Cr ÷ 18 occupied houses ÷ 12 = <b>2,08,333 L/occupied-house/month</b> — reflects combined fixed + variable costs at low occupancy.</span></td>
             </tr>
             <tr>
               <td class="lbl">Irrigation / Acre / Month</td>
@@ -939,7 +941,10 @@ function recalc() {
   const refTotSupMo   = refRwhMonthly + refStpMonthly + refMuniMo;
 
   const refPop    = refHouses*refOcc;
+  const refCurrOccPct = val('ref-curr-occ') || 10;
+  const refCurrPop = Math.round(refPop * refCurrOccPct / 100);
   set('ref-pop', fmtN(refPop));
+  set('ref-curr-pop', fmtN(refCurrPop) + ' (' + refCurrOccPct + '%)');
   set('ref-sup-total', fmtL(Math.round(refTotSupMo)));
 
   const refDomMo  = refLpcd*refPop*30;
