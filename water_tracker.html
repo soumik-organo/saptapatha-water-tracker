@@ -194,17 +194,49 @@
       </div>
     </div>
 
-    <table>
-      <thead>
-        <tr><th>Category</th><th class="dem">Annual Demand (L)</th><th class="sup">Annual Supply (L)</th><th class="bal">Annual Gap (L)</th><th>Status</th></tr>
-      </thead>
-      <tbody>
-        <tr><td class="lbl">🏠 Domestic</td><td id="db-dom-d">—</td><td id="db-dom-s">—</td><td id="db-dom-g">—</td><td id="db-dom-st">—</td></tr>
-        <tr><td class="lbl">🌾 Irrigation / Farming</td><td id="db-irr-d">—</td><td id="db-irr-s">—</td><td id="db-irr-g">—</td><td id="db-irr-st">—</td></tr>
-        <tr><td class="lbl">🏊 Amenities / Other</td><td id="db-oth-d">—</td><td id="db-oth-s">—</td><td id="db-oth-g">—</td><td id="db-oth-st"><span class="badge warn">⚠️ In total</span></td></tr>
-        <tr class="tot"><td>⚖️ TOTAL</td><td id="db-tot-d">—</td><td id="db-tot-s">—</td><td id="db-tot-g">—</td><td id="db-tot-st">—</td></tr>
-      </tbody>
-    </table>
+    <div class="g2" style="gap:14px;align-items:start">
+
+      <!-- DEMAND breakdown -->
+      <div>
+        <div class="sub-title" style="margin-bottom:8px">💧 Water Demand — By Category</div>
+        <table>
+          <thead>
+            <tr><th>Category</th><th class="dem">Annual (L)</th><th class="dem">Monthly Avg (L)</th><th class="dem">Share</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="lbl">🏠 Domestic</td><td id="db-dom-d">—</td><td id="db-dom-mo">—</td><td id="db-dom-pct">—</td></tr>
+            <tr><td class="lbl">🌾 Irrigation / Farming</td><td id="db-irr-d">—</td><td id="db-irr-mo">—</td><td id="db-irr-pct">—</td></tr>
+            <tr><td class="lbl">🏊 Amenities / Other</td><td id="db-oth-d">—</td><td id="db-oth-mo">—</td><td id="db-oth-pct">—</td></tr>
+            <tr class="tot"><td>TOTAL DEMAND</td><td id="db-tot-d">—</td><td id="db-tot-mo">—</td><td>100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SUPPLY — unified pool -->
+      <div>
+        <div class="sub-title" style="margin-bottom:8px">🔋 Water Supply — All Sources (Pooled)</div>
+        <table>
+          <thead>
+            <tr><th>Source</th><th class="sup">Daily (L)</th><th class="sup">Monthly (L)</th><th class="sup">Annual (L)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="lbl">💧 Borewells (GW)</td><td id="db-bw-d">—</td><td id="db-bw-mo">—</td><td id="db-bw-yr">—</td></tr>
+            <tr><td class="lbl">🌧️ RWH / Dugwell</td><td class="unit">varies</td><td id="db-rwh-mo">—</td><td id="db-rwh-yr">—</td></tr>
+            <tr><td class="lbl">♻️ STP Recycled</td><td id="db-stp-d">—</td><td id="db-stp-mo">—</td><td id="db-stp-yr">—</td></tr>
+            <tr><td class="lbl">🔄 Greywater</td><td id="db-grey-d">—</td><td id="db-grey-mo">—</td><td id="db-grey-yr">—</td></tr>
+            <tr><td class="lbl">🚛 Municipal / Tanker</td><td id="db-muni-d">—</td><td id="db-muni-mo">—</td><td id="db-muni-yr">—</td></tr>
+            <tr class="tot"><td>TOTAL SUPPLY</td><td id="db-sup-d">—</td><td id="db-sup-mo">—</td><td id="db-tot-s">—</td></tr>
+          </tbody>
+        </table>
+        <!-- Net balance bar -->
+        <div style="margin-top:10px;padding:10px 14px;border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap" id="db-balance-bar">
+          <span style="font-weight:700;font-size:13px">⚖️ Net Balance (Supply − Demand)</span>
+          <span style="font-size:18px;font-weight:800" id="db-tot-g">—</span>
+          <span id="db-tot-st">—</span>
+        </div>
+      </div>
+
+    </div>
 
     <div id="dash-alerts" style="margin-top:14px"></div>
 
@@ -1101,8 +1133,8 @@ function recalc() {
 
   // ── Balance metrics (full occupancy)
   const selfSuf = annTotalDemSeasoned > 0 ? totalSupplyYr/annTotalDemSeasoned : 0;
-  const domSelf = annDomSeasoned > 0 ? (muniMo*12)/annDomSeasoned : 0;
-  const irrSelf = annIrrSeasoned > 0 ? (bwMo*12+annRainL+recMo*12)/annIrrSeasoned : 0;
+  const domSelf = selfSuf; // overall self-sufficiency (no per-category split)
+  const irrSelf = selfSuf;
   const extDep  = totalSupplyYr > 0 ? (muniMo*12)/totalSupplyYr : 0;
   set('m-self',fmtR(selfSuf)); $('m-self-st').innerHTML=badgeR(selfSuf);
   set('m-dom-self',fmtR(domSelf)); $('m-dom-st').innerHTML=badgeR(domSelf);
@@ -1132,22 +1164,33 @@ function recalc() {
   set('kpi-dep',fmtP(extDep));
   $('kpi-dep-card').className='kpi '+(extDep>0.3?'r':'g');
 
-  // Supply allocation:
-  //   Domestic       ← Municipal/External only
-  //   Amenities      ← RWH (first priority on stored rainwater)
-  //   Irrigation     ← BW + remaining RWH (after amenities) + STP Recycled
-  const amenRwhAnn   = Math.min(annAmenSeasoned, annRwhUsable); // RWH to amenities (capped at demand)
-  const irrRwhAnn    = annRwhUsable - amenRwhAnn;               // leftover RWH to irrigation
-  const domSupplyAnn = muniMo*12;
-  const irrSupplyAnn = bwMo*12 + irrRwhAnn + recMo*12;
-  const othSupplyAnn = amenRwhAnn;
-  const domGap = domSupplyAnn - annDomSeasoned;
-  const irrGap = irrSupplyAnn - annIrrSeasoned;
-  const othGap = othSupplyAnn - annAmenSeasoned;
-  set('db-dom-d',fmtL(Math.round(annDomSeasoned))); set('db-dom-s',fmtL(Math.round(domSupplyAnn))); set('db-dom-g',fmtL(Math.round(domGap))); $('db-dom-st').innerHTML=badge(domGap);
-  set('db-irr-d',fmtL(Math.round(annIrrSeasoned))); set('db-irr-s',fmtL(Math.round(irrSupplyAnn))); set('db-irr-g',fmtL(Math.round(irrGap))); $('db-irr-st').innerHTML=badge(irrGap);
-  set('db-oth-d',fmtL(Math.round(annAmenSeasoned))); set('db-oth-s',fmtL(Math.round(othSupplyAnn))); set('db-oth-g',fmtL(Math.round(othGap))); $('db-oth-st').innerHTML=badge(othGap);
-  set('db-tot-d',fmtL(Math.round(annTotalDemSeasoned))); set('db-tot-s',fmtL(Math.round(totalSupplyYr))); set('db-tot-g',fmtL(Math.round(totalGap))); $('db-tot-st').innerHTML=badge(totalGap);
+  // ── Dashboard — Demand breakdown (no per-category supply split)
+  const pctDom = annTotalDemSeasoned > 0 ? (annDomSeasoned/annTotalDemSeasoned*100).toFixed(1)+'%' : '—';
+  const pctIrr = annTotalDemSeasoned > 0 ? (annIrrSeasoned/annTotalDemSeasoned*100).toFixed(1)+'%' : '—';
+  const pctOth = annTotalDemSeasoned > 0 ? (annAmenSeasoned/annTotalDemSeasoned*100).toFixed(1)+'%' : '—';
+  set('db-dom-d',fmtL(Math.round(annDomSeasoned)));  set('db-dom-mo',fmtL(Math.round(annDomSeasoned/12)));  set('db-dom-pct',pctDom);
+  set('db-irr-d',fmtL(Math.round(annIrrSeasoned)));  set('db-irr-mo',fmtL(Math.round(annIrrSeasoned/12)));  set('db-irr-pct',pctIrr);
+  set('db-oth-d',fmtL(Math.round(annAmenSeasoned))); set('db-oth-mo',fmtL(Math.round(annAmenSeasoned/12))); set('db-oth-pct',pctOth);
+  set('db-tot-d',fmtL(Math.round(annTotalDemSeasoned))); set('db-tot-mo',fmtL(Math.round(annTotalDemSeasoned/12)));
+
+  // ── Dashboard — Supply: all sources pooled (no allocation to categories)
+  const bwAnn  = bwDay*365, stpAnn = stpMo*12, greyAnn = greyMo*12, muniAnn = muniMo*12;
+  const supDay = bwDay + stpDay + greyDay + muniDay; // RWH varies, not a flat daily rate
+  const supMoAvg = totalSupplyMo;
+  set('db-bw-d',   fmtN(bwDay));      set('db-bw-mo',  fmtL(bwMo));                       set('db-bw-yr',  fmtL(Math.round(bwAnn)));
+  set('db-rwh-mo', fmtL(Math.round(rwhMonthlyAvg)));                                        set('db-rwh-yr', fmtL(Math.round(annRwhUsable)));
+  set('db-stp-d',  fmtN(Math.round(stpDay))); set('db-stp-mo', fmtL(stpMo));              set('db-stp-yr', fmtL(Math.round(stpAnn)));
+  set('db-grey-d', fmtN(greyDay));    set('db-grey-mo',fmtL(greyMo));                      set('db-grey-yr',fmtL(Math.round(greyAnn)));
+  set('db-muni-d', fmtN(muniDay));    set('db-muni-mo',fmtL(muniMo));                      set('db-muni-yr',fmtL(Math.round(muniAnn)));
+  set('db-sup-d',  fmtN(Math.round(supDay))); set('db-sup-mo', fmtL(Math.round(supMoAvg))); set('db-tot-s',  fmtL(Math.round(totalSupplyYr)));
+
+  // Net balance bar
+  set('db-tot-g', fmtL(Math.round(totalGap)));
+  $('db-tot-st').innerHTML = badge(totalGap);
+  const balBar = $('db-balance-bar');
+  balBar.style.background = totalGap>=0 ? 'var(--green-light)' : 'var(--red-light)';
+  balBar.style.border      = totalGap>=0 ? '1px solid #a5d6a7' : '1px solid #ef9a9a)';
+  $('db-tot-g').style.color = totalGap>=0 ? 'var(--green)' : 'var(--red)';
 
   // Alerts
   let al='';
