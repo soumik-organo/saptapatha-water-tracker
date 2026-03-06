@@ -174,12 +174,12 @@
         <table>
           <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">LPCD (Actual Measured)</td><td><input class="ri" type="number" id="ref-lpcd" value="68.46" step="0.01"></td><td class="unit">L/person/day</td></tr>
-            <tr><td class="lbl">Domestic / House / Month</td><td><input class="ri" type="number" id="ref-dom-hm" value="8215"></td><td class="unit">L/house/mo</td></tr>
+            <tr><td class="lbl">LPCD (Actual Measured)</td><td><input class="ri" type="number" id="ref-lpcd" value="169.35" step="0.01"></td><td class="unit">L/person/day</td></tr>
+            <tr><td class="lbl">Domestic / House / Month</td><td><input class="ri" type="number" id="ref-dom-hm" value="20604"></td><td class="unit">L/house/mo</td></tr>
             <tr><td class="lbl">Irrigation / Acre / Month</td><td><input class="ri" type="number" id="ref-irr-am" value="238095"></td><td class="unit">L/acre/mo</td></tr>
             <tr><td class="lbl">Swimming Pool Top-up</td><td><input class="ri" type="number" id="ref-pool-mo" value="526000"></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Other Consumption</td><td><input class="ri" type="number" id="ref-other-mo" value="83555"></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Dripper Crosscheck Total</td><td><input class="ri" type="number" id="ref-drip-xcheck" value="4737720"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Dripper Crosscheck Total</td><td><input class="ri" type="number" id="ref-drip-xcheck" value="1666667"></td><td class="unit">L/mo</td></tr>
           </tbody>
         </table>
       </div>
@@ -190,7 +190,7 @@
           <tbody>
             <tr><td class="lbl">RWH Storage / House</td><td><input class="ri" type="number" id="ref-rwh-h" value="65934"></td><td class="unit">L/house</td></tr>
             <tr><td class="lbl">RWH Total Storage</td><td><input class="ri" type="number" id="ref-rwh-total" value="12000000"></td><td class="unit">L</td></tr>
-            <tr><td class="lbl">RWH Monthly Supply (avg)</td><td><input class="ri" type="number" id="ref-rwh-monthly" value="1750000"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">RWH Monthly Supply (avg usable)</td><td><input class="ri" type="number" id="ref-rwh-monthly" value="7623000"></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">STP Monthly Supply</td><td><input class="ri" type="number" id="ref-stp-monthly" value="1650000"></td><td class="unit">L/mo</td></tr>
             <tr><td class="lbl">Municipal / External</td><td><input class="ri" type="number" id="ref-muni-monthly" value="1800000"></td><td class="unit">L/mo</td></tr>
             <tr class="tot"><td>Total Supply (monthly)</td><td><span class="cc ri" id="ref-sup-total">—</span></td><td class="unit">L/mo</td></tr>
@@ -261,7 +261,7 @@
       <div class="kpi">
         <div class="kpi-label">LPCD (Project)</div>
         <div class="kpi-val" id="kpi-lpcd">—</div>
-        <div class="kpi-sub">L/person/day &nbsp;|&nbsp; Antharam ref: 68.5</div>
+        <div class="kpi-sub">L/person/day &nbsp;|&nbsp; Antharam ref: 169.4</div>
       </div>
       <div class="kpi" id="kpi-dep-card">
         <div class="kpi-label">External Water Dependency</div>
@@ -334,23 +334,23 @@
           <tbody>
             <tr>
               <td class="lbl">LPCD</td>
-              <td><span class="cc">68.46 L/person/day</span></td>
-              <td style="font-size:12px;color:#546e7a">Actual water meter readings ÷ (182 houses × 4 persons × 30 days). Represents real daily per-capita consumption including drinking, cooking, bathing &amp; cleaning.</td>
+              <td><span class="cc">169.35 L/person/day</span></td>
+              <td style="font-size:12px;color:#546e7a">= Annual domestic (4.5 Cr L) ÷ (728 persons × 365 days) = 4,50,00,000 ÷ 2,65,720 = 169.35. Includes drinking, cooking, bathing, cleaning & in-house garden.</td>
             </tr>
             <tr>
               <td class="lbl">Domestic / House / Month</td>
-              <td><span class="cc">8,215 L/house/month</span></td>
-              <td style="font-size:12px;color:#546e7a">= LPCD × avg occupants × 30 = 68.46 × 4 × 30. Cross-check against house-level meter readings.</td>
+              <td><span class="cc">20,604 L/house/month</span></td>
+              <td style="font-size:12px;color:#546e7a">= Annual domestic (4.5 Cr L) ÷ (182 houses × 12 months) = 4,50,00,000 ÷ 2,184 = 20,604. Cross-check: LPCD × 4 persons × 30 = 169.35 × 4 × 30 = 20,322 ≈ 20,604 ✓</td>
             </tr>
             <tr>
               <td class="lbl">Irrigation / Acre / Month</td>
               <td><span class="cc">2,38,095 L/acre/month</span></td>
-              <td style="font-size:12px;color:#546e7a">= Dripper crosscheck total ÷ farm acres = 47,37,720 L ÷ ~19.9 ac (effective irrigated area). Validated against actual water meter on irrigation line.</td>
+              <td style="font-size:12px;color:#546e7a">= Annual irrigation (2 Cr L) ÷ (12 months × 7 acres) = 2,00,00,000 ÷ 84 = 2,38,095. Validated against actual water meter on irrigation line.</td>
             </tr>
             <tr>
               <td class="lbl">Dripper Crosscheck Total</td>
-              <td><span class="cc">47,37,720 L/month</span></td>
-              <td style="font-size:12px;color:#546e7a">= (47,921 × 3-line drippers + 31,041 × 2-line drippers) × flow rate (L/hr) × daily run hours × 30 days. Bottom-up estimate from installed dripper inventory.</td>
+              <td><span class="cc">16,66,667 L/month</span></td>
+              <td style="font-size:12px;color:#546e7a">= Annual irrigation (2 Cr L) ÷ 12 months = 16,66,667 L/month avg. This is the metered actual; dripper count × flow × time gives the bottom-up cross-check.</td>
             </tr>
             <tr>
               <td class="lbl">Swimming Pool Top-up</td>
@@ -381,9 +381,9 @@
               <td style="font-size:12px;color:#546e7a">Physical capacity of the Dugwell / sump at Antharam — engineered &amp; constructed storage volume. Sets the ceiling on usable monthly RWH (each month's harvest is capped at this value).</td>
             </tr>
             <tr>
-              <td class="lbl">RWH Monthly Supply (avg)</td>
-              <td><span class="cc">17,50,000 L/month</span></td>
-              <td style="font-size:12px;color:#546e7a">= Annual usable harvest ÷ 12. Annual harvest = Σ min(Rainfall_mm[i] × Site area × 4,046.86 m²/acre × Runoff coeff, Storage capacity) over 12 months. Chevella avg rainfall: 812 mm/yr; runoff coeff: 0.75.</td>
+              <td class="lbl">RWH Monthly Supply (avg usable)</td>
+              <td><span class="cc">76,23,000 L/month</span></td>
+              <td style="font-size:12px;color:#546e7a">= Σ min(monthly harvest, 1.2 Cr storage) ÷ 12. Total theoretical annual rainfall = 18 Cr L. Monthly harvest distributed by Chevella rainfall pattern — capped at 1.2 Cr L for Jun–Oct (monsoon months exceed tank capacity). Annual usable = 9.15 Cr L → monthly avg = 76.23 lakh L.</td>
             </tr>
             <tr>
               <td class="lbl">STP Monthly Supply</td>
