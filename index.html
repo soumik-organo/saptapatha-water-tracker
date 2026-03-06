@@ -827,11 +827,17 @@ function recalc() {
   const recMo = stpMo+greyMo;
   const muniDay= val('p-muni')+val('p-ext-other'), muniMo = muniDay*30;
   const siteA = val('p-site'), runoff = val('p-runoff');
-  const annRainL = RAIN_MM.reduce((s,m)=>s+m,0) * siteA * 4046.86 * runoff;
-  const rwhMonthlyAvg = annRainL/12;
+  const rwhCap = val('p-rwh');
+  // Compute monthly harvest then cap each month at storage capacity.
+  // You can only use what you can physically store in a given month.
+  const monthlyRwhHarvest = RAIN_MM.map(mm => mm * siteA * 4046.86 * runoff);
+  const monthlyRwhUsable  = monthlyRwhHarvest.map(h => Math.min(h, rwhCap));
+  const annRainL    = monthlyRwhHarvest.reduce((s,v)=>s+v,0); // theoretical (for display)
+  const annRwhUsable= monthlyRwhUsable.reduce((s,v)=>s+v,0);  // realistic, capped by storage
+  const rwhMonthlyAvg = annRwhUsable/12; // average usable per month
   const fixedSupplyMo = bwMo+stpMo+greyMo+muniMo; // non-RWH monthly
   const totalSupplyMo = fixedSupplyMo + rwhMonthlyAvg;
-  const totalSupplyYr = totalSupplyMo*12;
+  const totalSupplyYr = fixedSupplyMo*12 + annRwhUsable; // use usable, not theoretical
 
   // ── Annual averages (full occupancy, no seasonal factor — base)
   const annDomBase = domBase*12;
@@ -856,8 +862,7 @@ function recalc() {
   set('sd-bw2-d',fmtN(bw2d)); set('sd-bw2-m',fmtL(bw2d*30)); set('sd-bw2-y',fmtL(bw2d*365));
   set('sd-bw3-d',fmtN(bw3d)); set('sd-bw3-m',fmtL(bw3d*30)); set('sd-bw3-y',fmtL(bw3d*365));
   set('sd-bw-d',fmtN(bwDay)); set('sd-bw-m',fmtL(bwMo)); set('sd-bw-y',fmtL(bwDay*365));
-  set('sd-rwh-m',fmtL(Math.round(rwhMonthlyAvg))); set('sd-rwh-y',fmtL(Math.round(annRainL)));
-  const rwhCap = val('p-rwh');
+  set('sd-rwh-m',fmtL(Math.round(rwhMonthlyAvg))); set('sd-rwh-y',fmtL(Math.round(annRwhUsable)));
   set('sd-rwh-cap',fmtL(rwhCap));
   set('sd-rwh-cov', annTotalDemBase>0 ? (rwhCap/(annTotalDemBase/12)).toFixed(2)+' months' : '—');
   set('sd-stp-d',fmtN(Math.round(stpDay))); set('sd-stp-m',fmtL(stpMo)); set('sd-stp-y',fmtL(stpMo*12));
@@ -1014,6 +1019,7 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   const muniDay=val('p-muni')+val('p-ext-other');
   const fixedMoSupply = (bwDay+stpDay+greyDay+muniDay)*30;
   const siteA=val('p-site'), runoff=val('p-runoff');
+  const rwhCap=val('p-rwh'); // storage capacity cap
 
   $('mo-occ-label').textContent = `${(rate*100).toFixed(0)}% occupancy — ${fmtN(villas)} villas / ${fmtN(pop)} persons`;
 
@@ -1027,7 +1033,7 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
     const irrMo   = (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM;
     const amenMo  = amenScaled * DOM_FACTOR[i]; // pool + other
     const demMo   = domMo+irrMo+amenMo;
-    const rwhHarv = RAIN_MM[i]*siteA*4046.86*runoff;
+    const rwhHarv = Math.min(RAIN_MM[i]*siteA*4046.86*runoff, rwhCap);
     const gwMo    = bwDay*30;
     const stpMo   = stpDay*30;
     const greyMo  = greyDay*30;
