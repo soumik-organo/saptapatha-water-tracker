@@ -711,14 +711,6 @@
         </table>
       </div>
     </div>
-    <!-- 16-year analysis table -->
-    <div class="sub" style="margin-top:14px">
-      <div class="sub-title">📅 Year-by-Year Required Storage (2006–2021 Chevella Actual Rainfall)</div>
-      <table id="yr16-table">
-        <thead><tr><th>Year</th><th>Annual Rainfall (mm)</th><th class="proj">Required Storage (Rippl)</th><th>Feasible?</th><th>Status vs Planned</th></tr></thead>
-        <tbody id="yr16-tbody"></tbody>
-      </table>
-    </div>
     <div id="balance-alerts" style="margin-top:14px"></div>
     <div class="sub" style="display:none">
     </div>
@@ -1169,23 +1161,6 @@ function recalc() {
   }
   set('rwh-mos', (domBase+irrBase+amenBase)>0 ? (rwhCap/((domBase+irrBase+amenBase))).toFixed(2)+' months' : '—');
 
-  // ── 16-year table
-  const yr16tb = $('yr16-tbody');
-  if (yr16tb) {
-    yr16tb.innerHTML = '';
-    const annRainMMs = {2006:947.9,2007:772.8,2008:1154.5,2009:658,2010:1167.9,2011:583.9,2012:734.9,2013:1018.3,2014:636.9,2015:615.1,2016:1053.3,2017:1038.7,2018:570.3,2019:873.6,2020:1232.4,2021:1007.8};
-    reqPerYear.forEach(({yr, req}) => {
-      const ok = req !== null;
-      const suf = ok && rwhCap >= req;
-      yr16tb.innerHTML += `<tr>
-        <td style="font-weight:600">${yr}</td>
-        <td>${annRainMMs[yr] ?? '—'} mm</td>
-        <td style="font-weight:700;color:${ok?'#37474f':'var(--red)'}">${ok ? fmtL(Math.round(req)) : '⚠️ Infeasible'}</td>
-        <td>${ok ? '<span class="badge ok">✅ Yes</span>' : '<span class="badge deficit">🔴 No</span>'}</td>
-        <td>${ok ? (suf ? '<span class="badge ok">✅ Storage OK</span>' : '<span class="badge deficit">🔴 Need more</span>') : '—'}</td>
-      </tr>`;
-    });
-  }
 
   // ── Dashboard
   set('kpi-dem',fmtL(Math.round(annTotalDemSeasoned)));
