@@ -593,7 +593,7 @@
     </table>
 
     <p style="font-size:11px;color:var(--grey);margin-top:10px">
-      <b>RWH-only supply.</b> Seasonal demand factors: Peak summer Mar–Jun (domestic ×1.2, irrigation ×1.3) | Monsoon Jul–Sep (domestic ×0.85, irrigation ×0.5) | Transition Oct–Feb (domestic ×1.0, irrigation ×1.1). RWH harvest = Rainfall (mm) × Site Area (acres) × 4046.86 × Runoff coefficient, capped at storage capacity per month. Months showing deficit require the storage buffer built up in surplus months.
+      <b>RWH-only supply.</b> Seasonal demand factors: Peak summer Mar–Jun (domestic ×1.2, irrigation ×1.3) | Monsoon Jul–Sep (domestic ×0.85, irrigation ×0.5) | Transition Oct–Feb (domestic ×1.0, irrigation ×1.1). <b>RWH Harvest</b> = Rainfall (mm) × Site Area (acres) × 4046.86 × Runoff coefficient (theoretical, no cap). <b>Total Supply</b> = actual water delivered via tank simulation: each month the tank fills with harvest (capped at storage capacity), demand is drawn down, and leftover carries forward — so the tank can refill multiple times per year, delivering more total water than the tank capacity alone. Months showing deficit mean stored water was exhausted before the next rain event.
     </p>
   </div>
 </section>
@@ -770,6 +770,27 @@ function calcRequiredStorage(harvest, demand) {
     if (def>maxDeficit) maxDeficit=def;
   }
   return maxDeficit;
+}
+
+// Tank simulation: carries tank state month-to-month, counting every refill cycle.
+// Returns array of {supplied, tank} per month.
+function simulateTank(harvest, demand, capacity) {
+  let tank = 0;
+  // Run 2 cycles to stabilise the starting tank level
+  for (let c = 0; c < 2; c++) {
+    for (let i = 0; i < 12; i++) {
+      tank = Math.min(tank + harvest[i], capacity);
+      tank -= Math.min(demand[i], tank);
+    }
+  }
+  const monthly = [];
+  for (let i = 0; i < 12; i++) {
+    tank = Math.min(tank + harvest[i], capacity);
+    const supplied = Math.min(demand[i], tank);
+    tank -= supplied;
+    monthly.push({ supplied, tank });
+  }
+  return monthly;
 }
 
 // Occupancy rates (5 years)
@@ -987,23 +1008,25 @@ function recalc() {
   // ── Supply — RWH only
   const siteA = val('p-site'), runoff = val('p-runoff');
   const rwhCap = val('p-rwh');
-  // Monthly harvest, capped at storage capacity each month
   const monthlyRwhHarvest = RAIN_MM.map(mm => mm * siteA * 4046.86 * runoff);
-  const monthlyRwhUsable  = monthlyRwhHarvest.map(h => Math.min(h, rwhCap));
-  const annRainL    = monthlyRwhHarvest.reduce((s,v)=>s+v,0); // theoretical
-  const annRwhUsable= monthlyRwhUsable.reduce((s,v)=>s+v,0);  // capped by storage
-  const rwhMonthlyAvg = annRwhUsable/12;
-  const totalSupplyMo = rwhMonthlyAvg;
-  const totalSupplyYr = annRwhUsable;
+  const annRainL = monthlyRwhHarvest.reduce((s,v)=>s+v,0); // theoretical max (no storage limit)
 
-  // ── Required storage — Rippl method
-  // Build monthly demand array for Rippl (avg month, full occupancy, with seasonal factors)
+  // ── Monthly demand with seasonal factors (needed for simulation & Rippl)
   const monthlyDemandRippl = MONTHS.map((_,i) => {
     const domMo  = domBase * DOM_FACTOR[i];
     const irrMo  = (irrBase + farmWater + land) * IRR_FACTOR[i] + animal;
     const amenMo = amenBase * DOM_FACTOR[i];
     return domMo + irrMo + amenMo;
   });
+
+  // ── Tank simulation: storage fills and drains each month; accounts for multiple refill cycles
+  const tankSim      = simulateTank(monthlyRwhHarvest, monthlyDemandRippl, rwhCap);
+  const annRwhUsable = tankSim.reduce((s,v) => s + v.supplied, 0);
+  const rwhMonthlyAvg = annRwhUsable / 12;
+  const totalSupplyMo = rwhMonthlyAvg;
+  const totalSupplyYr = annRwhUsable;
+
+  // ── Required storage — Rippl method
   const reqAvg = calcRequiredStorage(monthlyRwhHarvest, monthlyDemandRippl);
 
   // Per-year required storage across 16 historical years
@@ -1237,14 +1260,24 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   const irrBaseM = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr')
                  : dripMo > 0                  ? dripMo
                  :                               val('p-farm')*val('ref-irr-am');
+  // Pre-compute tank simulation for monthly table (accounts for multiple refill cycles)
+  const moHarvest = RAIN_MM.map(mm => mm * siteA * 4046.86 * runoff);
+  const moDemand  = MONTHS.map((_,i) => {
+    const domMo  = domScaled * DOM_FACTOR[i];
+    const irrMo  = (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM;
+    const amenMo = amenScaled * DOM_FACTOR[i];
+    return domMo + irrMo + amenMo;
+  });
+  const moTankSim = simulateTank(moHarvest, moDemand, rwhCap);
+
   MONTHS.forEach((m, i) => {
     const domMo   = domScaled * DOM_FACTOR[i];
     // Irrigation/Farming = field irrigation + farming water + landscaping (seasonal) + animal (flat)
     const irrMo   = (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM;
     const amenMo  = amenScaled * DOM_FACTOR[i]; // pool + other
     const demMo   = domMo+irrMo+amenMo;
-    const rwhHarv = Math.min(RAIN_MM[i]*siteA*4046.86*runoff, rwhCap);
-    const supMo   = rwhHarv;
+    const rwhHarv = moHarvest[i]; // raw harvest (theoretical, no storage cap)
+    const supMo   = moTankSim[i].supplied; // actual supply from tank simulation
     const balMo   = supMo-demMo;
     const cls     = i>=6&&i<=8?'monsoon-row':i>=2&&i<=5?'peak-row':'trans-row';
     const balColor = balMo>=0?'style="color:var(--green);font-weight:700"':'style="color:var(--red);font-weight:700"';
