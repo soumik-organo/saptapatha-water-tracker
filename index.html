@@ -195,9 +195,7 @@
             <tr><td class="lbl">RWH Storage / House</td><td><input class="ri" type="number" id="ref-rwh-h" value="65934"></td><td class="unit">L/house</td></tr>
             <tr><td class="lbl">RWH Total Storage</td><td><input class="ri" type="number" id="ref-rwh-total" value="12000000"></td><td class="unit">L</td></tr>
             <tr><td class="lbl">RWH Monthly Supply (avg usable)</td><td><input class="ri" type="number" id="ref-rwh-monthly" value="7623000"></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">STP Monthly Supply</td><td><input class="ri" type="number" id="ref-stp-monthly" value="1650000"></td><td class="unit">L/mo</td></tr>
-            <tr><td class="lbl">Municipal / External</td><td><input class="ri" type="number" id="ref-muni-monthly" value="1800000"></td><td class="unit">L/mo</td></tr>
-            <tr class="tot"><td>Total Supply (monthly)</td><td><span class="cc ri" id="ref-sup-total">—</span></td><td class="unit">L/mo</td></tr>
+            <tr class="tot"><td>RWH Annual Usable (reference)</td><td><span class="cc ri" id="ref-sup-total">—</span></td><td class="unit">L/yr</td></tr>
           </tbody>
         </table>
       </div>
@@ -267,10 +265,10 @@
         <div class="kpi-val" id="kpi-lpcd">—</div>
         <div class="kpi-sub">L/person/day &nbsp;|&nbsp; Antharam ref: 150 <span title="Planning standard; measured actual at 38 occupied villas (152 persons) = 810.9 LPCD" style="cursor:help;color:#90a4ae">(planning basis ⓘ)</span></div>
       </div>
-      <div class="kpi" id="kpi-dep-card">
-        <div class="kpi-label">External Water Dependency</div>
-        <div class="kpi-val" id="kpi-dep">—</div>
-        <div class="kpi-sub">% supply from external sources</div>
+      <div class="kpi" id="kpi-req-card">
+        <div class="kpi-label">Required RWH Storage (Worst Year)</div>
+        <div class="kpi-val" id="kpi-req">—</div>
+        <div class="kpi-sub" id="kpi-req-sub">Rippl method — driest of 16 yrs on record</div>
       </div>
     </div>
 
@@ -292,20 +290,18 @@
         </table>
       </div>
 
-      <!-- SUPPLY — unified pool -->
+      <!-- SUPPLY — RWH only -->
       <div>
-        <div class="sub-title" style="margin-bottom:8px">🔋 Water Supply — All Sources (Pooled)</div>
+        <div class="sub-title" style="margin-bottom:8px">🌧️ Water Supply — Rainwater Harvesting Only</div>
         <table>
           <thead>
-            <tr><th>Source</th><th class="sup">Daily (L)</th><th class="sup">Monthly (L)</th><th class="sup">Annual (L)</th></tr>
+            <tr><th>Parameter</th><th class="sup">Monthly Avg (L)</th><th class="sup">Annual Usable (L)</th></tr>
           </thead>
           <tbody>
-            <tr><td class="lbl">💧 Borewells (GW)</td><td id="db-bw-d">—</td><td id="db-bw-mo">—</td><td id="db-bw-yr">—</td></tr>
-            <tr><td class="lbl">🌧️ RWH / Dugwell</td><td class="unit">varies</td><td id="db-rwh-mo">—</td><td id="db-rwh-yr">—</td></tr>
-            <tr><td class="lbl">♻️ STP Recycled</td><td id="db-stp-d">—</td><td id="db-stp-mo">—</td><td id="db-stp-yr">—</td></tr>
-            <tr><td class="lbl">🔄 Greywater</td><td id="db-grey-d">—</td><td id="db-grey-mo">—</td><td id="db-grey-yr">—</td></tr>
-            <tr><td class="lbl">🚛 Municipal / Tanker</td><td id="db-muni-d">—</td><td id="db-muni-mo">—</td><td id="db-muni-yr">—</td></tr>
-            <tr class="tot"><td>TOTAL SUPPLY</td><td id="db-sup-d">—</td><td id="db-sup-mo">—</td><td id="db-tot-s">—</td></tr>
+            <tr><td class="lbl">🌧️ RWH Harvest (usable, capped at storage)</td><td id="db-rwh-mo">—</td><td id="db-rwh-yr">—</td></tr>
+            <tr><td class="lbl">📐 Required Storage — Avg Year (Rippl)</td><td class="unit">—</td><td id="db-req-avg">—</td></tr>
+            <tr><td class="lbl">📐 Required Storage — Worst Year (Design)</td><td class="unit">—</td><td id="db-req-worst">—</td></tr>
+            <tr class="tot"><td>TOTAL SUPPLY (RWH only)</td><td id="db-sup-mo">—</td><td id="db-tot-s">—</td></tr>
           </tbody>
         </table>
         <!-- Net balance bar -->
@@ -389,16 +385,6 @@
               <td><span class="cc">76,23,000 L/month</span></td>
               <td style="font-size:12px;color:#546e7a">= Σ min(monthly harvest, 1.2 Cr storage) ÷ 12. Total theoretical annual rainfall = 18 Cr L. Monthly harvest distributed by Chevella rainfall pattern — capped at 1.2 Cr L for Jun–Oct (monsoon months exceed tank capacity). Annual usable = 9.15 Cr L → monthly avg = 76.23 lakh L.</td>
             </tr>
-            <tr>
-              <td class="lbl">STP Monthly Supply</td>
-              <td><span class="cc">16,50,000 L/month</span></td>
-              <td style="font-size:12px;color:#546e7a">= STP installed capacity × recovery rate × 30 days = 65,000 L/day × 85% × 30 = 16,57,500 L/month. STP treats greywater &amp; blackwater; recovered water used for irrigation only.</td>
-            </tr>
-            <tr>
-              <td class="lbl">Municipal / External Monthly</td>
-              <td><span class="cc">18,00,000 L/month</span></td>
-              <td style="font-size:12px;color:#546e7a">= Municipal / tanker inflow × 30 = 60,000 L/day × 30 days. Allocated to Domestic supply only. Represents the gap-fill where on-site sources are insufficient.</td>
-            </tr>
           </tbody>
         </table>
 
@@ -428,8 +414,6 @@
             <tr><td class="lbl">LPCD</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Reference LPCD</td><td style="font-size:12px;color:#546e7a">Per-capita standard is same regardless of project size</td></tr>
             <tr><td class="lbl">Pool top-up</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Reference pool value</td><td style="font-size:12px;color:#546e7a">One pool of same size — not proportional to houses</td></tr>
             <tr><td class="lbl">Other consumption</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Ref × (Proj pop ÷ Ref pop)</td><td style="font-size:12px;color:#546e7a">Community facilities scale roughly with population</td></tr>
-            <tr><td class="lbl">STP capacity</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= (Ref STP/mo ÷ 30) × pop scale</td><td style="font-size:12px;color:#546e7a">Sewage generation scales with population</td></tr>
-            <tr><td class="lbl">Municipal / Tanker</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= (Ref muni/mo ÷ 30) × pop scale</td><td style="font-size:12px;color:#546e7a">External water demand scales with population</td></tr>
             <tr><td class="lbl">RWH storage</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= 65,934 L × Project houses</td><td style="font-size:12px;color:#546e7a">Storage proportional to number of houses (per-house benchmark)</td></tr>
             <tr><td class="lbl">Farm irrigation</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Dripper count × flow × time × 30</td><td style="font-size:12px;color:#546e7a">Bottom-up from actual dripper inventory; ratio-based as fallback</td></tr>
           </tbody>
@@ -487,33 +471,26 @@
       </div>
     </div>
 
-    <!-- Supply Sources -->
+    <!-- Supply Sources — RWH only -->
     <div class="sub">
-      <div class="sub-title">3. Water Supply Sources</div>
-      <div class="g3">
-        <table>
-          <thead><tr><th>Groundwater</th><th class="proj">Value</th><th>Unit</th></tr></thead>
-          <tbody>
-            <tr><td class="lbl">Borewell 1 — Yield</td><td><input type="number" id="p-bw1" placeholder="0"></td><td class="unit">L/day</td></tr>
-            <tr><td class="lbl">Borewell 2 — Yield</td><td><input type="number" id="p-bw2" placeholder="0"></td><td class="unit">L/day</td></tr>
-            <tr><td class="lbl">Borewell 3 — Yield</td><td><input type="number" id="p-bw3" placeholder="0"></td><td class="unit">L/day</td></tr>
-          </tbody>
-        </table>
+      <div class="sub-title">3. Water Supply — Rainwater Harvesting Only</div>
+      <div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:#1565c0">
+        🌧️ <b>RWH-only design:</b> All supply comes exclusively from rainwater harvesting. Enter your planned storage capacity — the tool calculates the minimum required storage using the Rippl method across 16 years of actual Chevella rainfall (2006–2021).
+      </div>
+      <div class="g2">
         <table>
           <thead><tr><th>RWH / Dugwell Storage</th><th class="proj">Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">RWH / Dugwell Storage (total)</td><td><input type="number" id="p-rwh" value="12000000"></td><td class="unit">L capacity</td></tr>
+            <tr><td class="lbl">Planned RWH Storage (total)</td><td><input type="number" id="p-rwh" value="12000000"></td><td class="unit">L capacity</td></tr>
             <tr><td class="lbl">Runoff Coefficient</td><td><input type="number" id="p-runoff" value="0.75" step="0.01" min="0" max="1"></td><td class="unit">0–1</td></tr>
           </tbody>
         </table>
         <table>
-          <thead><tr><th>Recycled & External</th><th class="proj">Value</th><th>Unit</th></tr></thead>
+          <thead><tr><th>Required Storage — Calculated (Rippl Method)</th><th class="proj">Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">STP Capacity</td><td><input type="number" id="p-stp" value="60000"></td><td class="unit">L/day</td></tr>
-            <tr><td class="lbl">STP Recovery Rate</td><td><input type="number" id="p-stp-rec" value="85" min="0" max="100"></td><td class="unit">%</td></tr>
-            <tr><td class="lbl">Greywater Recycling</td><td><input type="number" id="p-grey" placeholder="0"></td><td class="unit">L/day</td></tr>
-            <tr><td class="lbl">Municipal / Tanker Supply</td><td><input type="number" id="p-muni" value="60000"></td><td class="unit">L/day</td></tr>
-            <tr><td class="lbl">Other External Source</td><td><input type="number" id="p-ext-other" placeholder="0"></td><td class="unit">L/day</td></tr>
+            <tr><td class="lbl">Required — Average Year (16-yr avg rainfall)</td><td><span class="cc" id="p-req-avg">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Required — Worst Year on Record (driest of 16 yrs)</td><td><span class="cc" id="p-req-worst">—</span></td><td class="unit">L</td></tr>
+            <tr class="tot"><td>Planned vs Required (Worst Year)</td><td><span class="cc" id="p-req-gap">—</span></td><td class="unit" id="p-req-gap-unit">L</td></tr>
           </tbody>
         </table>
       </div>
@@ -592,10 +569,7 @@
           <th class="dem">Irr<br>Demand</th>
           <th class="dem">Amenities</th>
           <th class="dem">Total<br>Demand</th>
-          <th class="sup">GW<br>(BW)</th>
           <th class="sup">RWH<br>Harvest</th>
-          <th class="sup">STP+<br>Recycled</th>
-          <th class="sup">External</th>
           <th class="sup">Total<br>Supply</th>
           <th class="bal">Net<br>Balance</th>
           <th>Status</th>
@@ -610,10 +584,7 @@
           <td id="mo-irr-yr">—</td>
           <td id="mo-amen-yr">—</td>
           <td id="mo-dem-yr">—</td>
-          <td id="mo-gw-yr">—</td>
           <td id="mo-rwh-yr">—</td>
-          <td id="mo-stp-yr">—</td>
-          <td id="mo-ext-yr">—</td>
           <td id="mo-sup-yr">—</td>
           <td id="mo-bal-yr">—</td>
           <td></td>
@@ -622,7 +593,7 @@
     </table>
 
     <p style="font-size:11px;color:var(--grey);margin-top:10px">
-      <b>Seasonal demand factors applied:</b> Peak summer Mar–Jun (domestic ×1.2, irrigation ×1.3) | Monsoon Jul–Sep (domestic ×0.85, irrigation ×0.5) | Dry/transition season Oct–Dec &amp; early year (domestic ×1.0, irrigation ×1.1). RWH harvest = Rainfall × Site Area × Runoff coefficient.
+      <b>RWH-only supply.</b> Seasonal demand factors: Peak summer Mar–Jun (domestic ×1.2, irrigation ×1.3) | Monsoon Jul–Sep (domestic ×0.85, irrigation ×0.5) | Transition Oct–Feb (domestic ×1.0, irrigation ×1.1). RWH harvest = Rainfall (mm) × Site Area (acres) × 4046.86 × Runoff coefficient, capped at storage capacity per month. Months showing deficit require the storage buffer built up in surplus months.
     </p>
   </div>
 </section>
@@ -685,32 +656,19 @@
   <div class="section-header">🔋 Supply Detail</div>
   <div class="section-body">
     <table>
-      <thead><tr><th>Source</th><th class="proj">L/Day</th><th class="proj">L/Month</th><th class="proj">L/Year</th><th class="ref">Antharam Ref (L/mo)</th><th>Notes</th></tr></thead>
+      <thead><tr><th>Parameter</th><th class="proj">Monthly Avg (L)</th><th class="proj">Annual (L)</th><th class="ref">Antharam Ref (L/mo)</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td colspan="6" style="background:#f5f5f5;font-weight:700;padding:7px 11px">A. Groundwater — Borewells</td></tr>
-        <tr><td class="lbl">Borewell 1</td><td id="sd-bw1-d">—</td><td id="sd-bw1-m">—</td><td id="sd-bw1-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-        <tr><td class="lbl">Borewell 2</td><td id="sd-bw2-d">—</td><td id="sd-bw2-m">—</td><td id="sd-bw2-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-        <tr><td class="lbl">Borewell 3</td><td id="sd-bw3-d">—</td><td id="sd-bw3-m">—</td><td id="sd-bw3-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-        <tr class="tot"><td>Total Groundwater</td><td id="sd-bw-d">—</td><td id="sd-bw-m">—</td><td id="sd-bw-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-
-        <tr><td colspan="6" style="background:#f5f5f5;font-weight:700;padding:7px 11px">B. Rainwater Harvesting</td></tr>
-        <tr><td class="lbl">Annual Rainfall Capture (est.)</td><td>—</td><td id="sd-rwh-m">—</td><td id="sd-rwh-y">—</td><td><span class="cc ri" id="sd-ref-rwh-mo">—</span></td><td class="note">Rainfall × Site Area × Runoff</td></tr>
-        <tr><td class="lbl">RWH Storage Capacity</td><td>—</td><td>—</td><td id="sd-rwh-cap">—</td><td><span class="cc ri" id="sd-ref-rwh-cap">—</span></td><td class="note">Total installed</td></tr>
-        <tr class="tot"><td>RWH Months Coverage</td><td>—</td><td>—</td><td id="sd-rwh-cov">—</td><td></td><td class="note">Storage ÷ Monthly demand</td></tr>
-
-        <tr><td colspan="6" style="background:#f5f5f5;font-weight:700;padding:7px 11px">C. Recycled / Treated</td></tr>
-        <tr><td class="lbl">STP Treated Water</td><td id="sd-stp-d">—</td><td id="sd-stp-m">—</td><td id="sd-stp-y">—</td><td><span class="cc ri" id="sd-ref-stp">—</span></td><td class="note">Capacity × Recovery %</td></tr>
-        <tr><td class="lbl">Greywater Recycling</td><td id="sd-grey-d">—</td><td id="sd-grey-m">—</td><td id="sd-grey-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-        <tr class="tot"><td>Total Recycled</td><td id="sd-rec-d">—</td><td id="sd-rec-m">—</td><td id="sd-rec-y">—</td><td><span class="cc ri" id="sd-ref-rec">—</span></td><td></td></tr>
-
-        <tr><td colspan="6" style="background:#f5f5f5;font-weight:700;padding:7px 11px">D. External / Purchased</td></tr>
-        <tr><td class="lbl">Municipal / Tanker</td><td id="sd-mun-d">—</td><td id="sd-mun-m">—</td><td id="sd-mun-y">—</td><td><span class="cc ri" id="sd-ref-muni">—</span></td><td></td></tr>
-        <tr><td class="lbl">Other External</td><td id="sd-ext-d">—</td><td id="sd-ext-m">—</td><td id="sd-ext-y">—</td><td><span class="cc ri">—</span></td><td></td></tr>
-        <tr class="tot"><td>Total External</td><td id="sd-extot-d">—</td><td id="sd-extot-m">—</td><td id="sd-extot-y">—</td><td><span class="cc ri" id="sd-ref-ext">—</span></td><td></td></tr>
-
+        <tr><td colspan="5" style="background:#e3f2fd;font-weight:700;padding:7px 11px;color:#1565c0">🌧️ Rainwater Harvesting — Sole Water Source</td></tr>
+        <tr><td class="lbl">RWH Harvest (avg monthly, usable)</td><td id="sd-rwh-m">—</td><td id="sd-rwh-y">—</td><td><span class="cc ri" id="sd-ref-rwh-mo">—</span></td><td class="note">Rainfall × Site Area × Runoff, capped at storage</td></tr>
+        <tr><td class="lbl">Annual Rainfall Capture (theoretical)</td><td class="unit">—</td><td id="sd-rwh-theoretical">—</td><td><span class="cc ri" id="sd-ref-rwh-cap">—</span></td><td class="note">Before storage cap</td></tr>
+        <tr><td class="lbl">Planned RWH Storage Capacity</td><td class="unit">—</td><td id="sd-rwh-cap">—</td><td></td><td class="note">Total installed</td></tr>
+        <tr><td colspan="5" style="background:#f5f5f5;font-weight:700;padding:7px 11px">📐 Required Storage — Rippl Method (across 16 years)</td></tr>
+        <tr><td class="lbl">Required — Average Year</td><td class="unit">—</td><td id="sd-req-avg">—</td><td></td><td class="note">16-yr avg rainfall pattern</td></tr>
+        <tr><td class="lbl">Required — Worst Year (driest on record)</td><td class="unit">—</td><td id="sd-req-worst">—</td><td></td><td class="note">Design basis</td></tr>
+        <tr><td class="lbl">Required — Best Year (wettest on record)</td><td class="unit">—</td><td id="sd-req-best">—</td><td></td><td class="note">Minimum possible</td></tr>
+        <tr class="tot"><td>RWH Months Coverage (planned storage)</td><td class="unit">—</td><td id="sd-rwh-cov">—</td><td></td><td class="note">Storage ÷ Monthly avg demand</td></tr>
         <tr class="tot" style="border-top:3px solid var(--blue)">
-          <td style="font-size:14px">⚡ TOTAL SUPPLY</td>
-          <td id="sd-tot-d" style="font-size:14px;font-weight:800"></td>
+          <td style="font-size:14px">⚡ TOTAL SUPPLY (= RWH only)</td>
           <td id="sd-tot-m" style="font-size:14px;font-weight:800"></td>
           <td id="sd-tot-y" style="font-size:14px;font-weight:800"></td>
           <td><span class="cc ri" id="sd-ref-tot-sup">—</span></td><td></td>
@@ -740,20 +698,31 @@
         </table>
       </div>
       <div class="sub">
-        <div class="sub-title">RWH Sizing Guidance</div>
+        <div class="sub-title">RWH Storage — Required vs Planned</div>
         <table>
           <thead><tr><th>Parameter</th><th class="proj">Value</th><th>Unit</th></tr></thead>
           <tbody>
-            <tr><td class="lbl">Antharam RWH / House</td><td><span class="cc ri">65,934</span></td><td class="unit">L/house</td></tr>
-            <tr><td class="lbl">Suggested RWH (ratio)</td><td><span class="cc" id="rwh-sug">—</span></td><td class="unit">L total</td></tr>
-            <tr><td class="lbl">RWH for 3-Month Buffer</td><td><span class="cc" id="rwh-3mo">—</span></td><td class="unit">L</td></tr>
-            <tr><td class="lbl">Your RWH Capacity</td><td><span class="cc" id="rwh-cap">—</span></td><td class="unit">L</td></tr>
-            <tr><td class="lbl">Months of Demand Covered</td><td><span class="cc" id="rwh-mos">—</span></td><td class="unit">months</td></tr>
+            <tr><td class="lbl">Required — Average Year (Rippl)</td><td><span class="cc" id="rwh-sug">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Required — Worst Year Design Basis</td><td><span class="cc" id="rwh-3mo">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Your Planned Storage</td><td><span class="cc" id="rwh-cap">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Storage Gap (Planned − Worst Year Required)</td><td><span class="cc" id="rwh-gap">—</span></td><td class="unit" id="rwh-gap-unit">L</td></tr>
+            <tr><td class="lbl">Months of Avg Demand Covered</td><td><span class="cc" id="rwh-mos">—</span></td><td class="unit">months</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div id="balance-alerts"></div>
+    <!-- 16-year analysis table -->
+    <div class="sub" style="margin-top:14px">
+      <div class="sub-title">📅 Year-by-Year Required Storage (2006–2021 Chevella Actual Rainfall)</div>
+      <table id="yr16-table">
+        <thead><tr><th>Year</th><th>Annual Rainfall (mm)</th><th class="proj">Required Storage (Rippl)</th><th>Feasible?</th><th>Status vs Planned</th></tr></thead>
+        <tbody id="yr16-tbody"></tbody>
+      </table>
+    </div>
+    <div id="balance-alerts" style="margin-top:14px"></div>
+    <div class="sub" style="display:none">
+    </div>
+      </div>
   </div>
 </section>
 
@@ -772,7 +741,44 @@ const DOM_FACTOR  = [1.0, 1.0, 1.2, 1.2, 1.2, 1.2, 0.85, 0.85, 0.85, 1.0, 1.0, 1
 // Seasonal demand multipliers — Irrigation (monsoon reduces need, summer increases)
 const IRR_FACTOR  = [1.1, 1.1, 1.3, 1.3, 1.2, 0.8, 0.5, 0.5, 0.6, 0.9, 1.0, 1.1];
 // Amenities scale with domestic factor
-let RAIN_MM = [8,10,13,18,30,80,163,179,158,90,38,25];
+let RAIN_MM = [1.7,7.8,18.1,24.9,36.3,115.5,152.6,195.2,204.0,96.4,22.4,4.3]; // 16-yr Chevella avg (2006–2021)
+
+// 16-year actual monthly rainfall data — Chevella, Rangareddy (IMD, 2006–2021), mm
+const CHEVELLA_YEARS = [
+  {yr:2006,mm:[0,0,44.5,63.9,92.4,84.7,180.4,203.6,206,21.7,50.7,0]},
+  {yr:2007,mm:[0,9.1,0,21.7,13.3,117.8,102.2,210,257.9,20.7,20.1,0]},
+  {yr:2008,mm:[0,61.7,154.4,13.5,19.6,70.2,114.8,445.6,181.5,49.2,43,1]},
+  {yr:2009,mm:[0,0,2.1,15.1,17,63.6,52.5,255.6,150.6,59.3,37.8,4.4]},
+  {yr:2010,mm:[6,2.7,0,7.1,27.1,168.1,311,283.4,211.2,77,62.5,11.8]},
+  {yr:2011,mm:[0,22.8,2.4,1.9,2.1,50.1,175.4,204.8,67.2,49,8.2,0]},
+  {yr:2012,mm:[1.1,0,0,20,1.1,135.5,209.7,120.9,116.8,83.4,46.4,0]},
+  {yr:2013,mm:[2.2,18.7,0,40.3,17.2,147.1,225,125.4,179.9,244.5,18,0]},
+  {yr:2014,mm:[0,0.4,39.8,22,69.6,52.5,129.8,164.1,102.2,23.2,33.1,0.2]},
+  {yr:2015,mm:[0.3,0,27.1,78.1,30.2,139.5,47.9,93.1,142,56.6,0.3,0]},
+  {yr:2016,mm:[0.6,0,1.6,8.3,90.4,87.6,159,126.3,533.2,43.6,0.9,1.8]},
+  {yr:2017,mm:[0,0,7.1,18.5,30.2,225.2,143.6,184.4,199.9,229.4,0.4,0]},
+  {yr:2018,mm:[0,0,1.4,33.6,61,117.3,91.7,121.4,74.4,22.3,0,47.2]},
+  {yr:2019,mm:[14.2,0.5,0.4,20.3,34.6,94.5,132.1,146.2,258.3,169.7,0,2.8]},
+  {yr:2020,mm:[2.5,6.4,8,22.4,14.6,145.5,124.3,278.4,303.8,319,7.5,0]},
+  {yr:2021,mm:[0.7,1.7,0,12.1,59.6,149,242.3,160,279.1,73.6,29.7,0]},
+];
+
+// Rippl method: minimum storage to bridge dry periods given cyclic annual pattern.
+// Returns null if annual harvest < annual demand (year is infeasible regardless of storage).
+function calcRequiredStorage(harvest, demand) {
+  const annH = harvest.reduce((s,v)=>s+v,0);
+  const annD = demand.reduce((s,v)=>s+v,0);
+  if (annH < annD) return null;
+  const net = harvest.map((h,i)=>h-demand[i]);
+  let cumNet=0, peakCumNet=0, maxDeficit=0;
+  for (let c=0;c<2;c++) for (let i=0;i<12;i++) {
+    cumNet += net[i];
+    if (cumNet>peakCumNet) peakCumNet=cumNet;
+    const def=peakCumNet-cumNet;
+    if (def>maxDeficit) maxDeficit=def;
+  }
+  return maxDeficit;
+}
 
 // Occupancy rates (5 years)
 let occRates = [0.10, 0.25, 0.50, 0.75, 1.00];
@@ -902,20 +908,6 @@ function buildYrTableSkeleton() {
 // ══════════════════════════════════════════════
 //  CORE CALCULATIONS
 // ══════════════════════════════════════════════
-function calcSupplyMonthly(month) {
-  // Supply is mostly fixed (borewells, STP, municipal run year-round)
-  // RWH varies by rainfall
-  const bwDay = val('p-bw1')+val('p-bw2')+val('p-bw3');
-  const bwMo  = bwDay*30;
-  const siteA = val('p-site'), runoff = val('p-runoff');
-  const rwhHarvest = RAIN_MM[month] * siteA * 4046.86 * runoff; // litres
-  const stpDay = val('p-stp')*(val('p-stp-rec')/100);
-  const stpMo  = stpDay*30;
-  const greyMo = val('p-grey')*30;
-  const muniMo = (val('p-muni')+val('p-ext-other'))*30;
-  const total  = bwMo + rwhHarvest + stpMo + greyMo + muniMo;
-  return {bwMo, rwhHarvest, stpMo, greyMo, recMo: stpMo+greyMo, muniMo, total};
-}
 
 function calcDemandMonthly(month, pop, irrBase, amenBase) {
   const lpcd = val('p-lpcd');
@@ -938,9 +930,7 @@ function recalc() {
   const refDripXcheck = val('ref-drip-xcheck');
   const refRwhTotal   = val('ref-rwh-total');
   const refRwhMonthly = val('ref-rwh-monthly');
-  const refStpMonthly = val('ref-stp-monthly');
-  const refMuniMo     = val('ref-muni-monthly');
-  const refTotSupMo   = refRwhMonthly + refStpMonthly + refMuniMo;
+  const refTotSupMo   = refRwhMonthly * 12; // RWH only — annual usable
 
   const refPop         = refHouses * refOcc;
   const refHandedOver  = val('ref-handed-over') || 79;
@@ -968,10 +958,6 @@ function recalc() {
   set('dds-ref-amen', fmtL(refAmenMo));
   set('sd-ref-rwh-mo', fmtL(refRwhMonthly));
   set('sd-ref-rwh-cap', fmtL(refRwhTotal));
-  set('sd-ref-stp', fmtL(refStpMonthly));
-  set('sd-ref-rec', fmtL(refStpMonthly));
-  set('sd-ref-muni', fmtL(refMuniMo));
-  set('sd-ref-ext', fmtL(refMuniMo));
   set('sd-ref-tot-sup', fmtL(Math.round(refTotSupMo)));
   // Farming detail cross-check ref
   const p_drip_ref = $('p-drip-mo'); // the dripper crosscheck is project-computed, not ref
@@ -1006,26 +992,39 @@ function recalc() {
   const otherD    = val('p-other-dem')||0;
   const amenBase  = pool+otherD;
 
-  // ── Supply constants (per month, not RWH)
-  const bwDay = val('p-bw1')+val('p-bw2')+val('p-bw3');
-  const bwMo  = bwDay*30;
-  const stpDay= val('p-stp')*(val('p-stp-rec')/100);
-  const stpMo = stpDay*30;
-  const greyDay= val('p-grey'), greyMo = greyDay*30;
-  const recMo = stpMo+greyMo;
-  const muniDay= val('p-muni')+val('p-ext-other'), muniMo = muniDay*30;
+  // ── Supply — RWH only
   const siteA = val('p-site'), runoff = val('p-runoff');
   const rwhCap = val('p-rwh');
-  // Compute monthly harvest then cap each month at storage capacity.
-  // You can only use what you can physically store in a given month.
+  // Monthly harvest, capped at storage capacity each month
   const monthlyRwhHarvest = RAIN_MM.map(mm => mm * siteA * 4046.86 * runoff);
   const monthlyRwhUsable  = monthlyRwhHarvest.map(h => Math.min(h, rwhCap));
-  const annRainL    = monthlyRwhHarvest.reduce((s,v)=>s+v,0); // theoretical (for display)
-  const annRwhUsable= monthlyRwhUsable.reduce((s,v)=>s+v,0);  // realistic, capped by storage
-  const rwhMonthlyAvg = annRwhUsable/12; // average usable per month
-  const fixedSupplyMo = bwMo+stpMo+greyMo+muniMo; // non-RWH monthly
-  const totalSupplyMo = fixedSupplyMo + rwhMonthlyAvg;
-  const totalSupplyYr = fixedSupplyMo*12 + annRwhUsable; // use usable, not theoretical
+  const annRainL    = monthlyRwhHarvest.reduce((s,v)=>s+v,0); // theoretical
+  const annRwhUsable= monthlyRwhUsable.reduce((s,v)=>s+v,0);  // capped by storage
+  const rwhMonthlyAvg = annRwhUsable/12;
+  const totalSupplyMo = rwhMonthlyAvg;
+  const totalSupplyYr = annRwhUsable;
+
+  // ── Required storage — Rippl method
+  // Build monthly demand array for Rippl (avg month, full occupancy, with seasonal factors)
+  const monthlyDemandRippl = MONTHS.map((_,i) => {
+    const domMo  = domBase * DOM_FACTOR[i];
+    const irrMo  = (irrBase + farmWater + land) * IRR_FACTOR[i] + animal;
+    const amenMo = amenBase * DOM_FACTOR[i];
+    return domMo + irrMo + amenMo;
+  });
+  const reqAvg = calcRequiredStorage(monthlyRwhHarvest, monthlyDemandRippl);
+
+  // Per-year required storage across 16 historical years
+  let reqPerYear = [];
+  CHEVELLA_YEARS.forEach(({yr, mm: yrMM}) => {
+    const harv = yrMM.map(rain => rain * siteA * 4046.86 * runoff);
+    const req  = calcRequiredStorage(harv, monthlyDemandRippl);
+    reqPerYear.push({yr, req, annMM: yrMM.reduce((s,v)=>s+v,0)});
+  });
+  const feasible  = reqPerYear.filter(r => r.req !== null);
+  const reqWorst  = feasible.length ? Math.max(...feasible.map(r=>r.req)) : null;
+  const reqBest   = feasible.length ? Math.min(...feasible.map(r=>r.req)) : null;
+  const infeasCnt = reqPerYear.filter(r => r.req === null).length;
 
   // ── Annual averages (full occupancy, no seasonal factor — base)
   const annDomBase = domBase*12;
@@ -1044,24 +1043,32 @@ function recalc() {
   });
   const annTotalDemSeasoned = annDomSeasoned+annIrrSeasoned+annAmenSeasoned;
 
-  // ── Supply detail
-  const bw1d=val('p-bw1'),bw2d=val('p-bw2'),bw3d=val('p-bw3');
-  set('sd-bw1-d',fmtN(bw1d)); set('sd-bw1-m',fmtL(bw1d*30)); set('sd-bw1-y',fmtL(bw1d*365));
-  set('sd-bw2-d',fmtN(bw2d)); set('sd-bw2-m',fmtL(bw2d*30)); set('sd-bw2-y',fmtL(bw2d*365));
-  set('sd-bw3-d',fmtN(bw3d)); set('sd-bw3-m',fmtL(bw3d*30)); set('sd-bw3-y',fmtL(bw3d*365));
-  set('sd-bw-d',fmtN(bwDay)); set('sd-bw-m',fmtL(bwMo)); set('sd-bw-y',fmtL(bwDay*365));
-  set('sd-rwh-m',fmtL(Math.round(rwhMonthlyAvg))); set('sd-rwh-y',fmtL(Math.round(annRwhUsable)));
-  set('sd-rwh-cap',fmtL(rwhCap));
+  // ── Supply detail — RWH only
+  set('sd-rwh-m', fmtL(Math.round(rwhMonthlyAvg)));
+  set('sd-rwh-y', fmtL(Math.round(annRwhUsable)));
+  set('sd-rwh-theoretical', fmtL(Math.round(annRainL)));
+  set('sd-rwh-cap', fmtL(rwhCap));
   set('sd-rwh-cov', annTotalDemBase>0 ? (rwhCap/(annTotalDemBase/12)).toFixed(2)+' months' : '—');
-  set('sd-stp-d',fmtN(Math.round(stpDay))); set('sd-stp-m',fmtL(stpMo)); set('sd-stp-y',fmtL(stpMo*12));
-  set('sd-grey-d',fmtN(greyDay)); set('sd-grey-m',fmtL(greyMo)); set('sd-grey-y',fmtL(greyMo*12));
-  set('sd-rec-d',fmtN(Math.round(stpDay+greyDay))); set('sd-rec-m',fmtL(recMo)); set('sd-rec-y',fmtL(recMo*12));
-  set('sd-mun-d',fmtN(val('p-muni'))); set('sd-mun-m',fmtL(val('p-muni')*30)); set('sd-mun-y',fmtL(val('p-muni')*365));
-  set('sd-ext-d',fmtN(val('p-ext-other'))); set('sd-ext-m',fmtL(val('p-ext-other')*30)); set('sd-ext-y',fmtL(val('p-ext-other')*365));
-  set('sd-extot-d',fmtN(muniDay)); set('sd-extot-m',fmtL(muniMo)); set('sd-extot-y',fmtL(muniMo*12));
-  set('sd-tot-d',fmtN(Math.round(bwDay+stpDay+greyDay+muniDay)));
-  set('sd-tot-m',fmtL(Math.round(totalSupplyMo)));
-  set('sd-tot-y',fmtL(Math.round(totalSupplyYr)));
+  set('sd-ref-rwh-mo', fmtL(val('ref-rwh-monthly')));
+  set('sd-ref-rwh-cap', fmtL(val('ref-rwh-total')));
+  set('sd-ref-tot-sup', fmtL(val('ref-rwh-monthly')));
+  set('sd-req-avg',   reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('sd-req-worst', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  set('sd-req-best',  reqBest  !== null ? fmtL(Math.round(reqBest))  : '—');
+  set('sd-tot-m', fmtL(Math.round(totalSupplyMo)));
+  set('sd-tot-y', fmtL(Math.round(totalSupplyYr)));
+  // Project Inputs required storage display
+  set('p-req-avg',   reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('p-req-worst', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  const gap = reqWorst !== null ? rwhCap - reqWorst : null;
+  if ($('p-req-gap')) {
+    set('p-req-gap', gap !== null ? fmtL(Math.round(gap)) : '—');
+    $('p-req-gap').style.color = (gap !== null && gap >= 0) ? 'var(--green)' : 'var(--red)';
+    set('p-req-gap-unit', gap !== null ? (gap >= 0 ? '✅ Sufficient' : '🔴 Shortfall') : '');
+  }
+  // Dashboard required storage
+  set('db-req-avg',   reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('db-req-worst', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
 
   // ── Demand detail
   set('dd-dom-tot',fmtL(Math.round(domBase)));
@@ -1143,36 +1150,58 @@ function recalc() {
 
   // ── Balance metrics (full occupancy)
   const selfSuf = annTotalDemSeasoned > 0 ? totalSupplyYr/annTotalDemSeasoned : 0;
-  const domSelf = selfSuf; // overall self-sufficiency (no per-category split)
-  const irrSelf = selfSuf;
-  const extDep  = totalSupplyYr > 0 ? (muniMo*12)/totalSupplyYr : 0;
   set('m-self',fmtR(selfSuf)); $('m-self-st').innerHTML=badgeR(selfSuf);
-  set('m-dom-self',fmtR(domSelf)); $('m-dom-st').innerHTML=badgeR(domSelf);
-  set('m-irr-self',fmtR(irrSelf)); $('m-irr-st').innerHTML=badgeR(irrSelf);
-  set('m-ext',fmtP(extDep)); $('m-ext-st').innerHTML=extDep>0.3?`<span class="badge deficit">🔴 High</span>`:`<span class="badge ok">✅ Low</span>`;
+  set('m-dom-self',fmtR(selfSuf)); $('m-dom-st').innerHTML=badgeR(selfSuf);
+  set('m-irr-self',fmtR(selfSuf)); $('m-irr-st').innerHTML=badgeR(selfSuf);
+  set('m-ext','0%'); if($('m-ext-st')) $('m-ext-st').innerHTML=`<span class="badge ok">✅ None</span>`;
   set('m-lpcd',lpcd.toFixed(1)); $('m-lpcd-st').innerHTML=lpcd>100?`<span class="badge warn">⚠️ High</span>`:`<span class="badge ok">✅ Efficient</span>`;
   set('m-per-house',fmtN(houses>0?Math.round(domBase/houses):0));
 
-  // RWH
-  const rwhSug = houses * val('ref-rwh-h');
-  const rwh3mo = (domBase+irrBase+amenBase)*3;
-  set('rwh-sug',fmtL(Math.round(rwhSug)));
-  set('rwh-3mo',fmtL(Math.round(rwh3mo)));
-  set('rwh-cap',fmtL(rwhCap));
-  set('rwh-mos',(domBase+irrBase+amenBase)>0?(rwhCap/((domBase+irrBase+amenBase))).toFixed(2)+' months':'—');
+  // RWH sizing guidance
+  set('rwh-sug',  reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('rwh-3mo',  reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  set('rwh-cap',  fmtL(rwhCap));
+  const storageGap = reqWorst !== null ? rwhCap - reqWorst : null;
+  if ($('rwh-gap')) {
+    set('rwh-gap', storageGap !== null ? fmtL(Math.round(storageGap)) : '—');
+    $('rwh-gap').style.color = (storageGap !== null && storageGap >= 0) ? 'var(--green)' : 'var(--red)';
+    set('rwh-gap-unit', storageGap !== null ? (storageGap >= 0 ? '✅ Sufficient' : '🔴 Shortfall') : '');
+  }
+  set('rwh-mos', (domBase+irrBase+amenBase)>0 ? (rwhCap/((domBase+irrBase+amenBase))).toFixed(2)+' months' : '—');
+
+  // ── 16-year table
+  const yr16tb = $('yr16-tbody');
+  if (yr16tb) {
+    yr16tb.innerHTML = '';
+    const annRainMMs = {2006:947.9,2007:772.8,2008:1154.5,2009:658,2010:1167.9,2011:583.9,2012:734.9,2013:1018.3,2014:636.9,2015:615.1,2016:1053.3,2017:1038.7,2018:570.3,2019:873.6,2020:1232.4,2021:1007.8};
+    reqPerYear.forEach(({yr, req}) => {
+      const ok = req !== null;
+      const suf = ok && rwhCap >= req;
+      yr16tb.innerHTML += `<tr>
+        <td style="font-weight:600">${yr}</td>
+        <td>${annRainMMs[yr] ?? '—'} mm</td>
+        <td style="font-weight:700;color:${ok?'#37474f':'var(--red)'}">${ok ? fmtL(Math.round(req)) : '⚠️ Infeasible'}</td>
+        <td>${ok ? '<span class="badge ok">✅ Yes</span>' : '<span class="badge deficit">🔴 No</span>'}</td>
+        <td>${ok ? (suf ? '<span class="badge ok">✅ Storage OK</span>' : '<span class="badge deficit">🔴 Need more</span>') : '—'}</td>
+      </tr>`;
+    });
+  }
 
   // ── Dashboard
   set('kpi-dem',fmtL(Math.round(annTotalDemSeasoned)));
   set('kpi-sup',fmtL(Math.round(totalSupplyYr)));
   const totalGap = totalSupplyYr - annTotalDemSeasoned;
   set('kpi-gap',fmtL(Math.round(totalGap)));
-  set('kpi-gap-sub', totalGap>=0?'✅ Surplus':'🔴 Deficit');
+  set('kpi-gap-sub', totalGap>=0?'✅ Surplus (with adequate storage)':'🔴 Deficit');
   $('kpi-gap-card').className='kpi '+(totalGap>=0?'g':'r');
   set('kpi-self',fmtR(selfSuf));
   $('kpi-self-card').className='kpi '+(selfSuf>=1?'g':'r');
   set('kpi-lpcd',lpcd.toFixed(1));
-  set('kpi-dep',fmtP(extDep));
-  $('kpi-dep-card').className='kpi '+(extDep>0.3?'r':'g');
+  // Required Storage KPI
+  set('kpi-req', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  const reqOk = reqWorst !== null && rwhCap >= reqWorst;
+  if($('kpi-req-card')) $('kpi-req-card').className='kpi '+(reqOk?'g':'r');
+  set('kpi-req-sub', reqWorst !== null ? (reqOk ? '✅ Planned storage is sufficient' : '🔴 Need '+fmtL(Math.round(reqWorst-rwhCap))+' more') : 'Annual harvest insufficient in some years');
 
   // ── Dashboard — Demand breakdown (no per-category supply split)
   const pctDom = annTotalDemSeasoned > 0 ? (annDomSeasoned/annTotalDemSeasoned*100).toFixed(1)+'%' : '—';
@@ -1183,16 +1212,11 @@ function recalc() {
   set('db-oth-d',fmtL(Math.round(annAmenSeasoned))); set('db-oth-mo',fmtL(Math.round(annAmenSeasoned/12))); set('db-oth-pct',pctOth);
   set('db-tot-d',fmtL(Math.round(annTotalDemSeasoned))); set('db-tot-mo',fmtL(Math.round(annTotalDemSeasoned/12)));
 
-  // ── Dashboard — Supply: all sources pooled (no allocation to categories)
-  const bwAnn  = bwDay*365, stpAnn = stpMo*12, greyAnn = greyMo*12, muniAnn = muniMo*12;
-  const supDay = bwDay + stpDay + greyDay + muniDay; // RWH varies, not a flat daily rate
-  const supMoAvg = totalSupplyMo;
-  set('db-bw-d',   fmtN(bwDay));      set('db-bw-mo',  fmtL(bwMo));                       set('db-bw-yr',  fmtL(Math.round(bwAnn)));
-  set('db-rwh-mo', fmtL(Math.round(rwhMonthlyAvg)));                                        set('db-rwh-yr', fmtL(Math.round(annRwhUsable)));
-  set('db-stp-d',  fmtN(Math.round(stpDay))); set('db-stp-mo', fmtL(stpMo));              set('db-stp-yr', fmtL(Math.round(stpAnn)));
-  set('db-grey-d', fmtN(greyDay));    set('db-grey-mo',fmtL(greyMo));                      set('db-grey-yr',fmtL(Math.round(greyAnn)));
-  set('db-muni-d', fmtN(muniDay));    set('db-muni-mo',fmtL(muniMo));                      set('db-muni-yr',fmtL(Math.round(muniAnn)));
-  set('db-sup-d',  fmtN(Math.round(supDay))); set('db-sup-mo', fmtL(Math.round(supMoAvg))); set('db-tot-s',  fmtL(Math.round(totalSupplyYr)));
+  // ── Dashboard — Supply: RWH only
+  set('db-rwh-mo', fmtL(Math.round(rwhMonthlyAvg)));
+  set('db-rwh-yr', fmtL(Math.round(annRwhUsable)));
+  set('db-sup-mo', fmtL(Math.round(totalSupplyMo)));
+  set('db-tot-s',  fmtL(Math.round(totalSupplyYr)));
 
   // Net balance bar
   set('db-tot-g', fmtL(Math.round(totalGap)));
@@ -1204,10 +1228,10 @@ function recalc() {
 
   // Alerts
   let al='';
-  if(totalGap<0) al+=`<div class="alert error"><div>🔴</div><div class="alert-text">Annual deficit of <b>${fmtL(Math.abs(totalGap))}</b>. Expand supply sources or reduce demand.</div></div>`;
-  else al+=`<div class="alert ok"><div>✅</div><div class="alert-text">Supply meets demand. Annual surplus: <b>${fmtL(totalGap)}</b>.</div></div>`;
-  if(extDep>0.3) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text">External dependency is <b>${fmtP(extDep)}</b>. Add borewells or expand RWH to reduce reliance on tankers / municipal.</div></div>`;
-  if(rwhCap<rwh3mo) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text">RWH storage covers only <b>${(rwhCap/((domBase+irrBase+amenBase))).toFixed(1)} months</b> of demand. Recommended minimum: 3 months.</div></div>`;
+  if(infeasCnt>0) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text"><b>${infeasCnt} of 16 historical years</b> had insufficient annual rainfall to meet full-occupancy demand, regardless of storage size. Consider demand reduction or demand reduction for those years.</div></div>`;
+  if(reqWorst !== null && rwhCap < reqWorst) al+=`<div class="alert error"><div>🔴</div><div class="alert-text">Planned storage (${fmtL(rwhCap)}) is <b>${fmtL(Math.round(reqWorst-rwhCap))} short</b> of the worst-year requirement (${fmtL(Math.round(reqWorst))}). Increase storage to ensure self-sufficiency in the driest years.</div></div>`;
+  else if(reqWorst !== null) al+=`<div class="alert ok"><div>✅</div><div class="alert-text">Planned storage is sufficient for all 16 historical years. Surplus over worst year: <b>${fmtL(Math.round(rwhCap-reqWorst))}</b>.</div></div>`;
+  if(totalGap<0) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text">With average rainfall &amp; current storage cap, annual usable RWH (${fmtL(Math.round(totalSupplyYr))}) is less than demand (${fmtL(Math.round(annTotalDemSeasoned))}). Increase storage or reduce demand.</div></div>`;
   $('dash-alerts').innerHTML = al;
   $('balance-alerts').innerHTML = al;
   scheduleAutoSave();
@@ -1225,18 +1249,13 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   const pool=val('p-pool'), farmWaterM=val('p-farm-water')||0, animalM=val('p-animal'), landM=val('p-landscape'), otherD=val('p-other-dem');
   const amenScaled = (pool+otherD); // amenities only = pool + other
 
-  const bwDay=val('p-bw1')+val('p-bw2')+val('p-bw3');
-  const stpDay=val('p-stp')*(val('p-stp-rec')/100);
-  const greyDay=val('p-grey');
-  const muniDay=val('p-muni')+val('p-ext-other');
-  const fixedMoSupply = (bwDay+stpDay+greyDay+muniDay)*30;
   const siteA=val('p-site'), runoff=val('p-runoff');
   const rwhCap=val('p-rwh'); // storage capacity cap
 
   $('mo-occ-label').textContent = `${(rate*100).toFixed(0)}% occupancy — ${fmtN(villas)} villas / ${fmtN(pop)} persons`;
 
   const tb = $('monthly-tbody'); tb.innerHTML='';
-  let totRain=0, totDom=0, totIrr=0, totAmen=0, totDem=0, totGW=0, totRWH=0, totSTP=0, totExt=0, totSup=0, totBal=0;
+  let totRain=0, totDom=0, totIrr=0, totAmen=0, totDem=0, totRWH=0, totSup=0, totBal=0;
 
   // Same priority as recalc(): override > dripper-based > ratio-based
   const dripMo = (val('p-drip3')+val('p-drip2')) * val('p-dflow') * (val('p-dtime')/60) * 30;
@@ -1250,11 +1269,7 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
     const amenMo  = amenScaled * DOM_FACTOR[i]; // pool + other
     const demMo   = domMo+irrMo+amenMo;
     const rwhHarv = Math.min(RAIN_MM[i]*siteA*4046.86*runoff, rwhCap);
-    const gwMo    = bwDay*30;
-    const stpMo   = stpDay*30;
-    const greyMo  = greyDay*30;
-    const extMo   = muniDay*30;
-    const supMo   = gwMo+rwhHarv+stpMo+greyMo+extMo;
+    const supMo   = rwhHarv;
     const balMo   = supMo-demMo;
     const cls     = i>=6&&i<=8?'monsoon-row':i>=2&&i<=5?'peak-row':'trans-row';
     const balColor = balMo>=0?'style="color:var(--green);font-weight:700"':'style="color:var(--red);font-weight:700"';
@@ -1266,16 +1281,13 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
       <td>${fmtL(Math.round(irrMo))}</td>
       <td>${fmtL(Math.round(amenMo))}</td>
       <td style="font-weight:700">${fmtL(Math.round(demMo))}</td>
-      <td>${fmtL(Math.round(gwMo))}</td>
       <td>${fmtL(Math.round(rwhHarv))}</td>
-      <td>${fmtL(Math.round(stpMo+greyMo))}</td>
-      <td>${fmtL(Math.round(extMo))}</td>
       <td style="font-weight:700">${fmtL(Math.round(supMo))}</td>
       <td ${balColor}>${fmtL(Math.round(balMo))}</td>
       <td>${badge(balMo)}</td>
     </tr>`;
     totRain+=RAIN_MM[i]; totDom+=domMo; totIrr+=irrMo; totAmen+=amenMo; totDem+=demMo;
-    totGW+=gwMo; totRWH+=rwhHarv; totSTP+=stpMo+greyMo; totExt+=extMo; totSup+=supMo; totBal+=balMo;
+    totRWH+=rwhHarv; totSup+=supMo; totBal+=balMo;
   });
 
   set('mo-rain-yr',totRain+' mm');
@@ -1283,10 +1295,7 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   set('mo-irr-yr',fmtL(Math.round(totIrr)));
   set('mo-amen-yr',fmtL(Math.round(totAmen)));
   set('mo-dem-yr',fmtL(Math.round(totDem)));
-  set('mo-gw-yr',fmtL(Math.round(totGW)));
   set('mo-rwh-yr',fmtL(Math.round(totRWH)));
-  set('mo-stp-yr',fmtL(Math.round(totSTP)));
-  set('mo-ext-yr',fmtL(Math.round(totExt)));
   set('mo-sup-yr',fmtL(Math.round(totSup)));
   const balEl = $('mo-bal-yr');
   if(balEl){balEl.textContent=fmtL(Math.round(totBal));balEl.style.color=totBal>=0?'var(--green)':'var(--red)';}
@@ -1317,7 +1326,7 @@ buildYrGrid();
 buildYrTableSkeleton();
 // ── Auto-fill system ──────────────────────────────────────────────────────────
 // Fields that can be auto-derived from reference benchmarks.
-const AUTO_FIELDS = ['p-lpcd','p-pool','p-other-dem','p-stp','p-muni','p-rwh'];
+const AUTO_FIELDS = ['p-lpcd','p-pool','p-other-dem','p-rwh'];
 // Scale inputs: changing these triggers auto-fill.
 const SCALE_INPUTS = ['p-houses','p-occ','p-site','p-farm'];
 // Fields whose changes should re-trigger auto-fill (reference data).
@@ -1332,12 +1341,10 @@ function autoFillFromRef() {
   const popScale = refPop > 0 ? projPop / refPop : 1;
 
   const targets = {
-    'p-lpcd':     val('ref-lpcd'),                                          // same LPCD standard
-    'p-pool':     val('ref-pool-mo'),                                       // same pool (fixed asset)
-    'p-other-dem': Math.round(val('ref-other-mo') * popScale),             // scales with population
-    'p-stp':      Math.round(val('ref-stp-monthly') / 30 * popScale),     // STP capacity → daily
-    'p-muni':     Math.round(val('ref-muni-monthly') / 30 * popScale),    // municipal → daily
-    'p-rwh':      Math.round(val('ref-rwh-h') * val('p-houses')),         // RWH storage per house
+    'p-lpcd':      val('ref-lpcd'),                                   // same LPCD standard
+    'p-pool':      val('ref-pool-mo'),                                // same pool (fixed asset)
+    'p-other-dem': Math.round(val('ref-other-mo') * popScale),       // scales with population
+    'p-rwh':       Math.round(val('ref-rwh-h') * val('p-houses')),   // RWH storage per house
   };
 
   Object.entries(targets).forEach(([id, v]) => {
