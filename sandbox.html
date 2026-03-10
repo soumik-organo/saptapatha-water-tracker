@@ -819,7 +819,7 @@
           <td id="p5s-dom-2030">—</td>
           <td id="p5s-dom-2031">—</td>
           <td id="p5s-dom-2032">—</td>
-          <td class="unit">ML/yr</td>
+          <td class="unit">Cr/yr</td>
         </tr>
         <tr>
           <td class="lbl">Annual Irrigation Demand</td>
@@ -828,7 +828,7 @@
           <td id="p5s-irr-2030">—</td>
           <td id="p5s-irr-2031">—</td>
           <td id="p5s-irr-2032">—</td>
-          <td class="unit">ML/yr</td>
+          <td class="unit">Cr/yr</td>
         </tr>
         <tr>
           <td class="lbl">Annual Amenities Demand</td>
@@ -837,7 +837,7 @@
           <td id="p5s-other-2030">—</td>
           <td id="p5s-other-2031">—</td>
           <td id="p5s-other-2032">—</td>
-          <td class="unit">ML/yr</td>
+          <td class="unit">Cr/yr</td>
         </tr>
         <tr class="tot">
           <td class="lbl">Total Annual Demand</td>
@@ -846,7 +846,7 @@
           <td id="p5s-total-2030">—</td>
           <td id="p5s-total-2031">—</td>
           <td id="p5s-total-2032">—</td>
-          <td class="unit">ML/yr</td>
+          <td class="unit">Cr/yr</td>
         </tr>
         <tr>
           <td class="lbl">Annual Supply (fixed)</td>
@@ -855,7 +855,7 @@
           <td id="p5s-supply-2030">—</td>
           <td id="p5s-supply-2031">—</td>
           <td id="p5s-supply-2032">—</td>
-          <td class="unit">ML/yr</td>
+          <td class="unit">Cr/yr</td>
         </tr>
         <tr class="tot">
           <td class="lbl">Annual Balance</td>
@@ -864,7 +864,7 @@
           <td id="p5s-balance-2030">—</td>
           <td id="p5s-balance-2031">—</td>
           <td id="p5s-balance-2032">—</td>
-          <td class="unit">ML/yr</td>
+          <td class="unit">Cr/yr</td>
         </tr>
       </tbody>
     </table>
@@ -996,8 +996,9 @@ const fmtDec = (n,d) => isNaN(n) ? '—' : n.toLocaleString('en-IN',{minimumFrac
 const fmtPct = n => isNaN(n) ? '—' : n.toFixed(1)+'%';
 const fmtL = n => {
   if(isNaN(n)||n===null) return '—';
-  if(Math.abs(n)>=1e6) return (n/1e6).toFixed(2)+' M L';
-  if(Math.abs(n)>=1e3) return (n/1e3).toFixed(1)+' K L';
+  if(Math.abs(n)>=1e7) return (n/1e7).toFixed(2)+' Cr';
+  if(Math.abs(n)>=1e5) return (n/1e5).toFixed(2)+' Lakh';
+  if(Math.abs(n)>=1e3) return (n/1e3).toFixed(1)+' K';
   return Math.round(n)+' L';
 };
 const $v = id => { const el=document.getElementById(id); return el ? parseFloat(el.value)||0 : 0; };
@@ -1563,18 +1564,18 @@ function updateOccupancySection(){
     const annHarvest= months.reduce((s,m) => s+m.harvest, 0);
     const annBalance= annHarvest - annDemand;
 
-    // Update summary table cells (in ML)
+    // Update summary table cells (in Cr = 1e7)
     setText('p5s-villas-'+projYr, villas);
     setText('p5s-pop-'+projYr, persons);
-    setText('p5s-dom-'+projYr, (annDom/1e6).toFixed(3));
-    setText('p5s-irr-'+projYr, (annIrr/1e6).toFixed(3));
-    setText('p5s-other-'+projYr, (annOther/1e6).toFixed(3));
-    setText('p5s-total-'+projYr, (annDemand/1e6).toFixed(3));
-    setText('p5s-supply-'+projYr, (annHarvest/1e6).toFixed(3));
+    setText('p5s-dom-'+projYr, (annDom/1e7).toFixed(3));
+    setText('p5s-irr-'+projYr, (annIrr/1e7).toFixed(3));
+    setText('p5s-other-'+projYr, (annOther/1e7).toFixed(3));
+    setText('p5s-total-'+projYr, (annDemand/1e7).toFixed(3));
+    setText('p5s-supply-'+projYr, (annHarvest/1e7).toFixed(3));
 
     const balEl = document.getElementById('p5s-balance-'+projYr);
     if(balEl) {
-      balEl.textContent = (annBalance/1e6).toFixed(3);
+      balEl.textContent = (annBalance/1e7).toFixed(3);
       balEl.className = annBalance >= 0 ? 'val-green' : 'val-red';
     }
   }
