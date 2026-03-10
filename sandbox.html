@@ -585,7 +585,7 @@
       <div class="kpi-card kpi-purple">
         <div class="k-label">Self-Sufficiency</div>
         <div class="k-val" id="kpi-selfsuff">—</div>
-        <div class="k-unit">% annual harvest vs demand</div>
+        <div class="k-unit">% of demand met by rainwater</div>
         <div class="k-note" id="kpi-selfsuff-note">—</div>
       </div>
       <div class="kpi-card kpi-green">
@@ -598,7 +598,7 @@
         <div class="k-label">Annual Water Demand</div>
         <div class="k-val" id="kpi-demand">—</div>
         <div class="k-unit">Litres/year</div>
-        <div class="k-note">Domestic (diversified) + Irrigation (rain-offset)</div>
+        <div class="k-note">Tank cycles through this — does NOT need to hold it all</div>
       </div>
     </div>
 
@@ -615,6 +615,17 @@
         <tr><td class="lbl">Rippl Required Storage (design year)</td><td id="res-rippl">—</td><td class="unit">L</td><td class="note">Minimum tank to achieve net-zero</td></tr>
         <tr><td class="lbl">Planned Tank Capacity</td><td id="res-planned">—</td><td class="unit">L</td><td></td></tr>
         <tr class="tot"><td class="lbl">Storage Coverage</td><td id="res-coverage">—</td><td class="unit">%</td><td class="note">Planned / Required</td></tr>
+      </tbody>
+    </table>
+    <div class="sub-title" style="margin-top:18px">Tank Flow-Through Simulation (Design Year)</div>
+    <div class="help" style="margin-bottom:8px">Your tank is a flow-through buffer — rain fills it during monsoon, daily use drains it. It does NOT need to hold the full annual demand.</div>
+    <table>
+      <thead><tr><th>Metric</th><th>Value</th><th>Unit</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td class="lbl">Tank Active Months</td><td id="res-tank-active" class="val-green">—</td><td class="unit">months</td><td class="note">Months when tank has water available</td></tr>
+        <tr><td class="lbl">Tank Dry Months</td><td id="res-tank-dry" class="val-orange">—</td><td class="unit">months</td><td class="note">Months when tank is empty — need external supply</td></tr>
+        <tr><td class="lbl">Peak Tank Level</td><td id="res-tank-peak">—</td><td class="unit">L</td><td class="note">Maximum water stored at any point during the year</td></tr>
+        <tr class="tot"><td class="lbl">External Supplement Required</td><td id="res-supplement">—</td><td class="unit">L/yr</td><td class="note">Water needed from borewells/tankers/municipal supply</td></tr>
       </tbody>
     </table>
   </div>
@@ -1171,15 +1182,27 @@ function refreshAll() {
   setText('d-dom-div-note', useDiversity ? 'Diversity applied — effective avg: ' + (DIVERSITY_ANNUAL_AVG*100).toFixed(1)+'%' : 'Full occupancy (no diversity)');
   setText('d-irr-monthly', fmt(irrBase) + ' L');
 
+  // Tank simulation — how the tank works as a flow-through buffer
+  let tank = 0, dryMonths = 0, peakTank = 0;
+  months.forEach(m => {
+    tank = Math.min(planned, Math.max(0, tank + m.harvest - m.demand));
+    if(tank === 0) dryMonths++;
+    peakTank = Math.max(peakTank, tank);
+  });
+  const wetMonths = 12 - dryMonths;
+  const peakUtil = planned > 0 ? (peakTank / planned * 100) : 0;
+
   // KPI cards
   setText('kpi-rippl', fmtL(rippl));
   setText('kpi-planned', fmtL(planned));
   setText('kpi-gap', fmtL(Math.abs(gap)));
-  setText('kpi-gap-note', gap >= 0 ? 'Storage surplus' : 'Need more storage');
+  setText('kpi-gap-note', gap >= 0 ? 'Tank surplus — buffer covers dry periods' : 'Need more storage for dry bridging');
   const gcCard = document.getElementById('kpi-gap-card');
   if(gcCard) gcCard.className = 'kpi-card ' + (gap >= 0 ? 'kpi-green' : 'kpi-red');
   setText('kpi-selfsuff', selfSuff.toFixed(0)+'%');
-  setText('kpi-selfsuff-note', selfSuff >= 100 ? 'Net-zero achievable' : 'Need '+fmtL(annDemand-annHarvest)+' supplement');
+  setText('kpi-selfsuff-note', selfSuff >= 100
+    ? 'Net-zero achievable — rainwater covers all demand'
+    : 'Rainwater provides '+selfSuff.toFixed(0)+'% — supplement '+fmtL(annDemand-annHarvest)+'/yr externally');
   setText('kpi-harvest', fmtL(annHarvest));
   setText('kpi-harvest-note', 'Eff. area: '+Math.round(effHarvestArea).toLocaleString()+' m2');
   setText('kpi-demand', fmtL(annDemand));
@@ -1197,8 +1220,14 @@ function refreshAll() {
   setText('res-planned', fmt(planned));
   const cov = document.getElementById('res-coverage');
   if(cov){ cov.textContent = fmtPct(coverage); cov.className = coverage >= 100 ? 'val-green' : 'val-red'; }
+  // Tank simulation results
+  setText('res-tank-active', wetMonths+' of 12 months');
+  setText('res-tank-dry', dryMonths+' months');
+  setText('res-tank-peak', fmtL(peakTank)+' ('+peakUtil.toFixed(0)+'% utilized)');
+  const suppEl = document.getElementById('res-supplement');
+  if(suppEl){ suppEl.textContent = annBalance >= 0 ? 'None — fully self-sufficient' : fmtL(Math.abs(annBalance))+'/yr'; suppEl.className = annBalance >= 0 ? 'val-green' : 'val-orange'; }
 
-  // Banner
+  // Banner — tank-centric messaging (storage is a flow-through buffer, not a reservoir)
   const banner = document.getElementById('feasibility-banner');
   const bannerMsg = document.getElementById('banner-msg');
   const bannerDetail = document.getElementById('banner-detail');
@@ -1206,20 +1235,20 @@ function refreshAll() {
     const iconEl = banner.querySelector('.icon');
     if(selfSuff >= 100 && coverage >= 100){
       banner.className='banner ok'; if(iconEl) iconEl.textContent='✅';
-      bannerMsg.textContent='Net-Zero Achievable — Harvest exceeds demand, storage is adequate';
-      bannerDetail.textContent='Self-sufficiency: '+selfSuff.toFixed(0)+'% | Storage coverage: '+coverage.toFixed(0)+'% | Annual surplus: '+fmtL(annBalance);
+      bannerMsg.textContent='Net-Zero Achievable — Rainwater harvest exceeds demand, tank bridges all dry periods';
+      bannerDetail.textContent='Self-sufficiency: '+selfSuff.toFixed(0)+'% | Tank covers '+coverage.toFixed(0)+'% of Rippl requirement | Annual surplus: '+fmtL(annBalance)+' | Tank active '+wetMonths+'/12 months';
     } else if(selfSuff >= 100){
       banner.className='banner warn'; if(iconEl) iconEl.textContent='⚠️';
-      bannerMsg.textContent='Harvest Sufficient but Storage Needs Scaling Up';
-      bannerDetail.textContent='Harvest covers demand ('+selfSuff.toFixed(0)+'%) but tank only covers '+coverage.toFixed(0)+'% of Rippl requirement. Add '+fmtL(rippl-planned)+' more storage.';
+      bannerMsg.textContent='Harvest Sufficient — Increase Tank Size to Bridge Dry Periods';
+      bannerDetail.textContent='Rainwater covers '+selfSuff.toFixed(0)+'% of demand. Tank covers '+coverage.toFixed(0)+'% of Rippl requirement — add '+fmtL(rippl-planned)+' more storage to bridge dry months.';
     } else if(coverage >= 100){
       banner.className='banner warn'; if(iconEl) iconEl.textContent='⚠️';
-      bannerMsg.textContent='Storage OK but Annual Harvest Falls Short of Demand';
-      bannerDetail.textContent='Harvest only '+selfSuff.toFixed(0)+'% of demand — '+fmtL(annDemand-annHarvest)+' gap.';
+      bannerMsg.textContent='Tank Adequate for Dry Bridging — Supplement '+Math.round(100-selfSuff)+'% from External Sources';
+      bannerDetail.textContent='Tank ('+fmtL(planned)+') covers '+coverage.toFixed(0)+'% of Rippl requirement — rain fills it, daily use drains it. Rainwater provides '+selfSuff.toFixed(0)+'% of annual demand; supplement '+fmtL(annDemand-annHarvest)+'/yr externally. Tank active '+wetMonths+'/12 months.';
     } else {
       banner.className='banner bad'; if(iconEl) iconEl.textContent='❌';
-      bannerMsg.textContent='Net-Zero Not Achievable with Current Configuration';
-      bannerDetail.textContent='Harvest '+selfSuff.toFixed(0)+'% of demand | Storage '+coverage.toFixed(0)+'% of required. Shortfall: '+fmtL(annDemand-annHarvest)+'/yr, need '+fmtL(rippl-planned)+' more storage.';
+      bannerMsg.textContent='Need Larger Tank + External Supply for Full Coverage';
+      bannerDetail.textContent='Tank covers '+coverage.toFixed(0)+'% of Rippl requirement — add '+fmtL(rippl-planned)+' more for dry bridging. Rainwater provides '+selfSuff.toFixed(0)+'% of demand; supplement '+fmtL(annDemand-annHarvest)+'/yr externally.';
     }
   }
 
