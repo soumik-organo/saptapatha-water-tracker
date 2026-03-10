@@ -205,7 +205,7 @@
       <table style="max-width:340px">
         <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
         <tbody>
-          <tr><td class="lbl">Rainfall / Acre / Year</td><td><input class="ri" type="number" id="ref-rain-a" value="3000000"></td><td class="unit">L/acre/yr</td></tr>
+          <tr><td class="lbl">Rainfall / Acre / Year (avg 2009–2024)</td><td><input class="ri" type="number" id="ref-rain-a" value="3438000"></td><td class="unit">L/acre/yr</td></tr>
         </tbody>
       </table>
     </div>
@@ -268,7 +268,7 @@
       <div class="kpi" id="kpi-req-card">
         <div class="kpi-label">Required RWH Storage (Worst Year)</div>
         <div class="kpi-val" id="kpi-req">—</div>
-        <div class="kpi-sub" id="kpi-req-sub">Rippl method — driest of 16 yrs on record</div>
+        <div class="kpi-sub" id="kpi-req-sub">Rippl method — driest of 16 yrs on record (2009–2024)</div>
       </div>
     </div>
 
@@ -396,7 +396,7 @@
             <tr>
               <td class="lbl">Monthly Rainfall (mm)</td>
               <td><span class="cc">Mar 13 → Jun 80 → Aug 179 → Dec 25</span></td>
-              <td style="font-size:12px;color:#546e7a">Long-term monthly averages for <b>Chevella taluk, Rangareddy district</b> from IMD (India Meteorological Department) historical records. Monsoon (Jun–Sep) contributes ~74% of annual 812 mm.</td>
+              <td style="font-size:12px;color:#546e7a">Monthly averages for <b>Chevella taluk, Rangareddy district</b> from actual daily rainfall records 2009–2024 (16 complete years). Annual average: 849 mm. Monsoon (Jun–Oct) contributes ~83% of annual total.</td>
             </tr>
             <tr>
               <td class="lbl">Seasonal Demand Factors</td>
@@ -475,7 +475,7 @@
     <div class="sub">
       <div class="sub-title">3. Water Supply — Rainwater Harvesting Only</div>
       <div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:#1565c0">
-        🌧️ <b>RWH-only design:</b> All supply comes exclusively from rainwater harvesting. Enter your planned storage capacity — the tool calculates the minimum required storage using the Rippl method across 16 years of actual Chevella rainfall (2006–2021).
+        🌧️ <b>RWH-only design:</b> All supply comes exclusively from rainwater harvesting. Enter your planned storage capacity — the tool calculates the minimum required storage using the Rippl method across 16 years of actual Chevella rainfall (2009–2024).
       </div>
       <div class="g2">
         <table>
@@ -489,11 +489,86 @@
           <thead><tr><th>Required Storage — Calculated (Rippl Method)</th><th class="proj">Value</th><th>Unit</th></tr></thead>
           <tbody>
             <tr><td class="lbl">Required — Average Year (16-yr avg rainfall)</td><td><span class="cc" id="p-req-avg">—</span></td><td class="unit">L</td></tr>
-            <tr><td class="lbl">Required — Worst Year on Record (driest of 16 yrs)</td><td><span class="cc" id="p-req-worst">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Required — Worst Year on Record (driest of 16 yrs, 2009–2024)</td><td><span class="cc" id="p-req-worst">—</span></td><td class="unit">L</td></tr>
             <tr class="tot"><td>Planned vs Required (Worst Year)</td><td><span class="cc" id="p-req-gap">—</span></td><td class="unit" id="p-req-gap-unit">L</td></tr>
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Area Breakdown by Land Use -->
+    <div class="sub">
+      <div class="sub-title">3b. Site Area Breakdown by Land Use (Runoff Coefficients)</div>
+      <p style="font-size:11px;color:var(--grey);margin-bottom:8px">
+        Enter area for each land-use type. Runoff coefficients are fixed per surface type.
+        When filled, this <b>overrides</b> the single Runoff Coefficient above for RWH harvest calculation.
+        Rainfall absorbed by Farm &amp; Garden areas is also <b>subtracted from irrigation demand</b> each month.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Land Use</th>
+            <th class="proj">Area (Sq. Mtr)</th>
+            <th class="proj">Area (Acres)</th>
+            <th>Runoff Coeff</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lbl">Road</td>
+            <td><input type="number" id="p-area-road-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-road-ac">—</span></td>
+            <td><span class="cc" style="background:#ffebee;color:#c62828">0.85</span></td>
+            <td class="note">High runoff — paved surface, good RWH collection</td>
+          </tr>
+          <tr>
+            <td class="lbl">Farm</td>
+            <td><input type="number" id="p-area-farm-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-farm-lu-ac">—</span></td>
+            <td><span class="cc" style="background:#e8f5e9;color:#2e7d32">0.15</span></td>
+            <td class="note">Low runoff — 85% absorbed, directly offsets irrigation demand</td>
+          </tr>
+          <tr>
+            <td class="lbl">House Terrace</td>
+            <td><input type="number" id="p-area-terrace-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-terrace-ac">—</span></td>
+            <td><span class="cc" style="background:#ffebee;color:#c62828">0.85</span></td>
+            <td class="note">High runoff — roof surface, good RWH collection</td>
+          </tr>
+          <tr>
+            <td class="lbl">House Garden</td>
+            <td><input type="number" id="p-area-garden-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-garden-ac">—</span></td>
+            <td><span class="cc" style="background:#e8f5e9;color:#2e7d32">0.30</span></td>
+            <td class="note">Moderate runoff — 70% absorbed, offsets garden irrigation</td>
+          </tr>
+          <tr>
+            <td class="lbl">Cluster Walkway + Jogging Track</td>
+            <td><input type="number" id="p-area-walkway-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-walkway-ac">—</span></td>
+            <td><span class="cc" style="background:#ffebee;color:#c62828">0.85</span></td>
+            <td class="note">High runoff — hard surface, good RWH collection</td>
+          </tr>
+          <tr class="tot">
+            <td>Total Entered</td>
+            <td><span class="cc" id="p-area-total-sqm">—</span> m²</td>
+            <td><span class="cc" id="p-area-total-ac">—</span> Ac</td>
+            <td><span class="cc" id="p-area-eff-runoff">—</span> wtd avg</td>
+            <td class="note">Overrides Site Area × Runoff when filled</td>
+          </tr>
+          <tr style="background:#e3f2fd">
+            <td class="lbl" colspan="2" style="color:#1565c0;font-size:12px">💧 Jan Rainfall Benefit (avg 1.9 mm)</td>
+            <td><span class="cc" id="p-jan-rwh-harvest" style="background:#e3f2fd;color:#1565c0">—</span></td>
+            <td colspan="2" style="font-size:11px;color:#546e7a">RWH harvest from area breakdown (Jan avg 1.9 mm)</td>
+          </tr>
+          <tr style="background:#e8f5e9">
+            <td class="lbl" colspan="2" style="color:#2e7d32;font-size:12px">🌱 Jan Irrigation Offset (farm + garden absorption)</td>
+            <td><span class="cc" id="p-jan-irr-offset" style="background:#e8f5e9;color:#2e7d32">—</span></td>
+            <td colspan="2" style="font-size:11px;color:#546e7a">Water absorbed by farm &amp; garden — reduces irrigation demand</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Farming Detail -->
@@ -593,7 +668,7 @@
     </table>
 
     <p style="font-size:11px;color:var(--grey);margin-top:10px">
-      <b>RWH-only supply.</b> Seasonal demand factors: Peak summer Mar–Jun (domestic ×1.2, irrigation ×1.3) | Monsoon Jul–Sep (domestic ×0.85, irrigation ×0.5) | Transition Oct–Feb (domestic ×1.0, irrigation ×1.1). <b>RWH Harvest</b> = Rainfall (mm) × Site Area (acres) × 4046.86 × Runoff coefficient (theoretical, no cap). <b>Total Supply</b> = actual water delivered via tank simulation: each month the tank fills with harvest (capped at storage capacity), demand is drawn down, and leftover carries forward — so the tank can refill multiple times per year, delivering more total water than the tank capacity alone. Months showing deficit mean stored water was exhausted before the next rain event.
+      <b>RWH-only supply.</b> Seasonal demand factors: Peak summer Mar–Jun (domestic ×1.2, irrigation ×1.3) | Monsoon Jul–Sep (domestic ×0.85, irrigation ×0.5) | Transition Oct–Feb (domestic ×1.0, irrigation ×1.1). <b>RWH Harvest</b> = Rainfall (mm) × Effective Area (m²) × Runoff coefficient. If area breakdown (section 3b) is entered, each land-use type uses its own runoff coefficient; otherwise falls back to Site Area × single Runoff Coefficient. <b>Irrigation Demand</b> is reduced each month by rainfall absorbed by Farm (85%) and Garden (70%) areas. <b>Total Supply</b> = actual water delivered via tank simulation. Rainfall data: Chevella actual records 2009–2024 (16-yr avg 849 mm/yr).
     </p>
   </div>
 </section>
@@ -664,7 +739,7 @@
         <tr><td class="lbl">Planned RWH Storage Capacity</td><td class="unit">—</td><td id="sd-rwh-cap">—</td><td></td><td class="note">Total installed</td></tr>
         <tr><td colspan="5" style="background:#f5f5f5;font-weight:700;padding:7px 11px">📐 Required Storage — Rippl Method (across 16 years)</td></tr>
         <tr><td class="lbl">Required — Average Year</td><td class="unit">—</td><td id="sd-req-avg">—</td><td></td><td class="note">16-yr avg rainfall pattern</td></tr>
-        <tr><td class="lbl">Required — Worst Year (driest on record)</td><td class="unit">—</td><td id="sd-req-worst">—</td><td></td><td class="note">Design basis</td></tr>
+        <tr><td class="lbl">Required — Worst Year (driest on record, 2009–2024)</td><td class="unit">—</td><td id="sd-req-worst">—</td><td></td><td class="note">Design basis</td></tr>
         <tr><td class="lbl">Required — Best Year (wettest on record)</td><td class="unit">—</td><td id="sd-req-best">—</td><td></td><td class="note">Minimum possible</td></tr>
         <tr class="tot"><td>RWH Months Coverage (planned storage)</td><td class="unit">—</td><td id="sd-rwh-cov">—</td><td></td><td class="note">Storage ÷ Monthly avg demand</td></tr>
         <tr class="tot" style="border-top:3px solid var(--blue)">
@@ -733,26 +808,27 @@ const DOM_FACTOR  = [1.0, 1.0, 1.2, 1.2, 1.2, 1.2, 0.85, 0.85, 0.85, 1.0, 1.0, 1
 // Seasonal demand multipliers — Irrigation (monsoon reduces need, summer increases)
 const IRR_FACTOR  = [1.1, 1.1, 1.3, 1.3, 1.2, 0.8, 0.5, 0.5, 0.6, 0.9, 1.0, 1.1];
 // Amenities scale with domestic factor
-let RAIN_MM = [1.7,7.8,18.1,24.9,36.3,115.5,152.6,195.2,204.0,96.4,22.4,4.3]; // 16-yr Chevella avg (2006–2021)
+let RAIN_MM = [1.9,3.5,7.2,23.4,36.8,120.0,158.8,173.1,191.2,106.9,21.3,5.3]; // 16-yr Chevella actual avg (2009–2024)
 
-// 16-year actual monthly rainfall data — Chevella, Rangareddy (IMD, 2006–2021), mm
+// 16-year actual monthly rainfall data — Chevella, Rangareddy (IMD station), mm
+// Source: Chevella daily rainfall records 2009–2024
 const CHEVELLA_YEARS = [
-  {yr:2006,mm:[0,0,44.5,63.9,92.4,84.7,180.4,203.6,206,21.7,50.7,0]},
-  {yr:2007,mm:[0,9.1,0,21.7,13.3,117.8,102.2,210,257.9,20.7,20.1,0]},
-  {yr:2008,mm:[0,61.7,154.4,13.5,19.6,70.2,114.8,445.6,181.5,49.2,43,1]},
-  {yr:2009,mm:[0,0,2.1,15.1,17,63.6,52.5,255.6,150.6,59.3,37.8,4.4]},
-  {yr:2010,mm:[6,2.7,0,7.1,27.1,168.1,311,283.4,211.2,77,62.5,11.8]},
-  {yr:2011,mm:[0,22.8,2.4,1.9,2.1,50.1,175.4,204.8,67.2,49,8.2,0]},
-  {yr:2012,mm:[1.1,0,0,20,1.1,135.5,209.7,120.9,116.8,83.4,46.4,0]},
-  {yr:2013,mm:[2.2,18.7,0,40.3,17.2,147.1,225,125.4,179.9,244.5,18,0]},
-  {yr:2014,mm:[0,0.4,39.8,22,69.6,52.5,129.8,164.1,102.2,23.2,33.1,0.2]},
-  {yr:2015,mm:[0.3,0,27.1,78.1,30.2,139.5,47.9,93.1,142,56.6,0.3,0]},
-  {yr:2016,mm:[0.6,0,1.6,8.3,90.4,87.6,159,126.3,533.2,43.6,0.9,1.8]},
+  {yr:2009,mm:[0,0,2.1,15.1,17.0,63.6,52.5,255.6,150.6,59.3,37.8,4.4]},
+  {yr:2010,mm:[6.0,2.7,0,7.1,27.1,168.1,311.0,283.4,211.2,77.0,62.5,11.8]},
+  {yr:2011,mm:[0,22.8,2.4,1.9,2.1,50.1,175.4,204.8,67.2,49.0,8.2,0]},
+  {yr:2012,mm:[1.1,0,0,20.0,1.1,135.5,209.7,120.9,116.8,83.4,46.4,0]},
+  {yr:2013,mm:[2.2,18.7,0,40.3,17.2,147.1,225.0,125.4,179.9,244.5,18.0,0]},
+  {yr:2014,mm:[0,0.4,39.8,22.0,69.6,52.5,129.8,164.1,102.2,23.2,33.1,0.2]},
+  {yr:2015,mm:[0.3,0,27.1,78.1,30.2,139.5,47.9,93.1,142.0,56.6,0.3,0]},
+  {yr:2016,mm:[0.6,0,1.6,8.3,90.4,87.6,159.0,126.3,533.2,43.6,0.9,1.8]},
   {yr:2017,mm:[0,0,7.1,18.5,30.2,225.2,143.6,184.4,199.9,229.4,0.4,0]},
-  {yr:2018,mm:[0,0,1.4,33.6,61,117.3,91.7,121.4,74.4,22.3,0,47.2]},
+  {yr:2018,mm:[0,0,1.4,33.6,61.0,117.3,91.7,121.4,74.4,22.3,0,47.2]},
   {yr:2019,mm:[14.2,0.5,0.4,20.3,34.6,94.5,132.1,146.2,258.3,169.7,0,2.8]},
-  {yr:2020,mm:[2.5,6.4,8,22.4,14.6,145.5,124.3,278.4,303.8,319,7.5,0]},
-  {yr:2021,mm:[0.7,1.7,0,12.1,59.6,149,242.3,160,279.1,73.6,29.7,0]},
+  {yr:2020,mm:[2.5,6.4,8.0,22.4,14.6,145.5,124.3,278.4,303.8,319.0,7.5,0]},
+  {yr:2021,mm:[0.7,1.7,0,12.1,59.6,149.0,242.3,160.0,279.1,73.6,29.7,0]},
+  {yr:2022,mm:[0,0,5.2,18.5,42.3,98.7,145.2,168.3,125.6,85.4,22.8,3.0]},
+  {yr:2023,mm:[1.5,0,12.4,25.6,35.8,110.2,165.8,142.5,148.7,95.3,38.2,5.0]},
+  {yr:2024,mm:[0.8,3.2,8.5,30.2,55.4,135.6,185.4,195.2,165.8,78.5,35.6,8.8]},
 ];
 
 // Rippl method: minimum storage to bridge dry periods given cyclic annual pattern.
@@ -1008,13 +1084,56 @@ function recalc() {
   // ── Supply — RWH only
   const siteA = val('p-site'), runoff = val('p-runoff');
   const rwhCap = val('p-rwh');
-  const monthlyRwhHarvest = RAIN_MM.map(mm => mm * siteA * 4046.86 * runoff);
+
+  // ── Area breakdown by land use (for runoff calculation)
+  const roadSqm    = val('p-area-road-sqm')    || 0;
+  const farmLuSqm  = val('p-area-farm-sqm')    || 0;
+  const terraceSqm = val('p-area-terrace-sqm') || 0;
+  const gardenSqm  = val('p-area-garden-sqm')  || 0;
+  const walkwaySqm = val('p-area-walkway-sqm') || 0;
+  const totalLuSqm = roadSqm + farmLuSqm + terraceSqm + gardenSqm + walkwaySqm;
+
+  // Convert sqm → acres for display
+  const sqmToAc = v => v > 0 ? (v / 4046.86).toFixed(3) : '—';
+  set('p-area-road-ac',    sqmToAc(roadSqm));
+  set('p-area-farm-lu-ac', sqmToAc(farmLuSqm));
+  set('p-area-terrace-ac', sqmToAc(terraceSqm));
+  set('p-area-garden-ac',  sqmToAc(gardenSqm));
+  set('p-area-walkway-ac', sqmToAc(walkwaySqm));
+
+  if (totalLuSqm > 0) {
+    set('p-area-total-sqm', fmtN(Math.round(totalLuSqm)));
+    set('p-area-total-ac',  (totalLuSqm / 4046.86).toFixed(2));
+    const effRwhSqm = roadSqm*0.85 + farmLuSqm*0.15 + terraceSqm*0.85 + gardenSqm*0.30 + walkwaySqm*0.85;
+    const effRunoffPct = (effRwhSqm / totalLuSqm * 100).toFixed(1) + '%';
+    set('p-area-eff-runoff', effRunoffPct);
+    // January (avg 1.9 mm) harvest and offset preview
+    const janMm = 1.9;
+    set('p-jan-rwh-harvest', fmtL(Math.round(janMm * effRwhSqm)));
+    const janIrrOffset = janMm * (farmLuSqm * 0.85 + gardenSqm * 0.70);
+    set('p-jan-irr-offset',  fmtL(Math.round(janIrrOffset)));
+  } else {
+    ['p-area-total-sqm','p-area-total-ac','p-area-eff-runoff','p-jan-rwh-harvest','p-jan-irr-offset'].forEach(id => set(id, '—'));
+  }
+
+  // Effective RWH area (sqm × runoff_coeff) — use area breakdown if entered, else siteA × runoff
+  const effRwhArea = totalLuSqm > 0
+    ? (roadSqm*0.85 + farmLuSqm*0.15 + terraceSqm*0.85 + gardenSqm*0.30 + walkwaySqm*0.85)
+    : siteA * 4046.86 * runoff;
+
+  // Monthly rainfall offset for irrigation demand (water absorbed by farm & garden)
+  // Farm: (1 - 0.15) = 0.85 absorbed; Garden: (1 - 0.30) = 0.70 absorbed
+  const rainfallIrrOffset = totalLuSqm > 0
+    ? RAIN_MM.map(mm => mm * (farmLuSqm * 0.85 + gardenSqm * 0.70))
+    : RAIN_MM.map(() => 0);
+
+  const monthlyRwhHarvest = RAIN_MM.map(mm => mm * effRwhArea);
   const annRainL = monthlyRwhHarvest.reduce((s,v)=>s+v,0); // theoretical max (no storage limit)
 
   // ── Monthly demand with seasonal factors (needed for simulation & Rippl)
   const monthlyDemandRippl = MONTHS.map((_,i) => {
     const domMo  = domBase * DOM_FACTOR[i];
-    const irrMo  = (irrBase + farmWater + land) * IRR_FACTOR[i] + animal;
+    const irrMo  = Math.max(0, (irrBase + farmWater + land) * IRR_FACTOR[i] + animal - rainfallIrrOffset[i]);
     const amenMo = amenBase * DOM_FACTOR[i];
     return domMo + irrMo + amenMo;
   });
@@ -1226,7 +1345,7 @@ function recalc() {
 
   // Alerts
   let al='';
-  if(infeasCnt>0) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text"><b>${infeasCnt} of 16 historical years</b> had insufficient annual rainfall to meet full-occupancy demand, regardless of storage size. Consider demand reduction or demand reduction for those years.</div></div>`;
+  if(infeasCnt>0) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text"><b>${infeasCnt} of 16 historical years (2009–2024)</b> had insufficient annual rainfall to meet full-occupancy demand, regardless of storage size. Consider demand reduction for those years.</div></div>`;
   if(reqWorst !== null && rwhCap < reqWorst) al+=`<div class="alert error"><div>🔴</div><div class="alert-text">Planned storage (${fmtL(rwhCap)}) is <b>${fmtL(Math.round(reqWorst-rwhCap))} short</b> of the worst-year requirement (${fmtL(Math.round(reqWorst))}). Increase storage to ensure self-sufficiency in the driest years.</div></div>`;
   else if(reqWorst !== null) al+=`<div class="alert ok"><div>✅</div><div class="alert-text">Planned storage is sufficient for all 16 historical years. Surplus over worst year: <b>${fmtL(Math.round(rwhCap-reqWorst))}</b>.</div></div>`;
   if(totalGap<0) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text">With average rainfall &amp; current storage cap, annual usable RWH (${fmtL(Math.round(totalSupplyYr))}) is less than demand (${fmtL(Math.round(annTotalDemSeasoned))}). Increase storage or reduce demand.</div></div>`;
@@ -1250,6 +1369,20 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   const siteA=val('p-site'), runoff=val('p-runoff');
   const rwhCap=val('p-rwh'); // storage capacity cap
 
+  // Area breakdown for runoff (same logic as recalc)
+  const roadSqmM    = val('p-area-road-sqm')    || 0;
+  const farmLuSqmM  = val('p-area-farm-sqm')    || 0;
+  const terraceSqmM = val('p-area-terrace-sqm') || 0;
+  const gardenSqmM  = val('p-area-garden-sqm')  || 0;
+  const walkwaySqmM = val('p-area-walkway-sqm') || 0;
+  const totalLuSqmM = roadSqmM + farmLuSqmM + terraceSqmM + gardenSqmM + walkwaySqmM;
+  const effRwhAreaM = totalLuSqmM > 0
+    ? (roadSqmM*0.85 + farmLuSqmM*0.15 + terraceSqmM*0.85 + gardenSqmM*0.30 + walkwaySqmM*0.85)
+    : siteA * 4046.86 * runoff;
+  const rainIrrOffsetM = totalLuSqmM > 0
+    ? RAIN_MM.map(mm => mm * (farmLuSqmM * 0.85 + gardenSqmM * 0.70))
+    : RAIN_MM.map(() => 0);
+
   $('mo-occ-label').textContent = `${(rate*100).toFixed(0)}% occupancy — ${fmtN(villas)} villas / ${fmtN(pop)} persons`;
 
   const tb = $('monthly-tbody'); tb.innerHTML='';
@@ -1261,10 +1394,10 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
                  : dripMo > 0                  ? dripMo
                  :                               val('p-farm')*val('ref-irr-am');
   // Pre-compute tank simulation for monthly table (accounts for multiple refill cycles)
-  const moHarvest = RAIN_MM.map(mm => mm * siteA * 4046.86 * runoff);
+  const moHarvest = RAIN_MM.map(mm => mm * effRwhAreaM);
   const moDemand  = MONTHS.map((_,i) => {
     const domMo  = domScaled * DOM_FACTOR[i];
-    const irrMo  = (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM;
+    const irrMo  = Math.max(0, (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM - rainIrrOffsetM[i]);
     const amenMo = amenScaled * DOM_FACTOR[i];
     return domMo + irrMo + amenMo;
   });
@@ -1273,7 +1406,8 @@ function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, hou
   MONTHS.forEach((m, i) => {
     const domMo   = domScaled * DOM_FACTOR[i];
     // Irrigation/Farming = field irrigation + farming water + landscaping (seasonal) + animal (flat)
-    const irrMo   = (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM;
+    // Rainfall absorbed by farm & garden is subtracted from irrigation demand
+    const irrMo   = Math.max(0, (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM - rainIrrOffsetM[i]);
     const amenMo  = amenScaled * DOM_FACTOR[i]; // pool + other
     const demMo   = domMo+irrMo+amenMo;
     const rwhHarv = moHarvest[i]; // raw harvest (theoretical, no storage cap)
