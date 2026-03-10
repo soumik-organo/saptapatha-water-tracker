@@ -625,30 +625,50 @@
     </div>
 
     <div id="monthly-5yr-selectors" style="display:none;margin-bottom:14px">
-      <div class="sub-title">Assign Historical Rainfall Year to Each Projection Year</div>
-      <div class="help" style="margin-bottom:8px">Population grows at the rate set in Section 7. Tank carries over month-to-month across all 60 months.</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <div class="field" style="min-width:140px">
-          <label>2028 Rainfall</label>
-          <select id="p5-rain-2028" onchange="refreshAll()"></select>
-        </div>
-        <div class="field" style="min-width:140px">
-          <label>2029 Rainfall</label>
-          <select id="p5-rain-2029" onchange="refreshAll()"></select>
-        </div>
-        <div class="field" style="min-width:140px">
-          <label>2030 Rainfall</label>
-          <select id="p5-rain-2030" onchange="refreshAll()"></select>
-        </div>
-        <div class="field" style="min-width:140px">
-          <label>2031 Rainfall</label>
-          <select id="p5-rain-2031" onchange="refreshAll()"></select>
-        </div>
-        <div class="field" style="min-width:140px">
-          <label>2032 Rainfall</label>
-          <select id="p5-rain-2032" onchange="refreshAll()"></select>
-        </div>
-      </div>
+      <div class="sub-title">Assign Historical Rainfall Year & Occupancy to Each Projection Year</div>
+      <div class="help" style="margin-bottom:8px">Population grows at the rate set in Section 7. Occupancy % reflects how many houses are occupied each year (ramp-up). Tank carries over month-to-month across all 60 months.</div>
+      <table style="margin-bottom:10px">
+        <thead>
+          <tr>
+            <th style="width:80px">Year</th>
+            <th>Rainfall Source</th>
+            <th style="width:120px">Occupancy %</th>
+            <th style="width:120px">Eff. Population</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lbl">2028</td>
+            <td><select id="p5-rain-2028" onchange="refreshAll()" style="width:100%"></select></td>
+            <td><input type="number" id="p5-occ-2028" value="30" min="0" max="100" step="5" oninput="refreshAll()"></td>
+            <td class="sc-auto" id="p5-effpop-2028">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">2029</td>
+            <td><select id="p5-rain-2029" onchange="refreshAll()" style="width:100%"></select></td>
+            <td><input type="number" id="p5-occ-2029" value="50" min="0" max="100" step="5" oninput="refreshAll()"></td>
+            <td class="sc-auto" id="p5-effpop-2029">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">2030</td>
+            <td><select id="p5-rain-2030" onchange="refreshAll()" style="width:100%"></select></td>
+            <td><input type="number" id="p5-occ-2030" value="70" min="0" max="100" step="5" oninput="refreshAll()"></td>
+            <td class="sc-auto" id="p5-effpop-2030">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">2031</td>
+            <td><select id="p5-rain-2031" onchange="refreshAll()" style="width:100%"></select></td>
+            <td><input type="number" id="p5-occ-2031" value="85" min="0" max="100" step="5" oninput="refreshAll()"></td>
+            <td class="sc-auto" id="p5-effpop-2031">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">2032</td>
+            <td><select id="p5-rain-2032" onchange="refreshAll()" style="width:100%"></select></td>
+            <td><input type="number" id="p5-occ-2032" value="100" min="0" max="100" step="5" oninput="refreshAll()"></td>
+            <td class="sc-auto" id="p5-effpop-2032">—</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <table>
@@ -1300,24 +1320,29 @@ function updateMonthlyTable5Yr(tankCap) {
   for(let y = 0; y < 5; y++) {
     const projYr = 2028 + y;
     const rainMM = getRainForProjectionYear(projYr);
-    const pop = Math.round(basePop * Math.pow(1+popGrowth, y));
+    const occPct = ($v('p5-occ-'+projYr) || 100) / 100; // occupancy fraction
+    const grownPop = Math.round(basePop * Math.pow(1+popGrowth, y));
+    const pop = Math.round(grownPop * occPct); // effective population after occupancy
     const drip = Math.round(baseDrip * Math.pow(1+irrGrowth, y));
     const sprink = Math.round(baseSprink * Math.pow(1+irrGrowth, y));
     const { months } = calcMonthlyCore(rainMM, pop, drip, sprink);
     const rainTotal = rainMM.reduce((a,b)=>a+b,0);
     const selEl = document.getElementById('p5-rain-'+projYr);
     const rainLabel = selEl ? selEl.options[selEl.selectedIndex].text : '';
-    allData.push({ projYr, months, pop, rainTotal, rainLabel });
+    allData.push({ projYr, months, pop, grownPop, occPct, rainTotal, rainLabel });
+
+    // Update effective population display in selector table
+    setText('p5-effpop-'+projYr, pop.toLocaleString()+' (of '+grownPop.toLocaleString()+')');
   }
 
   const maxBar = Math.max(...allData.flatMap(d=>d.months.map(m=>Math.max(m.demand,m.harvest))),1);
 
   for(const yearData of allData) {
-    const { projYr, months, pop, rainTotal, rainLabel } = yearData;
+    const { projYr, months, pop, grownPop, occPct, rainTotal, rainLabel } = yearData;
     let yrDem = 0, yrHar = 0;
 
     // Year header row
-    html += '<tr class="yr-sep"><td colspan="8">'+projYr+' — Pop: '+pop.toLocaleString()+' | Rainfall: '+rainLabel+'</td></tr>';
+    html += '<tr class="yr-sep"><td colspan="8">'+projYr+' — Pop: '+pop.toLocaleString()+' ('+Math.round(occPct*100)+'% of '+grownPop.toLocaleString()+') | Rainfall: '+rainLabel+'</td></tr>';
 
     for(let i = 0; i < 12; i++) {
       const m = months[i];
@@ -1495,7 +1520,8 @@ const FIELDS = [
   'sc-ref-label','sc-ref-acres','sc-ref-houses','sc-ref-bhk','sc-ref-area','sc-ref-pph',
   'sc-ref-sqm','sc-ref-drip','sc-ref-sprink','sc-ref-water',
   'sc-new-label','sc-new-acres','sc-new-houses','sc-new-bhk','sc-new-area','sc-new-pph',
-  'p5-rain-2028','p5-rain-2029','p5-rain-2030','p5-rain-2031','p5-rain-2032'
+  'p5-rain-2028','p5-rain-2029','p5-rain-2030','p5-rain-2031','p5-rain-2032',
+  'p5-occ-2028','p5-occ-2029','p5-occ-2030','p5-occ-2031','p5-occ-2032'
 ];
 
 function gatherState(){
