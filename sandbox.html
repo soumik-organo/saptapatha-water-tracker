@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💧 Net-Zero Water Calculator — Demand vs Supply</title>
+<title>Net-Zero Water Calculator — Demand vs Supply</title>
 <style>
   :root {
     --blue:#1a6fa8;--blue-light:#e8f4fd;--blue-input:#d0eaff;
@@ -18,12 +18,12 @@
 
   header{background:var(--header-bg);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
   header h1{font-size:17px;font-weight:700;letter-spacing:.3px}
-  header .sub{font-size:11px;opacity:.65;margin-top:2px}
+  header .hsub{font-size:11px;opacity:.65;margin-top:2px}
   nav{background:#154d7a;display:flex;gap:2px;padding:0 20px;overflow-x:auto;position:sticky;top:52px;z-index:99;scrollbar-width:none}
   nav a{color:rgba(255,255,255,.8);text-decoration:none;padding:9px 14px;font-size:12px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s}
   nav a:hover,nav a.active{color:#fff;border-bottom-color:#4fc3f7}
 
-  main{max-width:1300px;margin:0 auto;padding:20px 14px 80px}
+  main{max-width:1400px;margin:0 auto;padding:20px 14px 80px}
   .section{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);margin-bottom:22px;overflow:hidden}
   .section-header{background:var(--section-title);color:#fff;padding:11px 20px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
   .section-body{padding:18px 20px}
@@ -44,7 +44,6 @@
   input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,111,168,.15)}
   input[readonly]{background:#f5f5f5;color:#607d8b;font-weight:400}
 
-  /* Grid layouts */
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
   .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
@@ -64,7 +63,6 @@
   .kpi-teal{background:linear-gradient(135deg,#00695c,#00897b);color:#fff}
   .kpi-purple{background:linear-gradient(135deg,#4527a0,#7b1fa2);color:#fff}
 
-  /* Feasibility banner */
   .banner{border-radius:8px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600}
   .banner.ok{background:#e8f5e9;border-left:5px solid #2e7d32;color:#1b5e20}
   .banner.warn{background:#fff3e0;border-left:5px solid #f57c00;color:#bf360c}
@@ -72,7 +70,6 @@
   .banner .icon{font-size:22px}
   .banner .detail{font-size:12px;font-weight:400;margin-top:3px;opacity:.85}
 
-  /* Rain preset buttons */
   .rain-presets{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
   .rain-presets button{padding:4px 10px;font-size:11px;font-weight:600;border:1.5px solid #b0bec5;border-radius:12px;cursor:pointer;background:#fff;transition:all .15s}
   .rain-presets button:hover{border-color:#1a6fa8;color:#1a6fa8}
@@ -82,21 +79,17 @@
   .rain-presets button.wet{border-color:#2e7d32;color:#2e7d32}
   .rain-presets button.wet.active{background:#2e7d32;border-color:#2e7d32;color:#fff}
 
-  /* Rippl table */
   .rippl-good{color:#2e7d32;font-weight:700}
   .rippl-bad{color:#c62828;font-weight:700}
   .rippl-design{background:#fff3e0 !important}
   .rippl-worst{background:#ffebee !important}
 
-  /* Monthly chart bars */
   .bar-cell{width:120px}
   .bar-wrap{height:14px;background:#eceff1;border-radius:3px;overflow:hidden;position:relative}
   .bar-h{height:100%;border-radius:3px;transition:width .3s}
-  .bar-rain{background:#42a5f5}
   .bar-dem{background:#ef5350}
   .bar-har{background:#26a69a}
 
-  /* Misc */
   .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase}
   .badge-surplus{background:#e8f5e9;color:#2e7d32}
   .badge-deficit{background:#ffebee;color:#c62828}
@@ -115,10 +108,21 @@
   .btn-danger{background:#c62828;color:#fff}
   .btn-outline{background:#fff;color:#1565c0;border:2px solid #1565c0}
 
-  /* Form field label */
   .field{display:flex;flex-direction:column;gap:3px}
   .field label{font-size:11px;font-weight:700;color:#546e7a;text-transform:uppercase;letter-spacing:.4px}
   .field .fhelp{font-size:10px;color:#90a4ae}
+
+  /* Scaling table */
+  .sc-table th.sc-ref{background:#e3f2fd;color:#1565c0}
+  .sc-table th.sc-new{background:#e8f5e9;color:#2e7d32}
+  .sc-auto{background:#e8f5e9;color:#1b5e20;font-weight:700}
+
+  /* Diversity heatmap */
+  .div-grid{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:10px}
+  .div-block{width:20px;height:20px;border-radius:3px;font-size:7px;display:flex;align-items:center;justify-content:center;cursor:default;color:#fff;font-weight:700}
+  .div-legend{display:flex;gap:12px;font-size:10px;color:#546e7a;margin-bottom:8px;flex-wrap:wrap}
+  .div-legend span{display:flex;align-items:center;gap:3px}
+  .div-legend .swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
 </style>
 </head>
 <body>
@@ -127,19 +131,20 @@
   <div style="font-size:24px">💧</div>
   <div>
     <h1>Net-Zero Water Calculator</h1>
-    <div class="sub" id="hdr-subtitle">Demand vs Supply — Design for Scarcity</div>
+    <div class="hsub" id="hdr-subtitle">Demand vs Supply — Design for Scarcity</div>
   </div>
   <div style="margin-left:auto;font-size:11px;opacity:.65" id="hdr-project-loc"></div>
 </header>
 
 <nav id="main-nav">
   <a href="#sec-setup" class="active">⚙️ Setup</a>
+  <a href="#sec-scaling">📐 Scaling</a>
   <a href="#sec-demand">📋 Demand</a>
   <a href="#sec-rainfall">🌧️ Rainfall</a>
-  <a href="#sec-results">🎯 Net-Zero Results</a>
+  <a href="#sec-results">🎯 Net-Zero</a>
   <a href="#sec-monthly">📅 Monthly</a>
-  <a href="#sec-rippl">📊 Rippl Scan</a>
-  <a href="#sec-projection">🔮 5-Yr Projection</a>
+  <a href="#sec-rippl">📊 Rippl</a>
+  <a href="#sec-projection">🔮 Projection</a>
 </nav>
 
 <main>
@@ -165,6 +170,117 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════ SECTION 1B: SCALING CALCULATOR ═══════════════════════════════ -->
+<div class="section" id="sec-scaling">
+  <div class="section-header">📐 1B — Reference Scaling Calculator</div>
+  <div class="section-body">
+    <div class="help" style="margin-bottom:14px">Enter a known reference project's data, then enter the new project's size. All water parameters scale automatically by: <strong>Scale = (New Houses × New Avg Area) / (Ref Houses × Ref Avg Area)</strong></div>
+
+    <div class="sub">
+      <div class="sub-title">Step 1: Project Parameters</div>
+      <table class="sc-table">
+        <thead>
+          <tr><th>Parameter</th><th class="sc-ref">Reference Project</th><th class="sc-new">New Project</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lbl">Project Label</td>
+            <td><input type="text" id="sc-ref-label" value="Antharam" oninput="updateScaling()"></td>
+            <td><input type="text" id="sc-new-label" value="New Project" oninput="updateScaling()"></td>
+          </tr>
+          <tr>
+            <td class="lbl">Total Project Area <span class="unit">(Acres)</span></td>
+            <td><input type="number" id="sc-ref-acres" value="60" oninput="updateScaling()"></td>
+            <td><input type="number" id="sc-new-acres" value="26.5" oninput="updateScaling()"></td>
+          </tr>
+          <tr>
+            <td class="lbl">Number of Houses</td>
+            <td><input type="number" id="sc-ref-houses" value="182" oninput="updateScaling()"></td>
+            <td><input type="number" id="sc-new-houses" value="174" oninput="updateScaling()"></td>
+          </tr>
+          <tr>
+            <td class="lbl">BHK Type</td>
+            <td><select id="sc-ref-bhk" onchange="updateBHKArea('ref');updateScaling()">
+              <option value="1">1 BHK</option><option value="2">2 BHK</option>
+              <option value="3" selected>3 BHK</option><option value="4">4 BHK</option>
+            </select></td>
+            <td><select id="sc-new-bhk" onchange="updateBHKArea('new');updateScaling()">
+              <option value="1">1 BHK</option><option value="2" selected>2 BHK</option>
+              <option value="3">3 BHK</option><option value="4">4 BHK</option>
+            </select></td>
+          </tr>
+          <tr>
+            <td class="lbl">Avg House Size <span class="unit">(sqft) — auto-set by BHK, editable</span></td>
+            <td><input type="number" id="sc-ref-area" value="1200" oninput="updateScaling()"></td>
+            <td><input type="number" id="sc-new-area" value="900" oninput="updateScaling()"></td>
+          </tr>
+          <tr>
+            <td class="lbl">Persons per House</td>
+            <td><input type="number" id="sc-ref-pph" value="4" min="1" oninput="updateScaling()"></td>
+            <td><input type="number" id="sc-new-pph" value="4" min="1" oninput="updateScaling()"></td>
+          </tr>
+          <tr class="tot">
+            <td class="lbl">Scale Factor</td>
+            <td>1.0000 (base)</td>
+            <td id="sc-factor" class="sc-auto">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">Step 2: Scaled Results</div>
+      <table class="sc-table">
+        <thead>
+          <tr><th>Parameter</th><th class="sc-ref">Reference</th><th class="sc-new">New (auto-scaled)</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lbl">Total Water Area <span class="unit">(Sq.Mtr)</span></td>
+            <td><input type="number" id="sc-ref-sqm" value="19789.57" step="0.01" oninput="updateScaling()"></td>
+            <td class="sc-auto" id="sc-new-sqm">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">Total Water Area <span class="unit">(SFT)</span></td>
+            <td id="sc-ref-sft">—</td>
+            <td class="sc-auto" id="sc-new-sft">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">Total Water Area <span class="unit">(Ac)</span></td>
+            <td id="sc-ref-ac">—</td>
+            <td class="sc-auto" id="sc-new-ac">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">Total Drip Holes</td>
+            <td><input type="number" id="sc-ref-drip" value="37065.32" step="0.01" oninput="updateScaling()"></td>
+            <td class="sc-auto" id="sc-new-drip">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">Sprinklers</td>
+            <td><input type="number" id="sc-ref-sprink" value="348" oninput="updateScaling()"></td>
+            <td class="sc-auto" id="sc-new-sprink">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">Total Water Consumed <span class="unit">(L/month)</span></td>
+            <td><input type="number" id="sc-ref-water" value="97132" oninput="updateScaling()"></td>
+            <td class="sc-auto" id="sc-new-water">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">Estimated Population</td>
+            <td id="sc-ref-pop">—</td>
+            <td class="sc-auto" id="sc-new-pop">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-green" onclick="applyScaledToDemand()">✅ Apply Scaled Values to Demand Section →</button>
+      <span class="help" style="margin:0">Populates population, drip holes, sprinklers and project name into the Demand section</span>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════ SECTION 2: DEMAND ═══════════════════════════════ -->
 <div class="section" id="sec-demand">
   <div class="section-header">📋 2 — Water Demand Inputs</div>
@@ -186,10 +302,10 @@
           <td class="note">BIS standard 135 LPCD for urban; 70 for rural</td>
         </tr>
         <tr class="tot">
-          <td class="lbl">Monthly Domestic Demand</td>
+          <td class="lbl">Monthly Domestic Demand (at full occupancy)</td>
           <td id="d-dom-monthly">—</td>
           <td class="unit">Litres/month (avg)</td>
-          <td></td>
+          <td class="note" id="d-dom-div-note"></td>
         </tr>
       </table>
     </div>
@@ -276,43 +392,43 @@
         </thead>
         <tbody>
           <tr>
-            <td class="lbl">🛣️ Road / Paved</td>
+            <td class="lbl">Road / Paved</td>
             <td><input type="number" id="a-road" value="0" min="0" oninput="refreshAll()"></td>
             <td id="a-road-ac" class="unit">—</td>
             <td>0.85</td>
-            <td class="note">85% harvested → RWH tank</td>
+            <td class="note">85% harvested</td>
             <td class="note">No irrigation</td>
           </tr>
           <tr>
-            <td class="lbl">🌾 Farm / Open Land</td>
+            <td class="lbl">Farm / Open Land</td>
             <td><input type="number" id="a-farm" value="0" min="0" oninput="refreshAll()"></td>
             <td id="a-farm-ac" class="unit">—</td>
             <td>0.15</td>
-            <td class="note">15% harvested → RWH tank</td>
-            <td class="note">85% absorbed → offsets irrigation</td>
+            <td class="note">15% harvested</td>
+            <td class="note">85% absorbed → offsets irr.</td>
           </tr>
           <tr>
-            <td class="lbl">🏠 House Terrace</td>
+            <td class="lbl">House Terrace</td>
             <td><input type="number" id="a-terrace" value="0" min="0" oninput="refreshAll()"></td>
             <td id="a-terrace-ac" class="unit">—</td>
             <td>0.85</td>
-            <td class="note">85% harvested → RWH tank</td>
-            <td class="note">No irrigation (hard surface)</td>
+            <td class="note">85% harvested</td>
+            <td class="note">No irrigation</td>
           </tr>
           <tr>
-            <td class="lbl">🌺 House Garden</td>
+            <td class="lbl">House Garden</td>
             <td><input type="number" id="a-garden" value="0" min="0" oninput="refreshAll()"></td>
             <td id="a-garden-ac" class="unit">—</td>
             <td>0.30</td>
-            <td class="note">30% harvested → RWH tank</td>
-            <td class="note">70% absorbed → offsets irrigation</td>
+            <td class="note">30% harvested</td>
+            <td class="note">70% absorbed → offsets irr.</td>
           </tr>
           <tr>
-            <td class="lbl">🚶 Cluster Walkway / Track</td>
+            <td class="lbl">Cluster Walkway / Track</td>
             <td><input type="number" id="a-walk" value="0" min="0" oninput="refreshAll()"></td>
             <td id="a-walk-ac" class="unit">—</td>
             <td>0.85</td>
-            <td class="note">85% harvested → RWH tank</td>
+            <td class="note">85% harvested</td>
             <td class="note">No irrigation</td>
           </tr>
           <tr class="tot">
@@ -324,7 +440,7 @@
           </tr>
         </tbody>
       </table>
-      <div class="help" style="margin-top:8px">💡 If no areas entered, a single site area + runoff coefficient can be used below as a fallback.</div>
+      <div class="help" style="margin-top:8px">If no areas entered, a single site area + runoff coefficient can be used below as a fallback.</div>
       <div class="grid-3" style="margin-top:10px">
         <div class="field">
           <label>Fallback: Total Site Area (Acres)</label>
@@ -340,6 +456,48 @@
           <div class="fhelp">Litres — what you plan to build</div>
         </div>
       </div>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">2E — Occupancy Diversity Pattern (Weekly)</div>
+      <div class="help" style="margin-bottom:8px">
+        Diversity factor reflects what % of designed population actually uses water each day. Varies by week of year and weekday/weekend.
+        <label style="margin-left:14px;font-weight:700;font-size:12px">
+          <input type="checkbox" id="d-diversity-on" checked onchange="refreshAll()"> Apply diversity to domestic demand
+        </label>
+      </div>
+      <div class="div-legend">
+        <span><span class="swatch" style="background:#c62828"></span> 30%</span>
+        <span><span class="swatch" style="background:#ff9800"></span> 50%</span>
+        <span><span class="swatch" style="background:#43a047"></span> 60%</span>
+        <span><span class="swatch" style="background:#1565c0"></span> 75%</span>
+      </div>
+      <div class="div-grid" id="div-heatmap"></div>
+
+      <table style="margin-top:8px">
+        <thead>
+          <tr><th>Week Range</th><th>Pattern</th><th>Weekday %</th><th>Weekend %</th><th>Avg %</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="lbl">W1 – W17</td><td class="note">Low weekdays, moderate weekends</td><td>30%</td><td>50%</td><td>35.7%</td></tr>
+          <tr><td class="lbl">W18</td><td class="note">Transition week</td><td>60% (5d)</td><td>50% (1d) + 30% (1d)</td><td>54.3%</td></tr>
+          <tr><td class="lbl">W19 – W30</td><td class="note">High occupancy (summer)</td><td>60%</td><td>60%</td><td>60.0%</td></tr>
+          <tr><td class="lbl">W31</td><td class="note">Transition week</td><td>60% (3d)</td><td>30% (4d)</td><td>42.9%</td></tr>
+          <tr><td class="lbl">W32 – W39</td><td class="note">Low weekdays, moderate weekends</td><td>30%</td><td>50%</td><td>35.7%</td></tr>
+          <tr><td class="lbl">W40</td><td class="note">Festival week</td><td>60% (6d)</td><td>30% (1d)</td><td>55.7%</td></tr>
+          <tr><td class="lbl">W41 – W43</td><td class="note">Festival season</td><td>60%</td><td>60%</td><td>60.0%</td></tr>
+          <tr><td class="lbl">W44</td><td class="note">Transition week</td><td>60% (4d)</td><td>30% (3d)</td><td>47.1%</td></tr>
+          <tr><td class="lbl">W45 – W51</td><td class="note">Low weekdays, moderate weekends</td><td>30%</td><td>50%</td><td>35.7%</td></tr>
+          <tr><td class="lbl">W52</td><td class="note">Year-end / New Year</td><td>75%</td><td>75%</td><td>75.0%</td></tr>
+          <tr class="tot"><td>Annual Weighted Average</td><td></td><td></td><td></td><td id="div-annual-avg">—</td></tr>
+        </tbody>
+      </table>
+
+      <div class="sub-title" style="margin-top:14px">Monthly Diversity Factors (computed)</div>
+      <table>
+        <thead><tr><th>Month</th><th>Avg Diversity</th><th>Effect on Domestic Demand</th></tr></thead>
+        <tbody id="div-monthly-tbody"></tbody>
+      </table>
     </div>
 
   </div>
@@ -382,7 +540,7 @@
     <div id="feasibility-banner" class="banner ok">
       <div class="icon">✅</div>
       <div>
-        <div id="banner-msg">Calculating…</div>
+        <div id="banner-msg">Calculating...</div>
         <div class="detail" id="banner-detail"></div>
       </div>
     </div>
@@ -403,7 +561,7 @@
       <div class="kpi-card kpi-orange" id="kpi-gap-card">
         <div class="k-label">Storage Gap</div>
         <div class="k-val" id="kpi-gap">—</div>
-        <div class="k-unit">Litres (+need / −surplus)</div>
+        <div class="k-unit">Litres (+need / -surplus)</div>
         <div class="k-note" id="kpi-gap-note">—</div>
       </div>
       <div class="kpi-card kpi-purple">
@@ -422,28 +580,25 @@
         <div class="k-label">Annual Water Demand</div>
         <div class="k-val" id="kpi-demand">—</div>
         <div class="k-unit">Litres/year</div>
-        <div class="k-note">Domestic + Irrigation (rain-offset)</div>
+        <div class="k-note">Domestic (diversified) + Irrigation (rain-offset)</div>
       </div>
     </div>
 
     <table>
-      <thead>
-        <tr><th>Metric</th><th>Value</th><th>Unit</th><th>Notes</th></tr>
-      </thead>
+      <thead><tr><th>Metric</th><th>Value</th><th>Unit</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td class="lbl">Annual Domestic Demand</td><td id="res-dom-ann">—</td><td class="unit">L/yr</td><td class="note">Pop × LPCD × 365 × seasonal</td></tr>
+        <tr><td class="lbl">Annual Domestic Demand</td><td id="res-dom-ann">—</td><td class="unit">L/yr</td><td class="note">Pop × LPCD × days × seasonal × diversity</td></tr>
         <tr><td class="lbl">Annual Irrigation Demand (gross)</td><td id="res-irr-gross">—</td><td class="unit">L/yr</td><td class="note">Before rainfall offset</td></tr>
         <tr><td class="lbl">Annual Rainfall Irrigation Offset</td><td id="res-irr-offset">—</td><td class="unit">L/yr</td><td class="note">Rain absorbed by Farm + Garden areas</td></tr>
         <tr><td class="lbl">Annual Irrigation Demand (net)</td><td id="res-irr-net">—</td><td class="unit">L/yr</td><td class="note">After subtracting rainfall</td></tr>
         <tr><td class="lbl">Total Annual Demand (net)</td><td id="res-total-dem">—</td><td class="unit">L/yr</td><td></td></tr>
         <tr><td class="lbl">Total Annual RWH Harvest</td><td id="res-harvest">—</td><td class="unit">L/yr</td><td class="note">Sum of monthly harvests</td></tr>
-        <tr><td class="lbl">Annual Net Water Balance</td><td id="res-net-balance">—</td><td class="unit">L/yr</td><td class="note">Harvest − Demand (positive = surplus)</td></tr>
+        <tr><td class="lbl">Annual Net Water Balance</td><td id="res-net-balance">—</td><td class="unit">L/yr</td><td class="note">Harvest - Demand (positive = surplus)</td></tr>
         <tr><td class="lbl">Rippl Required Storage (design year)</td><td id="res-rippl">—</td><td class="unit">L</td><td class="note">Minimum tank to achieve net-zero</td></tr>
         <tr><td class="lbl">Planned Tank Capacity</td><td id="res-planned">—</td><td class="unit">L</td><td></td></tr>
-        <tr class="tot"><td class="lbl">Storage Coverage</td><td id="res-coverage">—</td><td class="unit">%</td><td class="note">Planned ÷ Required</td></tr>
+        <tr class="tot"><td class="lbl">Storage Coverage</td><td id="res-coverage">—</td><td class="unit">%</td><td class="note">Planned / Required</td></tr>
       </tbody>
     </table>
-
   </div>
 </div>
 
@@ -455,18 +610,20 @@
       <thead>
         <tr>
           <th>Month</th>
+          <th>Diversity</th>
           <th>Demand (L)</th>
           <th>Harvest (L)</th>
           <th>Net (L)</th>
           <th>Tank Level (L)</th>
           <th>Status</th>
-          <th style="width:130px">Demand vs Harvest</th>
+          <th style="width:120px">D vs H</th>
         </tr>
       </thead>
       <tbody id="monthly-tbody"></tbody>
       <tfoot>
         <tr class="tot">
           <td>Annual</td>
+          <td id="m-ann-div">—</td>
           <td id="m-ann-dem">—</td>
           <td id="m-ann-har">—</td>
           <td id="m-ann-net">—</td>
@@ -483,7 +640,7 @@
 <div class="section" id="sec-rippl">
   <div class="section-header">📊 6 — Rippl Scan Across All 16 Years</div>
   <div class="section-body">
-    <div class="help" style="margin-bottom:12px">The Rippl Method calculates the minimum storage required for each historical year. Use the <strong>worst year</strong> for conservative design. Sorted from driest to wettest.</div>
+    <div class="help" style="margin-bottom:12px">The Rippl Method calculates the minimum storage required for each historical year. Use the <strong>worst year</strong> for conservative design. Sorted driest to wettest.</div>
     <table>
       <thead>
         <tr>
@@ -526,14 +683,8 @@
     <table>
       <thead>
         <tr>
-          <th>Year</th>
-          <th>Population</th>
-          <th>Dom. Demand (L/yr)</th>
-          <th>Irr. Demand (L/yr)</th>
-          <th>Total Demand (L/yr)</th>
-          <th>Annual Harvest (L/yr)</th>
-          <th>Net Balance (L/yr)</th>
-          <th>Rippl Required (L)</th>
+          <th>Year</th><th>Population</th><th>Dom. Demand</th><th>Irr. Demand</th>
+          <th>Total Demand</th><th>Annual Harvest</th><th>Net Balance</th><th>Rippl Required</th>
         </tr>
       </thead>
       <tbody id="proj-tbody"></tbody>
@@ -554,9 +705,10 @@
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
-// DATA: Chevella 16-year rainfall records (2009–2024)
+// DATA: Chevella 16-year rainfall records (2009-2024)
 // ═══════════════════════════════════════════════════════════════════
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
 
 const CHEVELLA_YEARS = [
   {yr:2009, mm:[0,0,2.1,15.1,17.0,63.6,52.5,255.6,150.6,59.3,37.8,4.4]},
@@ -583,7 +735,6 @@ const AVG_MM = MONTHS.map((_,i) => {
 });
 const AVG_TOTAL = AVG_MM.reduce((a,b)=>a+b,0);
 
-// Sort years by total rainfall (driest first) for the preset buttons
 const YEARS_BY_RAIN = [...CHEVELLA_YEARS].sort((a,b) =>
   a.mm.reduce((s,v)=>s+v,0) - b.mm.reduce((s,v)=>s+v,0)
 );
@@ -596,11 +747,73 @@ const IRR_FACTOR  = [1.1,1.1,1.3,1.3,1.2,0.8,0.5,0.5,0.6,0.9,1.0,1.1];
 let RAIN_MM = [...CHEVELLA_YEARS.find(y=>y.yr===2018).mm];
 let activePreset = '2018';
 
+// BHK to average house area mapping (sqft)
+const BHK_AREA = {1:600, 2:900, 3:1200, 4:1600};
+
+// ═══════════════════════════════════════════════════════════════════
+// DIVERSITY: 52-week occupancy pattern
+// ═══════════════════════════════════════════════════════════════════
+function getDiversityForWeekDay(week, dow) {
+  // week: 1-52, dow: 0=Sun 1=Mon ... 6=Sat
+  const isWeekend = (dow === 0 || dow === 6);
+  if(week >= 1  && week <= 17) return isWeekend ? 0.50 : 0.30;
+  if(week === 18) {
+    // 60% on five days (Mon-Fri), 50% on Sat, 30% on Sun
+    if(dow === 0) return 0.30;
+    if(dow === 6) return 0.50;
+    return 0.60;
+  }
+  if(week >= 19 && week <= 30) return 0.60;
+  if(week === 31) {
+    // 60% on three days (Mon-Wed), 30% on four days (Thu-Sun)
+    return (dow >= 1 && dow <= 3) ? 0.60 : 0.30;
+  }
+  if(week >= 32 && week <= 39) return isWeekend ? 0.50 : 0.30;
+  if(week === 40) {
+    // 60% on six days (Mon-Sat), 30% on Sun
+    return (dow === 0) ? 0.30 : 0.60;
+  }
+  if(week >= 41 && week <= 43) return 0.60;
+  if(week === 44) {
+    // 60% on four days (Mon-Thu), 30% on three days (Fri-Sun)
+    return (dow >= 1 && dow <= 4) ? 0.60 : 0.30;
+  }
+  if(week >= 45 && week <= 51) return isWeekend ? 0.50 : 0.30;
+  return 0.75; // week 52
+}
+
+function calcMonthlyDiversity() {
+  // Build a 365-day array and aggregate by month
+  const monthlySum = new Array(12).fill(0);
+  let dayOfYear = 0;
+  for(let m = 0; m < 12; m++) {
+    for(let d = 0; d < DAYS_IN_MONTH[m]; d++) {
+      const date = new Date(2025, m, d + 1);
+      const dow = date.getDay();
+      const week = Math.min(Math.floor(dayOfYear / 7) + 1, 52);
+      monthlySum[m] += getDiversityForWeekDay(week, dow);
+      dayOfYear++;
+    }
+  }
+  return MONTHS.map((_, i) => monthlySum[i] / DAYS_IN_MONTH[i]);
+}
+
+// Cached diversity factors
+const DIVERSITY_MONTHLY = calcMonthlyDiversity();
+const DIVERSITY_ANNUAL_AVG = (() => {
+  let totalDays = 0, totalWeighted = 0;
+  for(let i = 0; i < 12; i++) {
+    totalWeighted += DIVERSITY_MONTHLY[i] * DAYS_IN_MONTH[i];
+    totalDays += DAYS_IN_MONTH[i];
+  }
+  return totalWeighted / totalDays;
+})();
+
 // ═══════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════
 const fmt = n => isNaN(n)||n===null ? '—' : n.toLocaleString('en-IN',{maximumFractionDigits:0});
-const fmtMM = n => isNaN(n) ? '—' : n.toFixed(1);
+const fmtDec = (n,d) => isNaN(n) ? '—' : n.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtPct = n => isNaN(n) ? '—' : n.toFixed(1)+'%';
 const fmtL = n => {
   if(isNaN(n)||n===null) return '—';
@@ -611,19 +824,10 @@ const fmtL = n => {
 const $v = id => { const el=document.getElementById(id); return el ? parseFloat(el.value)||0 : 0; };
 const $s = id => { const el=document.getElementById(id); return el ? el.value||'' : ''; };
 const setText = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-const setClass = (id,cls) => { const el=document.getElementById(id); if(el){ el.className=el.className.replace(/val-\w+/g,''); el.classList.add(cls); } };
 
 function ripplStorage(demand12, harvest12) {
-  // Rippl method: cumulative deficit = required storage
-  let cumDeficit = 0, maxDeficit = 0;
-  let cum = 0;
-  for(let i=0;i<12;i++){
-    cum += harvest12[i] - demand12[i];
-    if(cum < 0){ if(-cum > maxDeficit) maxDeficit = -cum; }
-  }
-  // Standard Rippl: max cumulative deficit
   let cumSum = 0, minCum = Infinity;
-  for(let i=0;i<12;i++){
+  for(let i = 0; i < 12; i++){
     cumSum += harvest12[i] - demand12[i];
     if(cumSum < minCum) minCum = cumSum;
   }
@@ -631,21 +835,77 @@ function ripplStorage(demand12, harvest12) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// CALCULATIONS
+// SCALING CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
-function calcMonthly(rainMM) {
-  const pop     = $v('d-pop');
+function updateBHKArea(which) {
+  const bhk = parseInt(document.getElementById('sc-'+which+'-bhk').value);
+  document.getElementById('sc-'+which+'-area').value = BHK_AREA[bhk] || 1200;
+  updateScaling();
+}
+
+function updateScaling() {
+  const refH = $v('sc-ref-houses') || 1;
+  const refA = $v('sc-ref-area') || 1;
+  const newH = $v('sc-new-houses') || 1;
+  const newA = $v('sc-new-area') || 1;
+  const factor = (newH * newA) / (refH * refA);
+
+  setText('sc-factor', factor.toFixed(4));
+
+  const refSqm = $v('sc-ref-sqm');
+  const refDrip = $v('sc-ref-drip');
+  const refSprink = $v('sc-ref-sprink');
+  const refWater = $v('sc-ref-water');
+
+  setText('sc-new-sqm', fmtDec(refSqm * factor, 2));
+  setText('sc-ref-sft', fmtDec(refSqm * 10.764, 1));
+  setText('sc-new-sft', fmtDec(refSqm * factor * 10.764, 1));
+  setText('sc-ref-ac', (refSqm / 4046.86).toFixed(2));
+  setText('sc-new-ac', (refSqm * factor / 4046.86).toFixed(2));
+  setText('sc-new-drip', fmtDec(refDrip * factor, 2));
+  setText('sc-new-sprink', fmt(Math.round(refSprink * factor)));
+  setText('sc-new-water', fmtDec(refWater * factor, 2));
+
+  const refPph = $v('sc-ref-pph') || 4;
+  const newPph = $v('sc-new-pph') || 4;
+  setText('sc-ref-pop', fmt(Math.round(refH * refPph)));
+  setText('sc-new-pop', fmt(Math.round(newH * newPph)));
+}
+
+function applyScaledToDemand() {
+  const refH = $v('sc-ref-houses') || 1;
+  const refA = $v('sc-ref-area') || 1;
+  const newH = $v('sc-new-houses') || 1;
+  const newA = $v('sc-new-area') || 1;
+  const factor = (newH * newA) / (refH * refA);
+
+  const newPph = $v('sc-new-pph') || 4;
+  document.getElementById('d-pop').value = Math.round(newH * newPph);
+  document.getElementById('d-drip').value = Math.round($v('sc-ref-drip') * factor);
+  document.getElementById('d-sprink').value = Math.round($v('sc-ref-sprink') * factor);
+
+  const newLabel = $s('sc-new-label');
+  if(newLabel) document.getElementById('proj-name').value = newLabel;
+
+  refreshAll();
+  document.getElementById('sec-demand').scrollIntoView({behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CORE CALCULATION (shared by all views)
+// ═══════════════════════════════════════════════════════════════════
+function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
+  const pop     = popOverride   !== undefined ? popOverride   : $v('d-pop');
   const lpcd    = $v('d-lpcd');
-  const drip    = $v('d-drip');
+  const drip    = dripOverride  !== undefined ? dripOverride  : $v('d-drip');
   const dripR   = $v('d-drip-rate');
   const dripH   = $v('d-drip-hrs');
-  const sprink  = $v('d-sprink');
+  const sprink  = sprinkOverride!== undefined ? sprinkOverride: $v('d-sprink');
   const sprinkR = $v('d-sprink-rate');
   const sprinkH = $v('d-sprink-hrs');
-  const animal  = $v('d-animal') * 30; // L/month
-  const misc    = $v('d-misc') * 30;   // L/month
+  const animalPerDay = $v('d-animal');
+  const miscPerDay   = $v('d-misc');
 
-  // Areas in m²
   const aRoad    = $v('a-road');
   const aFarm    = $v('a-farm');
   const aTerrace = $v('a-terrace');
@@ -653,38 +913,52 @@ function calcMonthly(rainMM) {
   const aWalk    = $v('a-walk');
   const totalAreaSqm = aRoad + aFarm + aTerrace + aGarden + aWalk;
 
-  // Effective harvest area (area × RC for each surface)
   let effHarvestArea;
   if(totalAreaSqm > 0) {
     effHarvestArea = aRoad*0.85 + aFarm*0.15 + aTerrace*0.85 + aGarden*0.30 + aWalk*0.85;
   } else {
-    const siteAcres = $v('a-site-ac');
-    const rc = $v('a-runoff');
-    effHarvestArea = siteAcres * 4046.86 * rc;
+    effHarvestArea = $v('a-site-ac') * 4046.86 * $v('a-runoff');
   }
 
-  // Base monthly demands (before seasonal factors)
-  const domBase = pop * lpcd * 30;         // L/month base
-  const dripBase = drip * dripR * dripH * 30; // L/month
-  const sprinkBase = sprink * sprinkR * sprinkH * 30;
-  const irrBase = dripBase + sprinkBase;
+  // Should we apply diversity?
+  const useDiversity = document.getElementById('d-diversity-on')?.checked ?? false;
+
+  // Per-day base demands (before seasonal / diversity)
+  const dripPerDay   = drip * dripR * dripH;
+  const sprinkPerDay = sprink * sprinkR * sprinkH;
+  const irrPerDay    = dripPerDay + sprinkPerDay;
 
   const months = MONTHS.map((m, i) => {
-    // Rainfall irrigation offset: rain absorbed by farm (85%) and garden (70%)
-    const rainOffset = rainMM[i] * (aFarm * 0.85 + aGarden * 0.70); // litres
+    const days = DAYS_IN_MONTH[i];
+    const divFactor = useDiversity ? DIVERSITY_MONTHLY[i] : 1.0;
 
-    const dom = domBase * DOM_FACTOR[i];
-    const irr = Math.max(0, irrBase * IRR_FACTOR[i] - rainOffset);
-    const demand = dom + irr + animal + misc;
+    // Domestic: pop × lpcd × days × seasonal × diversity
+    const dom = pop * lpcd * days * DOM_FACTOR[i] * divFactor;
 
-    // Harvest: 1 mm on 1 m² = 1 litre
+    // Irrigation: irr/day × days × seasonal - rainfall offset  (diversity does NOT affect irrigation)
+    const rainOffset = rainMM[i] * (aFarm * 0.85 + aGarden * 0.70);
+    const irrGross = irrPerDay * days * IRR_FACTOR[i];
+    const irr = Math.max(0, irrGross - rainOffset);
+
+    // Other uses (not diversified — animals/construction need water regardless)
+    const animal = animalPerDay * days;
+    const misc   = miscPerDay * days;
+
+    const demand  = dom + irr + animal + misc;
     const harvest = rainMM[i] * effHarvestArea;
 
-    return { month: m, dom, irr, irrGross: irrBase * IRR_FACTOR[i], rainOffset, demand, harvest, net: harvest - demand };
+    return { month: m, dom, irr, irrGross, rainOffset, demand, harvest, net: harvest - demand, divFactor, animal, misc };
   });
 
+  const irrBase = irrPerDay * 30; // for display only (avg month)
+  const domBase = pop * lpcd * 30; // for display only (avg month, before diversity)
   return { months, effHarvestArea, irrBase, domBase, totalAreaSqm };
 }
+
+// Convenience wrappers
+function calcMonthly(rainMM) { return calcMonthlyCore(rainMM); }
+function calcMonthlyWith(rainMM) { return calcMonthlyCore(rainMM); }
+function calcMonthlyForRain(rainMM) { return calcMonthlyCore(rainMM); }
 
 // ═══════════════════════════════════════════════════════════════════
 // REFRESH ALL OUTPUTS
@@ -692,19 +966,20 @@ function calcMonthly(rainMM) {
 function refreshAll() {
   updateHeader();
   updateAreaAcres();
-  const { months, effHarvestArea, irrBase, domBase, totalAreaSqm } = calcMonthly(RAIN_MM);
+  updateScaling();
+  updateDiversityDisplay();
 
-  // Basic sums
-  const annDemand  = months.reduce((s,m)=>s+m.demand,0);
-  const annHarvest = months.reduce((s,m)=>s+m.harvest,0);
-  const annDomDem  = months.reduce((s,m)=>s+m.dom,0);
+  const { months, effHarvestArea, irrBase, domBase } = calcMonthly(RAIN_MM);
+
+  const annDemand   = months.reduce((s,m)=>s+m.demand,0);
+  const annHarvest  = months.reduce((s,m)=>s+m.harvest,0);
+  const annDomDem   = months.reduce((s,m)=>s+m.dom,0);
   const annIrrGross = months.reduce((s,m)=>s+m.irrGross,0);
-  const annIrrOffset = months.reduce((s,m)=>s+m.rainOffset,0);
+  const annIrrOffset= months.reduce((s,m)=>s+m.rainOffset,0);
   const annIrrNet   = months.reduce((s,m)=>s+m.irr,0);
   const annBalance  = annHarvest - annDemand;
   const selfSuff    = annDemand > 0 ? (annHarvest / annDemand) * 100 : 0;
 
-  // Rippl
   const demand12  = months.map(m=>m.demand);
   const harvest12 = months.map(m=>m.harvest);
   const rippl     = ripplStorage(demand12, harvest12);
@@ -712,23 +987,23 @@ function refreshAll() {
   const gap       = planned - rippl;
   const coverage  = rippl > 0 ? (planned / rippl) * 100 : 100;
 
-  // Update demand summary display
-  const avgDomBase = domBase * 30 / 30;
+  // Demand summary
+  const useDiversity = document.getElementById('d-diversity-on')?.checked ?? false;
   setText('d-dom-monthly', fmt(domBase) + ' L');
+  setText('d-dom-div-note', useDiversity ? 'Diversity applied — effective avg: ' + (DIVERSITY_ANNUAL_AVG*100).toFixed(1)+'%' : 'Full occupancy (no diversity)');
   setText('d-irr-monthly', fmt(irrBase) + ' L');
 
   // KPI cards
   setText('kpi-rippl', fmtL(rippl));
   setText('kpi-planned', fmtL(planned));
   setText('kpi-gap', fmtL(Math.abs(gap)));
-  setText('kpi-gap-note', gap >= 0 ? '✅ Storage surplus' : '❌ Need more storage');
+  setText('kpi-gap-note', gap >= 0 ? 'Storage surplus' : 'Need more storage');
   const gcCard = document.getElementById('kpi-gap-card');
   if(gcCard) gcCard.className = 'kpi-card ' + (gap >= 0 ? 'kpi-green' : 'kpi-red');
-
   setText('kpi-selfsuff', selfSuff.toFixed(0)+'%');
-  setText('kpi-selfsuff-note', selfSuff >= 100 ? '✅ Net-zero achievable' : `Need ${fmtL(annDemand - annHarvest)} supplement`);
+  setText('kpi-selfsuff-note', selfSuff >= 100 ? 'Net-zero achievable' : 'Need '+fmtL(annDemand-annHarvest)+' supplement');
   setText('kpi-harvest', fmtL(annHarvest));
-  setText('kpi-harvest-note', `Eff. area: ${Math.round(effHarvestArea).toLocaleString()} m²`);
+  setText('kpi-harvest-note', 'Eff. area: '+Math.round(effHarvestArea).toLocaleString()+' m2');
   setText('kpi-demand', fmtL(annDemand));
 
   // Results table
@@ -745,53 +1020,40 @@ function refreshAll() {
   const cov = document.getElementById('res-coverage');
   if(cov){ cov.textContent = fmtPct(coverage); cov.className = coverage >= 100 ? 'val-green' : 'val-red'; }
 
-  // Feasibility banner
+  // Banner
   const banner = document.getElementById('feasibility-banner');
   const bannerMsg = document.getElementById('banner-msg');
   const bannerDetail = document.getElementById('banner-detail');
   if(banner && bannerMsg && bannerDetail){
+    const iconEl = banner.querySelector('.icon');
     if(selfSuff >= 100 && coverage >= 100){
-      banner.className = 'banner ok';
-      document.querySelector('.banner .icon').textContent = '✅';
-      bannerMsg.textContent = 'Net-Zero Achievable — Annual harvest exceeds demand, storage is adequate';
-      bannerDetail.textContent = `Self-sufficiency: ${selfSuff.toFixed(0)}% | Storage coverage: ${coverage.toFixed(0)}% | Annual surplus: ${fmtL(annBalance)}`;
-    } else if(selfSuff >= 100 && coverage < 100){
-      banner.className = 'banner warn';
-      document.querySelector('.banner .icon').textContent = '⚠️';
-      bannerMsg.textContent = 'Harvest Sufficient but Storage Needs Scaling Up';
-      bannerDetail.textContent = `Harvest covers demand (${selfSuff.toFixed(0)}%) but tank only covers ${coverage.toFixed(0)}% of Rippl requirement. Add ${fmtL(rippl - planned)} more storage.`;
-    } else if(selfSuff < 100 && coverage >= 100){
-      banner.className = 'banner warn';
-      document.querySelector('.banner .icon').textContent = '⚠️';
-      bannerMsg.textContent = 'Storage OK but Annual Harvest Falls Short of Demand';
-      bannerDetail.textContent = `Harvest only ${selfSuff.toFixed(0)}% of demand — ${fmtL(annDemand - annHarvest)} gap. Consider reducing demand or increasing catchment area.`;
+      banner.className='banner ok'; if(iconEl) iconEl.textContent='✅';
+      bannerMsg.textContent='Net-Zero Achievable — Harvest exceeds demand, storage is adequate';
+      bannerDetail.textContent='Self-sufficiency: '+selfSuff.toFixed(0)+'% | Storage coverage: '+coverage.toFixed(0)+'% | Annual surplus: '+fmtL(annBalance);
+    } else if(selfSuff >= 100){
+      banner.className='banner warn'; if(iconEl) iconEl.textContent='⚠️';
+      bannerMsg.textContent='Harvest Sufficient but Storage Needs Scaling Up';
+      bannerDetail.textContent='Harvest covers demand ('+selfSuff.toFixed(0)+'%) but tank only covers '+coverage.toFixed(0)+'% of Rippl requirement. Add '+fmtL(rippl-planned)+' more storage.';
+    } else if(coverage >= 100){
+      banner.className='banner warn'; if(iconEl) iconEl.textContent='⚠️';
+      bannerMsg.textContent='Storage OK but Annual Harvest Falls Short of Demand';
+      bannerDetail.textContent='Harvest only '+selfSuff.toFixed(0)+'% of demand — '+fmtL(annDemand-annHarvest)+' gap.';
     } else {
-      banner.className = 'banner bad';
-      document.querySelector('.banner .icon').textContent = '❌';
-      bannerMsg.textContent = 'Net-Zero Not Achievable with Current Configuration';
-      bannerDetail.textContent = `Harvest ${selfSuff.toFixed(0)}% of demand | Storage ${coverage.toFixed(0)}% of required. Shortfall: ${fmtL(annDemand - annHarvest)}/yr, need ${fmtL(rippl - planned)} more storage.`;
+      banner.className='banner bad'; if(iconEl) iconEl.textContent='❌';
+      bannerMsg.textContent='Net-Zero Not Achievable with Current Configuration';
+      bannerDetail.textContent='Harvest '+selfSuff.toFixed(0)+'% of demand | Storage '+coverage.toFixed(0)+'% of required. Shortfall: '+fmtL(annDemand-annHarvest)+'/yr, need '+fmtL(rippl-planned)+' more storage.';
     }
   }
 
-  // Rainfall table update
   updateRainTable(months);
-
-  // Monthly table
   updateMonthlyTable(months, planned);
-
-  // Rippl scan
   updateRipplTable();
-
-  // Projection
   updateProjection();
-
-  // Save
   saveState();
 }
 
 function updateHeader(){
-  const name = $s('proj-name');
-  const loc  = $s('proj-loc');
+  const name = $s('proj-name'), loc = $s('proj-loc');
   document.title = name + ' — Net-Zero Water';
   const sub = document.getElementById('hdr-subtitle');
   if(sub) sub.textContent = 'Demand vs Supply — Design for Scarcity';
@@ -800,107 +1062,132 @@ function updateHeader(){
 }
 
 function updateAreaAcres(){
-  const aRoad    = $v('a-road');
-  const aFarm    = $v('a-farm');
-  const aTerrace = $v('a-terrace');
-  const aGarden  = $v('a-garden');
-  const aWalk    = $v('a-walk');
-  const total    = aRoad + aFarm + aTerrace + aGarden + aWalk;
-
-  const toAc = sqm => (sqm / 4046.86).toFixed(3) + ' ac';
-  setText('a-road-ac',    aRoad    > 0 ? toAc(aRoad)    : '—');
-  setText('a-farm-ac',    aFarm    > 0 ? toAc(aFarm)    : '—');
-  setText('a-terrace-ac', aTerrace > 0 ? toAc(aTerrace) : '—');
-  setText('a-garden-ac',  aGarden  > 0 ? toAc(aGarden)  : '—');
-  setText('a-walk-ac',    aWalk    > 0 ? toAc(aWalk)    : '—');
-  setText('a-total-sqm',  total > 0 ? fmt(total) + ' m²' : '0');
-  setText('a-total-ac',   total > 0 ? toAc(total) : '—');
-
+  const a = {road:$v('a-road'), farm:$v('a-farm'), terrace:$v('a-terrace'), garden:$v('a-garden'), walk:$v('a-walk')};
+  const total = a.road+a.farm+a.terrace+a.garden+a.walk;
+  const toAc = sqm => (sqm/4046.86).toFixed(3)+' ac';
+  setText('a-road-ac', a.road>0?toAc(a.road):'—');
+  setText('a-farm-ac', a.farm>0?toAc(a.farm):'—');
+  setText('a-terrace-ac', a.terrace>0?toAc(a.terrace):'—');
+  setText('a-garden-ac', a.garden>0?toAc(a.garden):'—');
+  setText('a-walk-ac', a.walk>0?toAc(a.walk):'—');
+  setText('a-total-sqm', total>0?fmt(total)+' m2':'0');
+  setText('a-total-ac', total>0?toAc(total):'—');
   if(total > 0){
-    const effRC = (aRoad*0.85 + aFarm*0.15 + aTerrace*0.85 + aGarden*0.30 + aWalk*0.85) / total;
-    setText('a-eff-rc', 'eff. RC: ' + effRC.toFixed(2));
-    const annHarv = RAIN_MM.reduce((s,mm,i)=>s + mm*(aRoad*0.85+aFarm*0.15+aTerrace*0.85+aGarden*0.30+aWalk*0.85), 0);
-    setText('a-ann-harvest', 'Annual harvest ≈ ' + fmtL(annHarv));
+    const effRC = (a.road*0.85+a.farm*0.15+a.terrace*0.85+a.garden*0.30+a.walk*0.85)/total;
+    setText('a-eff-rc', 'eff. RC: '+effRC.toFixed(2));
+    const ann = RAIN_MM.reduce((s,mm)=>s+mm*(a.road*0.85+a.farm*0.15+a.terrace*0.85+a.garden*0.30+a.walk*0.85),0);
+    setText('a-ann-harvest', 'Annual harvest ~ '+fmtL(ann));
   } else {
-    setText('a-eff-rc', 'eff. RC: —');
-    setText('a-ann-harvest', 'No areas entered — using fallback site area');
+    setText('a-eff-rc','eff. RC: —');
+    setText('a-ann-harvest','No areas entered — using fallback');
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// DIVERSITY DISPLAY
+// ═══════════════════════════════════════════════════════════════════
+function updateDiversityDisplay() {
+  // Heatmap
+  const grid = document.getElementById('div-heatmap');
+  if(grid) {
+    let html = '';
+    for(let w = 1; w <= 52; w++) {
+      let sum = 0;
+      for(let d = 0; d < 7; d++) sum += getDiversityForWeekDay(w, d);
+      const avg = sum / 7;
+      let bg;
+      if(avg >= 0.70) bg = '#1565c0';
+      else if(avg >= 0.55) bg = '#43a047';
+      else if(avg >= 0.45) bg = '#ff9800';
+      else bg = '#c62828';
+      html += '<div class="div-block" style="background:'+bg+'" title="W'+w+': '+(avg*100).toFixed(0)+'%">'+w+'</div>';
+    }
+    grid.innerHTML = html;
+  }
+
+  // Annual avg
+  setText('div-annual-avg', (DIVERSITY_ANNUAL_AVG * 100).toFixed(1) + '%');
+
+  // Monthly table
+  const tbody = document.getElementById('div-monthly-tbody');
+  if(tbody) {
+    const useDiversity = document.getElementById('d-diversity-on')?.checked ?? false;
+    tbody.innerHTML = MONTHS.map((m, i) => {
+      const d = DIVERSITY_MONTHLY[i];
+      const tag = d < 0.40 ? 'Low' : d < 0.55 ? 'Medium' : 'High';
+      const cls = d < 0.40 ? 'val-red' : d < 0.55 ? 'val-orange' : 'val-green';
+      return '<tr><td class="lbl">'+m+'</td><td class="'+cls+'">'+(d*100).toFixed(1)+'%</td><td class="note">'+(useDiversity ? 'Domestic demand x '+(d).toFixed(3) : 'Diversity OFF — using 100%')+'</td></tr>';
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RAIN TABLE
+// ═══════════════════════════════════════════════════════════════════
 function updateRainTable(months){
   const totalRain = RAIN_MM.reduce((a,b)=>a+b,0);
   const totalAvg  = AVG_MM.reduce((a,b)=>a+b,0);
-  const totalHarv = months.reduce((s,m)=>s+m.harvest,0);
-  const totalOff  = months.reduce((s,m)=>s+m.rainOffset,0);
-
   const tbody = document.getElementById('rain-tbody');
   if(!tbody) return;
   tbody.querySelectorAll('tr').forEach(tr=>{
     const i = parseInt(tr.dataset.idx);
     if(isNaN(i)) return;
-    const m = months[i];
     const diff = RAIN_MM[i] - AVG_MM[i];
     tr.cells[1].querySelector('input').value = RAIN_MM[i];
-    tr.cells[2].textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1) + ' mm';
-    tr.cells[2].className = diff >= 0 ? 'val-green' : 'val-red';
-    tr.cells[3].textContent = fmtL(m.harvest);
-    tr.cells[4].textContent = fmtL(m.rainOffset);
+    tr.cells[2].textContent = (diff>=0?'+':'')+diff.toFixed(1)+' mm';
+    tr.cells[2].className = diff>=0?'val-green':'val-red';
+    tr.cells[3].textContent = fmtL(months[i].harvest);
+    tr.cells[4].textContent = fmtL(months[i].rainOffset);
   });
-
-  setText('rain-total', totalRain.toFixed(1) + ' mm');
+  setText('rain-total', totalRain.toFixed(1)+' mm');
   const totDiff = totalRain - totalAvg;
   const rvAvg = document.getElementById('rain-vs-avg');
-  if(rvAvg){ rvAvg.textContent = (totDiff>=0?'+':'')+totDiff.toFixed(0)+' mm vs avg'; rvAvg.className=(totDiff>=0?'val-green':'val-red'); }
-  setText('rain-harvest-total', fmtL(totalHarv));
-  setText('rain-offset-total', fmtL(totalOff));
+  if(rvAvg){ rvAvg.textContent=(totDiff>=0?'+':'')+totDiff.toFixed(0)+' mm vs avg'; rvAvg.className=(totDiff>=0?'val-green':'val-red'); }
+  setText('rain-harvest-total', fmtL(months.reduce((s,m)=>s+m.harvest,0)));
+  setText('rain-offset-total', fmtL(months.reduce((s,m)=>s+m.rainOffset,0)));
 }
 
 function updateMonthlyTable(months, tankCap){
   const tbody = document.getElementById('monthly-tbody');
   if(!tbody) return;
-
   let tank = 0;
   const maxBar = Math.max(...months.map(m=>Math.max(m.demand,m.harvest)),1);
-
   tbody.innerHTML = months.map((m,i) => {
     tank = Math.min(tankCap, Math.max(0, tank + m.harvest - m.demand));
-    const net = m.net;
-    const surp = net >= 0;
+    const surp = m.net >= 0;
     const dPct = Math.round(m.demand/maxBar*100);
     const hPct = Math.round(m.harvest/maxBar*100);
-    return `<tr>
-      <td class="lbl">${m.month}</td>
-      <td>${fmt(m.demand)}</td>
-      <td>${fmt(m.harvest)}</td>
-      <td class="${surp?'val-green':'val-red'}">${surp?'+':''}${fmt(net)}</td>
-      <td>${fmt(tank)}</td>
-      <td><span class="badge ${surp?'badge-surplus':'badge-deficit'}">${surp?'Surplus':'Deficit'}</span></td>
-      <td class="bar-cell">
-        <div style="font-size:10px;color:#78909c;margin-bottom:2px">D</div>
-        <div class="bar-wrap"><div class="bar-h bar-dem" style="width:${dPct}%"></div></div>
-        <div style="font-size:10px;color:#78909c;margin:2px 0">H</div>
-        <div class="bar-wrap"><div class="bar-h bar-har" style="width:${hPct}%"></div></div>
-      </td>
-    </tr>`;
+    return '<tr>'+
+      '<td class="lbl">'+m.month+'</td>'+
+      '<td class="'+(m.divFactor<0.5?'val-orange':'val-green')+'">'+(m.divFactor*100).toFixed(0)+'%</td>'+
+      '<td>'+fmt(m.demand)+'</td>'+
+      '<td>'+fmt(m.harvest)+'</td>'+
+      '<td class="'+(surp?'val-green':'val-red')+'">'+(surp?'+':'')+fmt(m.net)+'</td>'+
+      '<td>'+fmt(tank)+'</td>'+
+      '<td><span class="badge '+(surp?'badge-surplus':'badge-deficit')+'">'+(surp?'Surplus':'Deficit')+'</span></td>'+
+      '<td class="bar-cell">'+
+        '<div class="bar-wrap"><div class="bar-h bar-dem" style="width:'+dPct+'%"></div></div>'+
+        '<div class="bar-wrap" style="margin-top:2px"><div class="bar-h bar-har" style="width:'+hPct+'%"></div></div>'+
+      '</td></tr>';
   }).join('');
 
   const annDem = months.reduce((s,m)=>s+m.demand,0);
   const annHar = months.reduce((s,m)=>s+m.harvest,0);
   const annNet = annHar - annDem;
+  const avgDiv = months.reduce((s,m)=>s+m.divFactor,0)/12;
+  setText('m-ann-div', (avgDiv*100).toFixed(0)+'%');
   setText('m-ann-dem', fmt(annDem));
   setText('m-ann-har', fmt(annHar));
   const mNet = document.getElementById('m-ann-net');
-  if(mNet){ mNet.textContent = (annNet>=0?'+':'')+fmt(annNet); mNet.className=annNet>=0?'val-green':'val-red'; }
+  if(mNet){ mNet.textContent=(annNet>=0?'+':'')+fmt(annNet); mNet.className=annNet>=0?'val-green':'val-red'; }
   const mSt = document.getElementById('m-ann-status');
-  if(mSt){ mSt.innerHTML = `<span class="badge ${annNet>=0?'badge-surplus':'badge-deficit'}">${annNet>=0?'Surplus':'Deficit'}</span>`; }
+  if(mSt){ mSt.innerHTML='<span class="badge '+(annNet>=0?'badge-surplus':'badge-deficit')+'">'+(annNet>=0?'Surplus':'Deficit')+'</span>'; }
 }
 
 function updateRipplTable(){
   const tbody = document.getElementById('rippl-tbody');
   if(!tbody) return;
-
   const plannedCap = $v('stor-cap');
-
   tbody.innerHTML = YEARS_BY_RAIN.map(yr => {
     const { months } = calcMonthlyForRain(yr.mm);
     const demand12  = months.map(m=>m.demand);
@@ -912,120 +1199,49 @@ function updateRipplTable(){
     const feasible = annHar >= annDem;
     const isWorst = (rainTotal === Math.min(...CHEVELLA_YEARS.map(y=>y.mm.reduce((a,b)=>a+b,0))));
     const isDesign = yr.yr === parseInt($v('proj-year')||2018);
-
-    let rowClass = '';
-    if(isDesign) rowClass = 'rippl-design';
-    else if(isWorst) rowClass = 'rippl-worst';
-
+    let rowClass = isDesign ? 'rippl-design' : isWorst ? 'rippl-worst' : '';
     const feasIcon = feasible ? '🟢' : (rippl > annDem*0.5 ? '🟡' : '🔴');
-    return `<tr class="${rowClass}">
-      <td class="lbl">${yr.yr}${isDesign?' 🎯':''}</td>
-      <td>${rainTotal.toFixed(0)} mm</td>
-      <td>${fmt(annHar)}</td>
-      <td>${fmt(annDem)}</td>
-      <td class="${rippl <= plannedCap ? 'rippl-good' : 'rippl-bad'}">${fmt(rippl)}</td>
-      <td>${feasIcon} ${feasible ? 'Yes' : 'No'} — harvest ${feasible?'>':'<'} demand</td>
-    </tr>`;
+    return '<tr class="'+rowClass+'">'+
+      '<td class="lbl">'+yr.yr+(isDesign?' 🎯':'')+'</td>'+
+      '<td>'+rainTotal.toFixed(0)+' mm</td>'+
+      '<td>'+fmt(annHar)+'</td>'+
+      '<td>'+fmt(annDem)+'</td>'+
+      '<td class="'+(rippl<=plannedCap?'rippl-good':'rippl-bad')+'">'+fmt(rippl)+'</td>'+
+      '<td>'+feasIcon+' '+(feasible?'Yes':'No')+' — harvest '+(feasible?'>':'<')+' demand</td></tr>';
   }).join('');
-}
-
-function calcMonthlyForRain(rainMM) {
-  return calcMonthlyWith(rainMM);
-}
-
-function calcMonthlyWith(rainMM) {
-  const pop     = $v('d-pop');
-  const lpcd    = $v('d-lpcd');
-  const drip    = $v('d-drip');
-  const dripR   = $v('d-drip-rate');
-  const dripH   = $v('d-drip-hrs');
-  const sprink  = $v('d-sprink');
-  const sprinkR = $v('d-sprink-rate');
-  const sprinkH = $v('d-sprink-hrs');
-  const animal  = $v('d-animal') * 30;
-  const misc    = $v('d-misc') * 30;
-  const aRoad   = $v('a-road');
-  const aFarm   = $v('a-farm');
-  const aTerrace= $v('a-terrace');
-  const aGarden = $v('a-garden');
-  const aWalk   = $v('a-walk');
-  const totalAreaSqm = aRoad+aFarm+aTerrace+aGarden+aWalk;
-
-  let effHarvestArea;
-  if(totalAreaSqm > 0) {
-    effHarvestArea = aRoad*0.85 + aFarm*0.15 + aTerrace*0.85 + aGarden*0.30 + aWalk*0.85;
-  } else {
-    const siteAcres = $v('a-site-ac');
-    const rc = $v('a-runoff');
-    effHarvestArea = siteAcres * 4046.86 * rc;
-  }
-
-  const domBase = pop * lpcd * 30;
-  const dripBase = drip * dripR * dripH * 30;
-  const sprinkBase = sprink * sprinkR * sprinkH * 30;
-  const irrBase = dripBase + sprinkBase;
-
-  const months = MONTHS.map((m, i) => {
-    const rainOffset = rainMM[i] * (aFarm * 0.85 + aGarden * 0.70);
-    const dom = domBase * DOM_FACTOR[i];
-    const irr = Math.max(0, irrBase * IRR_FACTOR[i] - rainOffset);
-    const demand = dom + irr + animal + misc;
-    const harvest = rainMM[i] * effHarvestArea;
-    return { month: m, dom, irr, irrGross: irrBase * IRR_FACTOR[i], rainOffset, demand, harvest, net: harvest - demand };
-  });
-
-  return { months, effHarvestArea, irrBase, domBase, totalAreaSqm };
 }
 
 function updateProjection(){
   const tbody = document.getElementById('proj-tbody');
   if(!tbody) return;
-
-  const startYear  = $v('proj-start') || 2025;
-  const popGrowth  = ($v('proj-growth') || 0) / 100;
-  const irrGrowth  = ($v('proj-irr-growth') || 0) / 100;
-
-  let basePop = $v('d-pop');
-  let baseIrrDrip = $v('d-drip');
-  let baseIrrSprink = $v('d-sprink');
+  const startYear = $v('proj-start')||2025;
+  const popGrowth = ($v('proj-growth')||0)/100;
+  const irrGrowth = ($v('proj-irr-growth')||0)/100;
+  const basePop = $v('d-pop');
+  const baseDrip = $v('d-drip');
+  const baseSprink = $v('d-sprink');
 
   const rows = [];
-  for(let y=0;y<5;y++){
+  for(let y = 0; y < 5; y++){
     const pop = Math.round(basePop * Math.pow(1+popGrowth, y));
-    const drip = Math.round(baseIrrDrip * Math.pow(1+irrGrowth, y));
-    const sprink = Math.round(baseIrrSprink * Math.pow(1+irrGrowth, y));
-
-    // Override inputs temporarily for calculation
-    const origPop = document.getElementById('d-pop').value;
-    const origDrip = document.getElementById('d-drip').value;
-    const origSprink = document.getElementById('d-sprink').value;
-    document.getElementById('d-pop').value = pop;
-    document.getElementById('d-drip').value = drip;
-    document.getElementById('d-sprink').value = sprink;
-
-    const { months } = calcMonthlyWith(RAIN_MM);
+    const drip = Math.round(baseDrip * Math.pow(1+irrGrowth, y));
+    const sprink = Math.round(baseSprink * Math.pow(1+irrGrowth, y));
+    const { months } = calcMonthlyCore(RAIN_MM, pop, drip, sprink);
     const annDem = months.reduce((s,m)=>s+m.demand,0);
     const annHar = months.reduce((s,m)=>s+m.harvest,0);
     const annNet = annHar - annDem;
     const rippl  = ripplStorage(months.map(m=>m.demand), months.map(m=>m.harvest));
-
-    document.getElementById('d-pop').value = origPop;
-    document.getElementById('d-drip').value = origDrip;
-    document.getElementById('d-sprink').value = origSprink;
-
     const annDomDem = months.reduce((s,m)=>s+m.dom,0);
     const annIrrDem = months.reduce((s,m)=>s+m.irr,0);
-
-    rows.push(`<tr>
-      <td class="lbl">${startYear + y}</td>
-      <td>${pop.toLocaleString()}</td>
-      <td>${fmt(annDomDem)}</td>
-      <td>${fmt(annIrrDem)}</td>
-      <td>${fmt(annDem)}</td>
-      <td>${fmt(annHar)}</td>
-      <td class="${annNet>=0?'val-green':'val-red'}">${annNet>=0?'+':''}${fmt(annNet)}</td>
-      <td class="${rippl<=$v('stor-cap')?'val-green':'val-red'}">${fmt(rippl)}</td>
-    </tr>`);
+    rows.push('<tr>'+
+      '<td class="lbl">'+(startYear+y)+'</td>'+
+      '<td>'+pop.toLocaleString()+'</td>'+
+      '<td>'+fmt(annDomDem)+'</td>'+
+      '<td>'+fmt(annIrrDem)+'</td>'+
+      '<td>'+fmt(annDem)+'</td>'+
+      '<td>'+fmt(annHar)+'</td>'+
+      '<td class="'+(annNet>=0?'val-green':'val-red')+'">'+(annNet>=0?'+':'')+fmt(annNet)+'</td>'+
+      '<td class="'+(rippl<=$v('stor-cap')?'val-green':'val-red')+'">'+fmt(rippl)+'</td></tr>');
   }
   tbody.innerHTML = rows.join('');
 }
@@ -1036,45 +1252,27 @@ function updateProjection(){
 function buildRainPresetButtons(){
   const container = document.getElementById('rain-preset-btns');
   if(!container) return;
-
   const totals = CHEVELLA_YEARS.map(y => y.mm.reduce((a,b)=>a+b,0));
-  const minTot = Math.min(...totals);
-  const maxTot = Math.max(...totals);
-
-  // Build sorted buttons (driest first)
-  const sorted = [...CHEVELLA_YEARS].sort((a,b) =>
-    a.mm.reduce((s,v)=>s+v,0) - b.mm.reduce((s,v)=>s+v,0)
-  );
-
+  const minTot = Math.min(...totals), maxTot = Math.max(...totals);
+  const sorted = [...CHEVELLA_YEARS].sort((a,b)=>a.mm.reduce((s,v)=>s+v,0)-b.mm.reduce((s,v)=>s+v,0));
   let html = '<button class="dry" onclick="applyRainPreset(\'avg\')" id="rbtn-avg">📊 16-yr Avg</button>';
   sorted.forEach(yr => {
     const total = yr.mm.reduce((a,b)=>a+b,0);
-    const pct = (total - minTot) / (maxTot - minTot);
-    const cls = pct < 0.2 ? 'dry' : pct > 0.8 ? 'wet' : '';
-    html += `<button class="${cls}" onclick="applyRainPreset(${yr.yr})" id="rbtn-${yr.yr}">${yr.yr} (${total.toFixed(0)})</button>`;
+    const pct = (total-minTot)/(maxTot-minTot);
+    const cls = pct<0.2?'dry':pct>0.8?'wet':'';
+    html += '<button class="'+cls+'" onclick="applyRainPreset('+yr.yr+')" id="rbtn-'+yr.yr+'">'+yr.yr+' ('+total.toFixed(0)+')</button>';
   });
-
   container.innerHTML = html;
   markActivePreset();
 }
 
 function applyRainPreset(key){
-  if(key === 'avg'){
-    RAIN_MM = [...AVG_MM];
-    activePreset = 'avg';
-  } else {
-    const yr = CHEVELLA_YEARS.find(y=>y.yr===parseInt(key));
-    if(yr){ RAIN_MM = [...yr.mm]; activePreset = String(key); }
-  }
+  if(key==='avg'){ RAIN_MM=[...AVG_MM]; activePreset='avg'; }
+  else { const yr=CHEVELLA_YEARS.find(y=>y.yr===parseInt(key)); if(yr){RAIN_MM=[...yr.mm]; activePreset=String(key);} }
   markActivePreset();
-  // Update the input fields in the rainfall table
-  const rows = document.querySelectorAll('#rain-tbody tr');
-  rows.forEach(tr=>{
-    const i = parseInt(tr.dataset.idx);
-    if(!isNaN(i)){
-      const inp = tr.querySelector('input');
-      if(inp) inp.value = RAIN_MM[i];
-    }
+  document.querySelectorAll('#rain-tbody tr').forEach(tr=>{
+    const i=parseInt(tr.dataset.idx);
+    if(!isNaN(i)){ const inp=tr.querySelector('input'); if(inp) inp.value=RAIN_MM[i]; }
   });
   refreshAll();
 }
@@ -1082,33 +1280,23 @@ function applyRainPreset(key){
 function markActivePreset(){
   document.querySelectorAll('#rain-preset-btns button').forEach(btn=>{
     btn.classList.remove('active');
-    const id = btn.id.replace('rbtn-','');
-    if(id === activePreset) btn.classList.add('active');
+    if(btn.id.replace('rbtn-','')===activePreset) btn.classList.add('active');
   });
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// BUILD RAINFALL INPUT TABLE
-// ═══════════════════════════════════════════════════════════════════
 function buildRainTable(){
   const tbody = document.getElementById('rain-tbody');
   if(!tbody) return;
-  tbody.innerHTML = MONTHS.map((m,i) => `
-    <tr data-idx="${i}">
-      <td class="lbl">${m}</td>
-      <td><input type="number" min="0" step="0.1" value="${RAIN_MM[i]}"
-          oninput="RAIN_MM[${i}]=parseFloat(this.value)||0;activePreset='custom';markActivePreset();refreshAll()"></td>
-      <td class="${RAIN_MM[i]>=AVG_MM[i]?'val-green':'val-red'}">
-        ${((RAIN_MM[i]-AVG_MM[i])>=0?'+':'')+(RAIN_MM[i]-AVG_MM[i]).toFixed(1)} mm
-      </td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = MONTHS.map((m,i) =>
+    '<tr data-idx="'+i+'">'+
+    '<td class="lbl">'+m+'</td>'+
+    '<td><input type="number" min="0" step="0.1" value="'+RAIN_MM[i]+'" oninput="RAIN_MM['+i+']=parseFloat(this.value)||0;activePreset=\'custom\';markActivePreset();refreshAll()"></td>'+
+    '<td>—</td><td>—</td><td>—</td></tr>'
+  ).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// PERSISTENCE: localStorage + URL
+// PERSISTENCE
 // ═══════════════════════════════════════════════════════════════════
 const FIELDS = [
   'proj-name','proj-loc','proj-year',
@@ -1117,98 +1305,78 @@ const FIELDS = [
   'd-animal','d-misc',
   'a-road','a-farm','a-terrace','a-garden','a-walk',
   'a-site-ac','a-runoff','stor-cap',
-  'proj-start','proj-growth','proj-irr-growth'
+  'proj-start','proj-growth','proj-irr-growth',
+  'sc-ref-label','sc-ref-acres','sc-ref-houses','sc-ref-bhk','sc-ref-area','sc-ref-pph',
+  'sc-ref-sqm','sc-ref-drip','sc-ref-sprink','sc-ref-water',
+  'sc-new-label','sc-new-acres','sc-new-houses','sc-new-bhk','sc-new-area','sc-new-pph'
 ];
 
 function gatherState(){
   const state = {};
-  FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if(el) state[id] = el.value;
-  });
+  FIELDS.forEach(id => { const el=document.getElementById(id); if(el) state[id]=el.value; });
   state._rainMM = RAIN_MM;
   state._activePreset = activePreset;
+  state._diversityOn = document.getElementById('d-diversity-on')?.checked ?? false;
   return state;
 }
 
 function applyState(state){
-  FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    if(el && state[id] !== undefined) el.value = state[id];
-  });
+  FIELDS.forEach(id => { const el=document.getElementById(id); if(el && state[id]!==undefined) el.value=state[id]; });
   if(state._rainMM && Array.isArray(state._rainMM)) {
     RAIN_MM = state._rainMM;
-    // Update input fields
-    const rows = document.querySelectorAll('#rain-tbody tr');
-    rows.forEach(tr => {
-      const i = parseInt(tr.dataset.idx);
-      if(!isNaN(i)){
-        const inp = tr.querySelector('input');
-        if(inp) inp.value = RAIN_MM[i];
-      }
+    document.querySelectorAll('#rain-tbody tr').forEach(tr => {
+      const i=parseInt(tr.dataset.idx);
+      if(!isNaN(i)){ const inp=tr.querySelector('input'); if(inp) inp.value=RAIN_MM[i]; }
     });
   }
-  if(state._activePreset) { activePreset = state._activePreset; markActivePreset(); }
+  if(state._activePreset){ activePreset=state._activePreset; markActivePreset(); }
+  if(state._diversityOn !== undefined){
+    const cb = document.getElementById('d-diversity-on');
+    if(cb) cb.checked = state._diversityOn;
+  }
 }
 
 function saveState(){
   try {
-    localStorage.setItem('nzwc_v1', JSON.stringify(gatherState()));
-    const el = document.getElementById('save-status');
-    if(el){ el.textContent = 'Saved ' + new Date().toLocaleTimeString(); }
+    localStorage.setItem('nzwc_v2', JSON.stringify(gatherState()));
+    const el=document.getElementById('save-status');
+    if(el) el.textContent='Saved '+new Date().toLocaleTimeString();
   } catch(e){}
 }
 
 function loadState(){
-  // 1. Check URL hash
   try {
     const hash = location.hash.slice(1);
-    if(hash.startsWith('state=')){
-      const data = JSON.parse(atob(hash.slice(6)));
-      applyState(data);
-      return;
-    }
+    if(hash.startsWith('state=')){ applyState(JSON.parse(atob(hash.slice(6)))); return; }
   } catch(e){}
-  // 2. Check localStorage
   try {
-    const saved = localStorage.getItem('nzwc_v1');
-    if(saved){ applyState(JSON.parse(saved)); }
+    const saved = localStorage.getItem('nzwc_v2') || localStorage.getItem('nzwc_v1');
+    if(saved) applyState(JSON.parse(saved));
   } catch(e){}
 }
 
 function copyShareURL(){
   try {
-    const state = gatherState();
-    const encoded = btoa(JSON.stringify(state));
-    const url = location.origin + location.pathname + '#state=' + encoded;
-    navigator.clipboard.writeText(url).then(()=>alert('Share URL copied to clipboard!'));
+    const encoded = btoa(JSON.stringify(gatherState()));
+    navigator.clipboard.writeText(location.origin+location.pathname+'#state='+encoded).then(()=>alert('Share URL copied!'));
   } catch(e){ alert('Copy failed: '+e.message); }
 }
 
 function exportJSON(){
-  const data = JSON.stringify(gatherState(), null, 2);
-  const blob = new Blob([data], {type:'application/json'});
+  const blob = new Blob([JSON.stringify(gatherState(),null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = ($s('proj-name')||'project').replace(/\s+/g,'-') + '-water-calc.json';
+  a.download = ($s('proj-name')||'project').replace(/\s+/g,'-')+'-water-calc.json';
   a.click();
 }
 
 function importJSON(){
   const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = '.json';
+  inp.type='file'; inp.accept='.json';
   inp.onchange = e => {
-    const f = e.target.files[0];
-    if(!f) return;
+    const f=e.target.files[0]; if(!f) return;
     const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        applyState(data);
-        refreshAll();
-      } catch(err){ alert('Invalid JSON file: '+err.message); }
-    };
+    reader.onload = ev => { try { applyState(JSON.parse(ev.target.result)); refreshAll(); } catch(err){ alert('Invalid JSON: '+err.message); } };
     reader.readAsText(f);
   };
   inp.click();
@@ -1216,8 +1384,9 @@ function importJSON(){
 
 function resetAll(){
   if(!confirm('Reset all inputs to defaults?')) return;
+  localStorage.removeItem('nzwc_v2');
   localStorage.removeItem('nzwc_v1');
-  location.hash = '';
+  location.hash='';
   location.reload();
 }
 
@@ -1225,17 +1394,12 @@ function resetAll(){
 // SCROLL SPY
 // ═══════════════════════════════════════════════════════════════════
 function setupScrollSpy(){
-  const sections = ['sec-setup','sec-demand','sec-rainfall','sec-results','sec-monthly','sec-rippl','sec-projection'];
+  const sections = ['sec-setup','sec-scaling','sec-demand','sec-rainfall','sec-results','sec-monthly','sec-rippl','sec-projection'];
   const links = document.querySelectorAll('nav a');
   window.addEventListener('scroll', ()=>{
     let current = sections[0];
-    sections.forEach(id => {
-      const el = document.getElementById(id);
-      if(el && el.getBoundingClientRect().top < 120) current = id;
-    });
-    links.forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href')==='#'+current);
-    });
+    sections.forEach(id => { const el=document.getElementById(id); if(el && el.getBoundingClientRect().top<120) current=id; });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href')==='#'+current));
   }, {passive:true});
 }
 
