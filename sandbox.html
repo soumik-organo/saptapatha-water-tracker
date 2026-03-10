@@ -120,6 +120,15 @@
   /* Diversity heatmap */
   .div-grid{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:10px}
   .div-block{width:20px;height:20px;border-radius:3px;font-size:7px;display:flex;align-items:center;justify-content:center;cursor:default;color:#fff;font-weight:700}
+  /* Toggle buttons */
+  .toggle-btn{padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:#eceff1;color:#546e7a;transition:all .15s}
+  .toggle-btn.active{background:#1565c0;color:#fff}
+  .toggle-btn:hover:not(.active){background:#cfd8dc}
+
+  /* Year separator row in 5-yr table */
+  tr.yr-sep td{background:#1a3a5c !important;color:#fff;font-weight:700;font-size:12px;padding:8px 11px;letter-spacing:.5px;border:none}
+  tr.yr-subtotal td{background:#e3f2fd !important;font-weight:700;color:#1565c0;border-top:2px solid #90caf9}
+
   .div-legend{display:flex;gap:12px;font-size:10px;color:#546e7a;margin-bottom:8px;flex-wrap:wrap}
   .div-legend span{display:flex;align-items:center;gap:3px}
   .div-legend .swatch{width:12px;height:12px;border-radius:2px;display:inline-block}
@@ -606,8 +615,44 @@
 <div class="section" id="sec-monthly">
   <div class="section-header">📅 5 — Monthly Water Balance</div>
   <div class="section-body">
+
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap">
+      <div style="display:flex;border:2px solid var(--border);border-radius:6px;overflow:hidden">
+        <button class="toggle-btn active" id="tbtn-single" onclick="setMonthlyMode('single')">📅 Single Year</button>
+        <button class="toggle-btn" id="tbtn-5yr" onclick="setMonthlyMode('5yr')">📊 5-Year Projection (2028–2032)</button>
+      </div>
+      <span class="help" style="margin:0" id="monthly-mode-hint">Showing current rainfall selection</span>
+    </div>
+
+    <div id="monthly-5yr-selectors" style="display:none;margin-bottom:14px">
+      <div class="sub-title">Assign Historical Rainfall Year to Each Projection Year</div>
+      <div class="help" style="margin-bottom:8px">Population grows at the rate set in Section 7. Tank carries over month-to-month across all 60 months.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="field" style="min-width:140px">
+          <label>2028 Rainfall</label>
+          <select id="p5-rain-2028" onchange="refreshAll()"></select>
+        </div>
+        <div class="field" style="min-width:140px">
+          <label>2029 Rainfall</label>
+          <select id="p5-rain-2029" onchange="refreshAll()"></select>
+        </div>
+        <div class="field" style="min-width:140px">
+          <label>2030 Rainfall</label>
+          <select id="p5-rain-2030" onchange="refreshAll()"></select>
+        </div>
+        <div class="field" style="min-width:140px">
+          <label>2031 Rainfall</label>
+          <select id="p5-rain-2031" onchange="refreshAll()"></select>
+        </div>
+        <div class="field" style="min-width:140px">
+          <label>2032 Rainfall</label>
+          <select id="p5-rain-2032" onchange="refreshAll()"></select>
+        </div>
+      </div>
+    </div>
+
     <table>
-      <thead>
+      <thead id="monthly-thead">
         <tr>
           <th>Month</th>
           <th>Diversity</th>
@@ -620,7 +665,7 @@
         </tr>
       </thead>
       <tbody id="monthly-tbody"></tbody>
-      <tfoot>
+      <tfoot id="monthly-tfoot">
         <tr class="tot">
           <td>Annual</td>
           <td id="m-ann-div">—</td>
@@ -1147,9 +1192,59 @@ function updateRainTable(months){
   setText('rain-offset-total', fmtL(months.reduce((s,m)=>s+m.rainOffset,0)));
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// MONTHLY TABLE: Single-year & 5-Year Projection modes
+// ═══════════════════════════════════════════════════════════════════
+let monthlyMode = 'single'; // 'single' or '5yr'
+
+function setMonthlyMode(mode) {
+  monthlyMode = mode;
+  document.getElementById('tbtn-single').classList.toggle('active', mode==='single');
+  document.getElementById('tbtn-5yr').classList.toggle('active', mode==='5yr');
+  document.getElementById('monthly-5yr-selectors').style.display = mode==='5yr' ? 'block' : 'none';
+  document.getElementById('monthly-mode-hint').textContent = mode==='single'
+    ? 'Showing current rainfall selection'
+    : '60-month projection with population growth & historical rainfall';
+  refreshAll();
+}
+
+function build5YrRainSelectors() {
+  // 5 driest years as defaults for conservative design
+  const sorted = [...CHEVELLA_YEARS].sort((a,b)=>a.mm.reduce((s,v)=>s+v,0)-b.mm.reduce((s,v)=>s+v,0));
+  const defaults = {2028: sorted[0].yr, 2029: sorted[1].yr, 2030: sorted[2].yr, 2031: sorted[3].yr, 2032: sorted[4].yr};
+
+  for(let yr = 2028; yr <= 2032; yr++) {
+    const sel = document.getElementById('p5-rain-'+yr);
+    if(!sel) continue;
+    let html = '<option value="avg">16-yr Average ('+AVG_TOTAL.toFixed(0)+' mm)</option>';
+    CHEVELLA_YEARS.forEach(cy => {
+      const tot = cy.mm.reduce((a,b)=>a+b,0);
+      html += '<option value="'+cy.yr+'"'+(cy.yr===defaults[yr]?' selected':'')+'>'+cy.yr+' ('+tot.toFixed(0)+' mm)</option>';
+    });
+    sel.innerHTML = html;
+  }
+}
+
+function getRainForProjectionYear(yr) {
+  const sel = document.getElementById('p5-rain-'+yr);
+  if(!sel) return RAIN_MM;
+  const val = sel.value;
+  if(val === 'avg') return AVG_MM;
+  const match = CHEVELLA_YEARS.find(y => y.yr === parseInt(val));
+  return match ? match.mm : RAIN_MM;
+}
+
 function updateMonthlyTable(months, tankCap){
+  if(monthlyMode === '5yr') {
+    updateMonthlyTable5Yr(tankCap);
+    return;
+  }
+  // ── Single-year mode ──
   const tbody = document.getElementById('monthly-tbody');
+  const tfoot = document.getElementById('monthly-tfoot');
   if(!tbody) return;
+  if(tfoot) tfoot.style.display = '';
+
   let tank = 0;
   const maxBar = Math.max(...months.map(m=>Math.max(m.demand,m.harvest)),1);
   tbody.innerHTML = months.map((m,i) => {
@@ -1182,6 +1277,97 @@ function updateMonthlyTable(months, tankCap){
   if(mNet){ mNet.textContent=(annNet>=0?'+':'')+fmt(annNet); mNet.className=annNet>=0?'val-green':'val-red'; }
   const mSt = document.getElementById('m-ann-status');
   if(mSt){ mSt.innerHTML='<span class="badge '+(annNet>=0?'badge-surplus':'badge-deficit')+'">'+(annNet>=0?'Surplus':'Deficit')+'</span>'; }
+}
+
+function updateMonthlyTable5Yr(tankCap) {
+  const tbody = document.getElementById('monthly-tbody');
+  const tfoot = document.getElementById('monthly-tfoot');
+  if(!tbody) return;
+  if(tfoot) tfoot.style.display = 'none'; // Hide single-year footer
+
+  const popGrowth = ($v('proj-growth')||0)/100;
+  const irrGrowth = ($v('proj-irr-growth')||0)/100;
+  const basePop = $v('d-pop');
+  const baseDrip = $v('d-drip');
+  const baseSprink = $v('d-sprink');
+
+  let tank = 0;
+  let html = '';
+  let grandDem = 0, grandHar = 0;
+
+  // Collect all 60 months' data for maxBar calculation
+  const allData = [];
+  for(let y = 0; y < 5; y++) {
+    const projYr = 2028 + y;
+    const rainMM = getRainForProjectionYear(projYr);
+    const pop = Math.round(basePop * Math.pow(1+popGrowth, y));
+    const drip = Math.round(baseDrip * Math.pow(1+irrGrowth, y));
+    const sprink = Math.round(baseSprink * Math.pow(1+irrGrowth, y));
+    const { months } = calcMonthlyCore(rainMM, pop, drip, sprink);
+    const rainTotal = rainMM.reduce((a,b)=>a+b,0);
+    const selEl = document.getElementById('p5-rain-'+projYr);
+    const rainLabel = selEl ? selEl.options[selEl.selectedIndex].text : '';
+    allData.push({ projYr, months, pop, rainTotal, rainLabel });
+  }
+
+  const maxBar = Math.max(...allData.flatMap(d=>d.months.map(m=>Math.max(m.demand,m.harvest))),1);
+
+  for(const yearData of allData) {
+    const { projYr, months, pop, rainTotal, rainLabel } = yearData;
+    let yrDem = 0, yrHar = 0;
+
+    // Year header row
+    html += '<tr class="yr-sep"><td colspan="8">'+projYr+' — Pop: '+pop.toLocaleString()+' | Rainfall: '+rainLabel+'</td></tr>';
+
+    for(let i = 0; i < 12; i++) {
+      const m = months[i];
+      tank = Math.min(tankCap, Math.max(0, tank + m.harvest - m.demand));
+      const surp = m.net >= 0;
+      const dPct = Math.round(m.demand/maxBar*100);
+      const hPct = Math.round(m.harvest/maxBar*100);
+      yrDem += m.demand;
+      yrHar += m.harvest;
+
+      html += '<tr>'+
+        '<td class="lbl">'+m.month+' '+projYr+'</td>'+
+        '<td class="'+(m.divFactor<0.5?'val-orange':'val-green')+'">'+(m.divFactor*100).toFixed(0)+'%</td>'+
+        '<td>'+fmt(m.demand)+'</td>'+
+        '<td>'+fmt(m.harvest)+'</td>'+
+        '<td class="'+(surp?'val-green':'val-red')+'">'+(surp?'+':'')+fmt(m.net)+'</td>'+
+        '<td>'+fmt(tank)+'</td>'+
+        '<td><span class="badge '+(surp?'badge-surplus':'badge-deficit')+'">'+(surp?'Surplus':'Deficit')+'</span></td>'+
+        '<td class="bar-cell">'+
+          '<div class="bar-wrap"><div class="bar-h bar-dem" style="width:'+dPct+'%"></div></div>'+
+          '<div class="bar-wrap" style="margin-top:2px"><div class="bar-h bar-har" style="width:'+hPct+'%"></div></div>'+
+        '</td></tr>';
+    }
+
+    const yrNet = yrHar - yrDem;
+    html += '<tr class="yr-subtotal">'+
+      '<td>'+projYr+' Total</td><td></td>'+
+      '<td>'+fmt(yrDem)+'</td>'+
+      '<td>'+fmt(yrHar)+'</td>'+
+      '<td class="'+(yrNet>=0?'val-green':'val-red')+'">'+(yrNet>=0?'+':'')+fmt(yrNet)+'</td>'+
+      '<td>'+fmt(tank)+'</td>'+
+      '<td><span class="badge '+(yrNet>=0?'badge-surplus':'badge-deficit')+'">'+(yrNet>=0?'Surplus':'Deficit')+'</span></td>'+
+      '<td></td></tr>';
+
+    grandDem += yrDem;
+    grandHar += yrHar;
+  }
+
+  // Grand total row
+  const grandNet = grandHar - grandDem;
+  html += '<tr class="tot">'+
+    '<td>5-Year Grand Total</td><td></td>'+
+    '<td>'+fmt(grandDem)+'</td>'+
+    '<td>'+fmt(grandHar)+'</td>'+
+    '<td class="'+(grandNet>=0?'val-green':'val-red')+'">'+(grandNet>=0?'+':'')+fmt(grandNet)+'</td>'+
+    '<td>'+fmt(tank)+'</td>'+
+    '<td><span class="badge '+(grandNet>=0?'badge-surplus':'badge-deficit')+'">'+(grandNet>=0?'Surplus':'Deficit')+'</span></td>'+
+    '<td></td></tr>';
+
+  tbody.innerHTML = html;
 }
 
 function updateRipplTable(){
@@ -1308,7 +1494,8 @@ const FIELDS = [
   'proj-start','proj-growth','proj-irr-growth',
   'sc-ref-label','sc-ref-acres','sc-ref-houses','sc-ref-bhk','sc-ref-area','sc-ref-pph',
   'sc-ref-sqm','sc-ref-drip','sc-ref-sprink','sc-ref-water',
-  'sc-new-label','sc-new-acres','sc-new-houses','sc-new-bhk','sc-new-area','sc-new-pph'
+  'sc-new-label','sc-new-acres','sc-new-houses','sc-new-bhk','sc-new-area','sc-new-pph',
+  'p5-rain-2028','p5-rain-2029','p5-rain-2030','p5-rain-2031','p5-rain-2032'
 ];
 
 function gatherState(){
@@ -1409,6 +1596,7 @@ function setupScrollSpy(){
 document.addEventListener('DOMContentLoaded', () => {
   buildRainTable();
   buildRainPresetButtons();
+  build5YrRainSelectors();
   loadState();
   refreshAll();
   setupScrollSpy();
