@@ -1652,6 +1652,7 @@ function gatherState(){
   state._rainMM = RAIN_MM;
   state._activePreset = activePreset;
   state._diversityOn = document.getElementById('d-diversity-on')?.checked ?? false;
+  state._monthlyMode = monthlyMode;
   return state;
 }
 
@@ -1669,11 +1670,25 @@ function applyState(state){
     const cb = document.getElementById('d-diversity-on');
     if(cb) cb.checked = state._diversityOn;
   }
+  if(state._monthlyMode){
+    monthlyMode = state._monthlyMode;
+    document.getElementById('tbtn-single').classList.toggle('active', monthlyMode==='single');
+    document.getElementById('tbtn-5yr').classList.toggle('active', monthlyMode==='5yr');
+    document.getElementById('monthly-5yr-panel').style.display = monthlyMode==='5yr' ? 'block' : 'none';
+    document.getElementById('monthly-mode-hint').textContent = monthlyMode==='single'
+      ? 'Showing current rainfall selection'
+      : '60-month projection with occupancy ramp-up, population growth & historical rainfall';
+  }
 }
 
 function saveState(){
   try {
-    localStorage.setItem('nzwc_v2', JSON.stringify(gatherState()));
+    const state = gatherState();
+    const json = JSON.stringify(state);
+    localStorage.setItem('nzwc_v2', json);
+    // Auto-update URL hash so the link is always shareable
+    const encoded = btoa(json);
+    history.replaceState(null, '', '#state=' + encoded);
     const el=document.getElementById('save-status');
     if(el) el.textContent='Saved '+new Date().toLocaleTimeString();
   } catch(e){}
