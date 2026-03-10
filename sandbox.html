@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Estimation Tracker — Demand vs Supply | Saptapatha</title>
+<style>
+  :root {
+    --blue:#1a6fa8;--blue-light:#e8f4fd;--blue-input:#d0eaff;
+    --green:#2e7d32;--green-light:#e8f5e9;
+    --red:#c62828;--red-light:#ffebee;
+    --orange:#e65100;--orange-light:#fff3e0;
+    --grey:#546e7a;--grey-light:#eceff1;--border:#b0bec5;
+    --bg:#f4f7f9;--header-bg:#0d3f6b;--section-title:#1a3a5c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:#263238;font-size:13px}
+
+  header{background:var(--header-bg);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.3px}
+  header span{font-size:11px;opacity:.7}
+  nav{background:#1a5280;display:flex;gap:2px;padding:0 20px;overflow-x:auto;position:sticky;top:50px;z-index:99;scrollbar-width:none}
+  nav a{color:rgba(255,255,255,.8);text-decoration:none;padding:9px 14px;font-size:12px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s}
+  nav a:hover,nav a.active{color:#fff;border-bottom-color:#4fc3f7}
+
+  main{max-width:1400px;margin:0 auto;padding:20px 14px 60px}
+  .section{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);margin-bottom:22px;overflow:hidden}
+  .section-header{background:var(--section-title);color:#fff;padding:11px 20px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .section-body{padding:18px 20px}
+  .sub{margin-bottom:18px}
+  .sub-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--grey);border-bottom:2px solid var(--grey-light);padding-bottom:5px;margin-bottom:10px}
+
+  table{width:100%;border-collapse:collapse}
+  th{background:#eceff1;text-align:left;padding:7px 11px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--grey);border-bottom:2px solid var(--border)}
+  th.ref{background:#e3f2fd;color:#1565c0}
+  th.proj{background:#e8f5e9;color:#2e7d32}
+  th.dem{background:#fff3e0;color:#bf360c}
+  th.sup{background:#e8f5e9;color:#1b5e20}
+  th.bal{background:#ede7f6;color:#4527a0}
+  td{padding:6px 11px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#fafafa}
+  .lbl{font-weight:500;color:#37474f}
+  .unit{font-size:11px;color:#90a4ae}
+  .note{font-size:11px;color:#78909c;max-width:200px}
+  tr.tot td{font-weight:700;background:#f5f5f5;border-top:2px solid var(--border)}
+  tr.sub-row td{padding-left:26px;color:#546e7a;font-size:12px}
+
+  input[type=number],input[type=text],select{width:100%;padding:5px 9px;border:1.5px solid #b0bec5;border-radius:4px;font-size:13px;background:var(--blue-input);color:#1a237e;font-weight:600;transition:border-color .15s,box-shadow .15s;min-width:100px}
+  input[type=number]:focus,input[type=text]:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,111,168,.15)}
+  input.ri{background:#e3f2fd;color:#0d47a1}
+  .cc{font-weight:600;color:#263238;background:#f4f7f9;padding:5px 9px;border-radius:4px;font-size:13px;display:inline-block;text-align:right;min-width:100px}
+
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+  .kpi{border-radius:8px;padding:14px 16px;border-left:4px solid var(--blue);background:var(--blue-light)}
+  .kpi.g{border-left-color:var(--green);background:var(--green-light)}
+  .kpi.r{border-left-color:var(--red);background:var(--red-light)}
+  .kpi.o{border-left-color:var(--orange);background:var(--orange-light)}
+  .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--grey);margin-bottom:3px}
+  .kpi-val{font-size:20px;font-weight:700;color:var(--section-title)}
+  .kpi-sub{font-size:10px;color:var(--grey);margin-top:2px}
+
+  .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700}
+  .ok{background:var(--green-light);color:var(--green)}
+  .deficit{background:var(--red-light);color:var(--red)}
+  .warn{background:var(--orange-light);color:var(--orange)}
+
+  .alert{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;border-radius:6px;margin-bottom:8px}
+  .alert.ok{background:var(--green-light);border-left:3px solid var(--green)}
+  .alert.error{background:var(--red-light);border-left:3px solid var(--red)}
+  .alert.warn{background:var(--orange-light);border-left:3px solid var(--orange)}
+  .alert-text{font-size:12px;font-weight:500}
+
+  /* 5-year projection cards */
+  .yr-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+  .yr-card{background:var(--blue-light);border-radius:8px;padding:12px;text-align:center}
+  .yr-card label{display:block;font-size:11px;font-weight:700;color:var(--grey);margin-bottom:5px}
+  .yr-card .yr-derived{font-size:11px;color:#546e7a;margin-top:6px;line-height:1.7}
+
+  /* Month selector */
+  .month-controls{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .month-controls label{font-size:12px;font-weight:600;color:var(--grey)}
+  .yr-btn{padding:6px 16px;border:1.5px solid var(--blue);border-radius:20px;background:#fff;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+  .yr-btn.active{background:var(--blue);color:#fff}
+  .yr-btn:hover{background:var(--blue-light)}
+
+  /* seasonal row colouring */
+  .peak-row td{background:#fff8f5}
+  .monsoon-row td{background:#f1f8e9}
+  .trans-row td{background:#fafafa}
+
+  /* bar spark */
+  .bar-wrap{display:flex;align-items:center;gap:6px}
+  .bar-track{width:80px;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .3s}
+  .bar-fill.r{background:var(--red)}
+  .bar-fill.o{background:var(--orange)}
+
+  /* grid split */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+  @media(max-width:900px){.g2,.g3,.yr-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.g2,.g3,.yr-grid{grid-template-columns:1fr}.dash-grid{grid-template-columns:1fr 1fr}}
+
+  /* legend */
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--grey)}
+  .ldot{width:11px;height:11px;border-radius:3px}
+
+  /* persistence toolbar */
+  .persist-bar{background:#0a2f4f;display:flex;align-items:center;gap:8px;padding:6px 20px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.08)}
+  .persist-btn{background:rgba(255,255,255,.12);color:#e0e0e0;border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+  .persist-btn:hover{background:rgba(255,255,255,.22)}
+  .persist-btn.green{background:#2e7d32;border-color:#43a047;color:#fff}
+  .persist-btn.green:hover{background:#388e3c}
+  .persist-btn.danger{background:rgba(198,40,40,.5);border-color:#e57373;color:#fff}
+  .persist-btn.danger:hover{background:rgba(198,40,40,.7)}
+  #save-indicator{margin-left:auto;font-size:11px;font-weight:600;color:rgba(255,255,255,.5);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>💧 Water Estimation Tracker — Demand vs Supply</h1>
+    <span>Saptapatha Dashboard &nbsp;|&nbsp; Benchmark: Organo Antharam (182 houses, 60 acres, Chevella)</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#reference">📚 Reference Data</a>
+  <a href="#dashboard" class="active">🎯 Dashboard</a>
+  <a href="#inputs">📝 Project Inputs</a>
+  <a href="#five-year">📅 5-Year Projection</a>
+  <a href="#monthly">📊 Monthly Analysis</a>
+  <a href="#demand-detail">💧 Demand Detail</a>
+  <a href="#supply-detail">🔋 Supply Detail</a>
+  <a href="#balance">⚖️ Balance & Metrics</a>
+</nav>
+
+<!-- Persistence toolbar -->
+<div class="persist-bar">
+  <span style="font-size:12px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:.3px">💾 DATA</span>
+  <button class="persist-btn green" onclick="copyShareURL()">🔗 Copy Share Link</button>
+  <button class="persist-btn" onclick="exportJSON()">⬇️ Export JSON</button>
+  <label class="persist-btn" style="cursor:pointer">⬆️ Import JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(this.files[0]);this.value=''"></label>
+  <button class="persist-btn danger" onclick="clearSavedData()">🗑️ Reset</button>
+  <span id="save-indicator">💾 Auto-save on</span>
+</div>
+
+<main>
+
+<!-- ═══════════════════ REFERENCE DATA ═══════════════════ -->
+<section class="section" id="reference">
+  <div class="section-header">📚 Reference Data — Organo Antharam Benchmarks (Editable)</div>
+  <div class="section-body">
+    <p style="font-size:12px;color:var(--grey);margin-bottom:14px">Benchmark ratios derived from Antharam actuals. <b style="color:#e65100">⚠️ Readings captured at 20.9% occupancy — 79 villas handed over, 38 occupied (152 of 728 residents).</b> Planning LPCD = 150 (IS 1172 standard). Per-house & per-person figures normalised to full design capacity — the 5-Year Projection ramps up automatically. Used as fallback when project-specific overrides are not entered.</p>
+    <div class="g3">
+      <div class="sub">
+        <div class="sub-title">Project Profile</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="ref">Antharam Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Total Site Area</td><td><input class="ri" type="number" id="ref-site" value="60"></td><td class="unit">acres</td></tr>
+            <tr><td class="lbl">Total Houses</td><td><input class="ri" type="number" id="ref-houses" value="182"></td><td class="unit">nos.</td></tr>
+            <tr><td class="lbl">Avg Occupants / House</td><td><input class="ri" type="number" id="ref-occ" value="4"></td><td class="unit">persons</td></tr>
+            <tr><td class="lbl" style="color:#e65100">Villas Handed Over</td><td><input class="ri" type="number" id="ref-handed-over" value="79" style="background:#fff3e0;color:#bf360c;font-weight:700"></td><td class="unit" style="color:#e65100">nos.</td></tr>
+            <tr><td class="lbl" style="color:#e65100">Currently Occupied</td><td><input class="ri" type="number" id="ref-occupied" value="38" style="background:#fff3e0;color:#bf360c;font-weight:700"></td><td class="unit" style="color:#e65100">nos.</td></tr>
+            <tr><td class="lbl">Farming Area</td><td><input class="ri" type="number" id="ref-farm" value="7"></td><td class="unit">acres</td></tr>
+            <tr class="tot"><td>Design Population (100%)</td><td><span class="cc ri" id="ref-pop">728</span></td><td class="unit">persons</td></tr>
+            <tr><td class="lbl" style="color:#e65100;font-size:12px">↳ Occupied Residents</td><td><span class="cc" id="ref-curr-pop" style="background:#fff3e0;color:#bf360c">152</span></td><td class="unit" style="color:#e65100">persons</td></tr>
+            <tr><td class="lbl" style="color:#78909c;font-size:12px">↳ Occupancy of Design</td><td><span class="cc" id="ref-curr-occ" style="background:#f5f5f5;color:#546e7a;font-size:12px">20.9%</span></td><td class="unit" style="color:#78909c">38 of 182</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Demand Ratios & Benchmarks</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">LPCD (Planning Basis)</td><td><input class="ri" type="number" id="ref-lpcd" value="150" step="0.01"></td><td class="unit">L/person/day</td></tr>
+            <tr><td class="lbl">Domestic / House / Month</td><td><input class="ri" type="number" id="ref-dom-hm" value="18000"></td><td class="unit">L/house/mo</td></tr>
+            <tr><td class="lbl">Irrigation / Acre / Month</td><td><input class="ri" type="number" id="ref-irr-am" value="238095"></td><td class="unit">L/acre/mo</td></tr>
+            <tr><td class="lbl">Swimming Pool Top-up</td><td><input class="ri" type="number" id="ref-pool-mo" value="526000"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Other Consumption</td><td><input class="ri" type="number" id="ref-other-mo" value="83555"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Dripper Crosscheck Total</td><td><input class="ri" type="number" id="ref-drip-xcheck" value="1666667"></td><td class="unit">L/mo</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <div class="sub-title">Supply Benchmarks</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">RWH Storage / House</td><td><input class="ri" type="number" id="ref-rwh-h" value="65934"></td><td class="unit">L/house</td></tr>
+            <tr><td class="lbl">RWH Total Storage</td><td><input class="ri" type="number" id="ref-rwh-total" value="12000000"></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">RWH Monthly Supply (avg usable)</td><td><input class="ri" type="number" id="ref-rwh-monthly" value="7623000"></td><td class="unit">L/mo</td></tr>
+            <tr class="tot"><td>RWH Annual Usable (reference)</td><td><span class="cc ri" id="ref-sup-total">—</span></td><td class="unit">L/yr</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="sub" style="margin-top:4px">
+      <div class="sub-title">Rainfall / Acre / Year</div>
+      <table style="max-width:340px">
+        <thead><tr><th>Parameter</th><th class="ref">Value</th><th>Unit</th></tr></thead>
+        <tbody>
+          <tr><td class="lbl">Rainfall / Acre / Year (avg 2009–2024)</td><td><input class="ri" type="number" id="ref-rain-a" value="3438000"></td><td class="unit">L/acre/yr</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Rainfall inputs -->
+    <div class="sub">
+      <div class="sub-title">Monthly Rainfall — Chevella Mandal, Rangareddy (Actual Records 2009–2024)</div>
+
+      <!-- Design basis selector -->
+      <div style="background:#ffebee;border:1px solid #ef9a9a;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:#c62828;white-space:nowrap">📐 Design Basis:</span>
+        <span id="rain-preset-label" style="font-size:12px;font-weight:700;color:#c62828;background:#ffcdd2;padding:3px 10px;border-radius:12px;white-space:nowrap">🔴 Worst Year 2018 — 570 mm</span>
+        <span style="font-size:11px;color:#78909c;font-style:italic">Design for scarcity, not abundance</span>
+      </div>
+
+      <!-- Year preset buttons -->
+      <div style="margin-bottom:8px;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;font-weight:700;color:var(--grey);margin-right:2px">Quick Load:</span>
+        <button onclick="applyRainPreset('worst')"  class="rain-preset-btn" style="background:#c62828;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">🔴 Worst (2018)</button>
+        <button onclick="applyRainPreset('y2011')"  class="rain-preset-btn" style="background:#e53935;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2011</button>
+        <button onclick="applyRainPreset('y2015')"  class="rain-preset-btn" style="background:#e53935;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2015</button>
+        <button onclick="applyRainPreset('y2014')"  class="rain-preset-btn" style="background:#ef6c00;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2014</button>
+        <button onclick="applyRainPreset('y2009')"  class="rain-preset-btn" style="background:#ef6c00;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2009</button>
+        <button onclick="applyRainPreset('y2022')"  class="rain-preset-btn" style="background:#f9a825;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2022</button>
+        <button onclick="applyRainPreset('y2023')"  class="rain-preset-btn" style="background:#f9a825;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2023</button>
+        <button onclick="applyRainPreset('y2019')"  class="rain-preset-btn" style="background:#558b2f;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2019</button>
+        <button onclick="applyRainPreset('y2024')"  class="rain-preset-btn" style="background:#2e7d32;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2024</button>
+        <button onclick="applyRainPreset('y2021')"  class="rain-preset-btn" style="background:#1b5e20;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2021</button>
+        <button onclick="applyRainPreset('y2013')"  class="rain-preset-btn" style="background:#1b5e20;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2013</button>
+        <button onclick="applyRainPreset('y2017')"  class="rain-preset-btn" style="background:#1565c0;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2017</button>
+        <button onclick="applyRainPreset('y2016')"  class="rain-preset-btn" style="background:#1565c0;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2016</button>
+        <button onclick="applyRainPreset('y2010')"  class="rain-preset-btn" style="background:#0d47a1;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2010</button>
+        <button onclick="applyRainPreset('y2020')"  class="rain-preset-btn" style="background:#0d47a1;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2020 (Wettest)</button>
+        <button onclick="applyRainPreset('avg')"    class="rain-preset-btn" style="background:#546e7a;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">📊 16-yr Avg</button>
+      </div>
+
+      <table id="rainfall-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th class="proj">Design Rainfall (mm)</th>
+            <th style="background:#eceff1;color:#546e7a;font-size:10px">16-yr Avg (mm)</th>
+            <th style="background:#eceff1;color:#546e7a;font-size:10px">vs Avg</th>
+            <th>Season</th><th>Demand Pressure</th><th>RWH Potential</th>
+          </tr>
+        </thead>
+        <tbody id="rainfall-tbody"></tbody>
+        <tfoot>
+          <tr class="tot">
+            <td>Annual Total</td>
+            <td id="rain-total" style="font-weight:800;color:#c62828">—</td>
+            <td style="font-size:11px;color:#546e7a">849 mm avg</td>
+            <td id="rain-vs-avg" style="font-size:11px;font-weight:700">—</td>
+            <td colspan="3"><span style="font-size:11px;color:var(--grey)">Source: Chevella daily records 2009–2024 | Design default = Worst Year 2018</span></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ DASHBOARD ═══════════════════ -->
+<section class="section" id="dashboard">
+  <div class="section-header">🎯 Dashboard — Live Overview</div>
+  <div class="section-body">
+
+    <div class="legend">
+      <div class="legend-item"><div class="ldot" style="background:var(--blue-input)"></div>Project Input</div>
+      <div class="legend-item"><div class="ldot" style="background:#e3f2fd"></div>Reference Input (Antharam)</div>
+      <div class="legend-item"><div class="ldot" style="background:#f4f7f9;border:1px solid #ccc"></div>Auto-Calculated</div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="kpi" id="kpi-dem-card">
+        <div class="kpi-label">Annual Demand (Full Occupancy)</div>
+        <div class="kpi-val" id="kpi-dem">—</div>
+        <div class="kpi-sub" id="kpi-dem-sub">Litres / year</div>
+      </div>
+      <div class="kpi g" id="kpi-sup-card">
+        <div class="kpi-label">Annual Supply</div>
+        <div class="kpi-val" id="kpi-sup">—</div>
+        <div class="kpi-sub">Litres / year</div>
+      </div>
+      <div class="kpi" id="kpi-gap-card">
+        <div class="kpi-label">Annual Net Balance</div>
+        <div class="kpi-val" id="kpi-gap">—</div>
+        <div class="kpi-sub" id="kpi-gap-sub">—</div>
+      </div>
+      <div class="kpi" id="kpi-self-card">
+        <div class="kpi-label">Self-Sufficiency Ratio</div>
+        <div class="kpi-val" id="kpi-self">—</div>
+        <div class="kpi-sub">Supply ÷ Demand</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">LPCD (Project)</div>
+        <div class="kpi-val" id="kpi-lpcd">—</div>
+        <div class="kpi-sub">L/person/day &nbsp;|&nbsp; Antharam ref: 150 <span title="Planning standard; measured actual at 38 occupied villas (152 persons) = 810.9 LPCD" style="cursor:help;color:#90a4ae">(planning basis ⓘ)</span></div>
+      </div>
+      <div class="kpi" id="kpi-req-card">
+        <div class="kpi-label">Required RWH Storage (Worst Year)</div>
+        <div class="kpi-val" id="kpi-req">—</div>
+        <div class="kpi-sub" id="kpi-req-sub">Rippl method — driest of 16 yrs on record (2009–2024)</div>
+      </div>
+    </div>
+
+    <div class="g2" style="gap:14px;align-items:start">
+
+      <!-- DEMAND breakdown -->
+      <div>
+        <div class="sub-title" style="margin-bottom:8px">💧 Water Demand — By Category</div>
+        <table>
+          <thead>
+            <tr><th>Category</th><th class="dem">Annual (L)</th><th class="dem">Monthly Avg (L)</th><th class="dem">Share</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="lbl">🏠 Domestic</td><td id="db-dom-d">—</td><td id="db-dom-mo">—</td><td id="db-dom-pct">—</td></tr>
+            <tr><td class="lbl">🌾 Irrigation / Farming</td><td id="db-irr-d">—</td><td id="db-irr-mo">—</td><td id="db-irr-pct">—</td></tr>
+            <tr><td class="lbl">🏊 Amenities / Other</td><td id="db-oth-d">—</td><td id="db-oth-mo">—</td><td id="db-oth-pct">—</td></tr>
+            <tr class="tot"><td>TOTAL DEMAND</td><td id="db-tot-d">—</td><td id="db-tot-mo">—</td><td>100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SUPPLY — RWH only -->
+      <div>
+        <div class="sub-title" style="margin-bottom:8px">🌧️ Water Supply — Rainwater Harvesting Only</div>
+        <table>
+          <thead>
+            <tr><th>Parameter</th><th class="sup">Monthly Avg (L)</th><th class="sup">Annual Usable (L)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="lbl">🌧️ RWH Harvest (usable, capped at storage)</td><td id="db-rwh-mo">—</td><td id="db-rwh-yr">—</td></tr>
+            <tr><td class="lbl">📐 Required Storage — Avg Year (Rippl)</td><td class="unit">—</td><td id="db-req-avg">—</td></tr>
+            <tr><td class="lbl">📐 Required Storage — Worst Year (Design)</td><td class="unit">—</td><td id="db-req-worst">—</td></tr>
+            <tr class="tot"><td>TOTAL SUPPLY (RWH only)</td><td id="db-sup-mo">—</td><td id="db-tot-s">—</td></tr>
+          </tbody>
+        </table>
+        <!-- Net balance bar -->
+        <div style="margin-top:10px;padding:10px 14px;border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap" id="db-balance-bar">
+          <span style="font-weight:700;font-size:13px">⚖️ Net Balance (Supply − Demand)</span>
+          <span style="font-size:18px;font-weight:800" id="db-tot-g">—</span>
+          <span id="db-tot-st">—</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="dash-alerts" style="margin-top:14px"></div>
+
+    <!-- Reference Methodology Panel -->
+    <div style="margin-top:18px;border:1px solid #b0bec5;border-radius:8px;overflow:hidden">
+      <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.tog').textContent=this.nextElementSibling.style.display==='none'?'▼ Show':'▲ Hide'"
+           style="background:#1a3a5c;color:#fff;padding:10px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;user-select:none">
+        <span>📐 How Reference Values Are Derived — Antharam (Organo, Chevella)</span>
+        <span class="tog" style="font-size:11px;opacity:.8">▼ Show</span>
+      </div>
+      <div style="display:none;padding:18px 20px;background:#f9fbff">
+
+        <p style="font-size:12px;color:#546e7a;margin-bottom:14px">All reference values come from <b>actual measured data at Organo Antharam</b> — 182 houses, 60 acres, Chevella taluk, Telangana. <b style="color:#e65100">⚠️ Important: Readings were captured at 20.9% occupancy — 79 villas handed over, 38 currently occupied (152 of 728 planned residents present).</b> The planning LPCD of 150 is a chosen standard (IS 1172 basis). Actual measured LPCD = 810.9 (elevated due to fixed infrastructure shared by fewer residents). Full-occupancy demand ≈ 4.8× current actuals. The 5-Year Projection tab handles the ramp-up automatically.</p>
+
+        <!-- Demand Reference -->
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#37474f;border-bottom:2px solid #e0e0e0;padding-bottom:4px;margin-bottom:10px">Demand Benchmarks</div>
+        <table style="margin-bottom:18px">
+          <thead><tr><th>Reference Value</th><th>Antharam Figure</th><th class="ref">Formula / Source</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="lbl">LPCD</td>
+              <td><span class="cc">150 L/person/day</span></td>
+              <td style="font-size:12px;color:#546e7a"><b>Chosen planning standard</b> (aligned with IS 1172 for group housing). Applied to design population (728) for full-occupancy projections. <br><span style="color:#546e7a">Cross-check against measurement: 4.5 Cr L measured at 38 occupied villas (152 persons) → actual LPCD = 4,50,00,000 ÷ 152 ÷ 365 = <b>810.9 LPCD</b> — elevated because fixed infrastructure (common areas, clubhouse, roads, pool) is shared across only 21% of residents. Planning LPCD of 150 is conservative and appropriate for full-occupancy design.</span></td>
+            </tr>
+            <tr>
+              <td class="lbl">Domestic / House / Month</td>
+              <td><span class="cc">18,000 L/house/month</span></td>
+              <td style="font-size:12px;color:#546e7a">= Planning LPCD × avg occupancy × 30 days = 150 × 4 × 30 = <b>18,000 L/house/month</b>. <br><span style="color:#546e7a">Cross-check against measurement: 4.5 Cr L ÷ 38 occupied houses ÷ 12 = <b>98,684 L/occupied-house/month</b> — high because fixed costs (common areas, club, roads) are borne entirely by 38 households. At full occupancy (182 houses), fixed costs spread across all → per-house figure approaches the 18,000 planning standard.</span></td>
+            </tr>
+            <tr>
+              <td class="lbl">Irrigation / Acre / Month</td>
+              <td><span class="cc">2,38,095 L/acre/month</span></td>
+              <td style="font-size:12px;color:#546e7a">= Annual irrigation (2 Cr L) ÷ (12 months × 7 acres) = 2,00,00,000 ÷ 84 = 2,38,095. Validated against actual water meter on irrigation line.</td>
+            </tr>
+            <tr>
+              <td class="lbl">Dripper Crosscheck Total</td>
+              <td><span class="cc">16,66,667 L/month</span></td>
+              <td style="font-size:12px;color:#546e7a">= Annual irrigation (2 Cr L) ÷ 12 months = 16,66,667 L/month avg. This is the metered actual; dripper count × flow × time gives the bottom-up cross-check.</td>
+            </tr>
+            <tr>
+              <td class="lbl">Swimming Pool Top-up</td>
+              <td><span class="cc">5,26,000 L/month</span></td>
+              <td style="font-size:12px;color:#546e7a">Actual measured pool water consumption — accounts for evaporation losses (~3–5 mm/day), splash &amp; backwash. Pool volume × turnover rate.</td>
+            </tr>
+            <tr>
+              <td class="lbl">Other Consumption</td>
+              <td><span class="cc">83,555 L/month</span></td>
+              <td style="font-size:12px;color:#546e7a">Residual metered consumption not classified under domestic, irrigation, or pool — includes community spaces, club house, roads washing, fire-fighting top-up.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Supply Reference -->
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#37474f;border-bottom:2px solid #e0e0e0;padding-bottom:4px;margin-bottom:10px">Supply Benchmarks</div>
+        <table style="margin-bottom:18px">
+          <thead><tr><th>Reference Value</th><th>Antharam Figure</th><th class="ref">Formula / Source</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="lbl">RWH Storage per House</td>
+              <td><span class="cc">65,934 L/house</span></td>
+              <td style="font-size:12px;color:#546e7a">= Total RWH storage capacity ÷ total houses = 1,20,00,000 L ÷ 182 houses. Used to scale project RWH storage proportionally.</td>
+            </tr>
+            <tr>
+              <td class="lbl">RWH Total Storage</td>
+              <td><span class="cc">1,20,00,000 L (1.2 Cr L)</span></td>
+              <td style="font-size:12px;color:#546e7a">Physical capacity of the Dugwell / sump at Antharam — engineered &amp; constructed storage volume. Sets the ceiling on usable monthly RWH (each month's harvest is capped at this value).</td>
+            </tr>
+            <tr>
+              <td class="lbl">RWH Monthly Supply (avg usable)</td>
+              <td><span class="cc">76,23,000 L/month</span></td>
+              <td style="font-size:12px;color:#546e7a">= Σ min(monthly harvest, 1.2 Cr storage) ÷ 12. Total theoretical annual rainfall = 18 Cr L. Monthly harvest distributed by Chevella rainfall pattern — capped at 1.2 Cr L for Jun–Oct (monsoon months exceed tank capacity). Annual usable = 9.15 Cr L → monthly avg = 76.23 lakh L.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Rainfall -->
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#37474f;border-bottom:2px solid #e0e0e0;padding-bottom:4px;margin-bottom:10px">Rainfall Data Source</div>
+        <table style="margin-bottom:18px">
+          <thead><tr><th>Parameter</th><th>Value</th><th class="ref">Source</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="lbl">Monthly Rainfall (mm)</td>
+              <td><span class="cc">Mar 13 → Jun 80 → Aug 179 → Dec 25</span></td>
+              <td style="font-size:12px;color:#546e7a">Monthly averages for <b>Chevella taluk, Rangareddy district</b> from actual daily rainfall records 2009–2024 (16 complete years). Annual average: 849 mm. Monsoon (Jun–Oct) contributes ~83% of annual total.</td>
+            </tr>
+            <tr>
+              <td class="lbl">Seasonal Demand Factors</td>
+              <td><span class="cc">DOM: ×0.85–1.2 &nbsp;|&nbsp; IRR: ×0.5–1.3</span></td>
+              <td style="font-size:12px;color:#546e7a">Domestic factor peaks Mar–Jun (summer heat → ×1.2) and dips Jul–Sep (cooler monsoon → ×0.85). Irrigation factor peaks Apr–May (dry sowing → ×1.3) and drops Jul–Sep (rain-fed, minimal irrigation → ×0.5).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Auto-scaling logic -->
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#37474f;border-bottom:2px solid #e0e0e0;padding-bottom:4px;margin-bottom:10px">How Project Values Are Auto-Scaled from Reference</div>
+        <table>
+          <thead><tr><th>Project Field</th><th class="proj">Auto-fill Formula</th><th>Rationale</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">LPCD</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Reference LPCD</td><td style="font-size:12px;color:#546e7a">Per-capita standard is same regardless of project size</td></tr>
+            <tr><td class="lbl">Pool top-up</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Reference pool value</td><td style="font-size:12px;color:#546e7a">One pool of same size — not proportional to houses</td></tr>
+            <tr><td class="lbl">Other consumption</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Ref × (Proj pop ÷ Ref pop)</td><td style="font-size:12px;color:#546e7a">Community facilities scale roughly with population</td></tr>
+            <tr><td class="lbl">RWH storage</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= 65,934 L × Project houses</td><td style="font-size:12px;color:#546e7a">Storage proportional to number of houses (per-house benchmark)</td></tr>
+            <tr><td class="lbl">Farm irrigation</td><td style="font-size:12px;font-weight:600;color:#2e7d32">= Dripper count × flow × time × 30</td><td style="font-size:12px;color:#546e7a">Bottom-up from actual dripper inventory; ratio-based as fallback</td></tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════ PROJECT INPUTS ═══════════════════ -->
+<section class="section" id="inputs">
+  <div class="section-header">📝 Project Inputs</div>
+  <div class="section-body">
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:13px;color:#2e7d32;flex:1">🔗 <b>Auto-fill from Reference:</b> Set Houses &amp; Occupancy above → Demand &amp; Supply fields auto-scale from Antharam benchmarks. Edit any field manually to override.</span>
+      <button onclick="resetAutoFills()" style="background:#43a047;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:600">🔄 Reset All to Auto</button>
+    </div>
+
+    <div class="g2">
+      <!-- Profile -->
+      <div class="sub">
+        <div class="sub-title">1. Project Profile</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="proj">Your Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Total Site Area</td><td><input type="number" id="p-site" value="70"></td><td class="unit">acres</td></tr>
+            <tr><td class="lbl">Total Houses</td><td><input type="number" id="p-houses" value="280"></td><td class="unit">nos.</td></tr>
+            <tr><td class="lbl">Avg Occupants / House</td><td><input type="number" id="p-occ" value="4"></td><td class="unit">persons</td></tr>
+            <tr><td class="lbl">Farming Area</td><td><input type="number" id="p-farm" value="7" step="0.1"></td><td class="unit">acres</td></tr>
+            <tr><td class="lbl">Afforestation Area</td><td><input type="number" id="p-afforest" value="10" step="0.1"></td><td class="unit">acres</td></tr>
+            <tr class="tot"><td>Total Population (auto)</td><td><span class="cc" id="p-pop">—</span></td><td class="unit">persons</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Demand Overrides -->
+      <div class="sub">
+        <div class="sub-title">2. Demand Inputs (Override)</div>
+        <p style="font-size:11px;color:var(--grey);margin-bottom:8px">Leave blank → uses Antharam benchmark ratios automatically.</p>
+        <table>
+          <thead><tr><th>Parameter</th><th class="proj">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Domestic LPCD</td><td><input type="number" id="p-lpcd" value="68.46" step="0.01"></td><td class="unit">L/person/day</td></tr>
+            <tr><td class="lbl">Domestic Water / Month (override)</td><td><input type="number" id="p-dom-ovr" placeholder="auto"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Irrigation / Month (override)</td><td><input type="number" id="p-irr-ovr" placeholder="auto"></td><td class="unit">L/mo</td></tr>
+            <tr style="background:#f1f8e9"><td class="lbl" style="font-weight:600">🌾 Farming Water / Month</td><td><input type="number" id="p-farm-water" placeholder="0"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Swimming Pool Top-up</td><td><input type="number" id="p-pool" value="526000"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Animal Husbandry / Goshala</td><td><input type="number" id="p-animal" placeholder="0"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Landscaping (non-farm)</td><td><input type="number" id="p-landscape" placeholder="0"></td><td class="unit">L/mo</td></tr>
+            <tr><td class="lbl">Other Consumption</td><td><input type="number" id="p-other-dem" value="83555"></td><td class="unit">L/mo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Supply Sources — RWH only -->
+    <div class="sub">
+      <div class="sub-title">3. Water Supply — Rainwater Harvesting Only</div>
+      <div style="background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:10px 16px;margin-bottom:12px;font-size:12px;color:#1565c0">
+        🌧️ <b>RWH-only design:</b> All supply comes exclusively from rainwater harvesting. Enter your planned storage capacity — the tool calculates the minimum required storage using the Rippl method across 16 years of actual Chevella rainfall (2009–2024).
+      </div>
+      <div class="g2">
+        <table>
+          <thead><tr><th>RWH / Dugwell Storage</th><th class="proj">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Planned RWH Storage (total)</td><td><input type="number" id="p-rwh" value="12000000"></td><td class="unit">L capacity</td></tr>
+            <tr><td class="lbl">Runoff Coefficient</td><td><input type="number" id="p-runoff" value="0.75" step="0.01" min="0" max="1"></td><td class="unit">0–1</td></tr>
+          </tbody>
+        </table>
+        <table>
+          <thead><tr><th>Required Storage — Calculated (Rippl Method)</th><th class="proj">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Required — Average Year (16-yr avg rainfall)</td><td><span class="cc" id="p-req-avg">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Required — Worst Year on Record (driest of 16 yrs, 2009–2024)</td><td><span class="cc" id="p-req-worst">—</span></td><td class="unit">L</td></tr>
+            <tr class="tot"><td>Planned vs Required (Worst Year)</td><td><span class="cc" id="p-req-gap">—</span></td><td class="unit" id="p-req-gap-unit">L</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Area Breakdown by Land Use -->
+    <div class="sub">
+      <div class="sub-title">3b. Site Area Breakdown by Land Use (Runoff Coefficients)</div>
+      <p style="font-size:11px;color:var(--grey);margin-bottom:8px">
+        Enter area for each land-use type. Runoff coefficients are fixed per surface type.
+        When filled, this <b>overrides</b> the single Runoff Coefficient above for RWH harvest calculation.
+        Rainfall absorbed by Farm &amp; Garden areas is also <b>subtracted from irrigation demand</b> each month.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Land Use</th>
+            <th class="proj">Area (Sq. Mtr)</th>
+            <th class="proj">Area (Acres)</th>
+            <th>Runoff Coeff</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="lbl">Road</td>
+            <td><input type="number" id="p-area-road-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-road-ac">—</span></td>
+            <td><span class="cc" style="background:#ffebee;color:#c62828">0.85</span></td>
+            <td class="note">High runoff — paved surface, good RWH collection</td>
+          </tr>
+          <tr>
+            <td class="lbl">Farm</td>
+            <td><input type="number" id="p-area-farm-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-farm-lu-ac">—</span></td>
+            <td><span class="cc" style="background:#e8f5e9;color:#2e7d32">0.15</span></td>
+            <td class="note">Low runoff — 85% absorbed, directly offsets irrigation demand</td>
+          </tr>
+          <tr>
+            <td class="lbl">House Terrace</td>
+            <td><input type="number" id="p-area-terrace-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-terrace-ac">—</span></td>
+            <td><span class="cc" style="background:#ffebee;color:#c62828">0.85</span></td>
+            <td class="note">High runoff — roof surface, good RWH collection</td>
+          </tr>
+          <tr>
+            <td class="lbl">House Garden</td>
+            <td><input type="number" id="p-area-garden-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-garden-ac">—</span></td>
+            <td><span class="cc" style="background:#e8f5e9;color:#2e7d32">0.30</span></td>
+            <td class="note">Moderate runoff — 70% absorbed, offsets garden irrigation</td>
+          </tr>
+          <tr>
+            <td class="lbl">Cluster Walkway + Jogging Track</td>
+            <td><input type="number" id="p-area-walkway-sqm" placeholder="0" step="1" min="0"></td>
+            <td><span class="cc" id="p-area-walkway-ac">—</span></td>
+            <td><span class="cc" style="background:#ffebee;color:#c62828">0.85</span></td>
+            <td class="note">High runoff — hard surface, good RWH collection</td>
+          </tr>
+          <tr class="tot">
+            <td>Total Entered</td>
+            <td><span class="cc" id="p-area-total-sqm">—</span> m²</td>
+            <td><span class="cc" id="p-area-total-ac">—</span> Ac</td>
+            <td><span class="cc" id="p-area-eff-runoff">—</span> wtd avg</td>
+            <td class="note">Overrides Site Area × Runoff when filled</td>
+          </tr>
+          <tr style="background:#e3f2fd">
+            <td class="lbl" colspan="2" style="color:#1565c0;font-size:12px">💧 Jan Rainfall Benefit (avg 1.9 mm)</td>
+            <td><span class="cc" id="p-jan-rwh-harvest" style="background:#e3f2fd;color:#1565c0">—</span></td>
+            <td colspan="2" style="font-size:11px;color:#546e7a">RWH harvest from area breakdown (Jan avg 1.9 mm)</td>
+          </tr>
+          <tr style="background:#e8f5e9">
+            <td class="lbl" colspan="2" style="color:#2e7d32;font-size:12px">🌱 Jan Irrigation Offset (farm + garden absorption)</td>
+            <td><span class="cc" id="p-jan-irr-offset" style="background:#e8f5e9;color:#2e7d32">—</span></td>
+            <td colspan="2" style="font-size:11px;color:#546e7a">Water absorbed by farm &amp; garden — reduces irrigation demand</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Farming Detail -->
+    <div class="sub">
+      <div class="sub-title">4. Farming / Irrigation Detail (Optional — for cross-check)</div>
+      <table>
+        <thead><tr><th>Parameter</th><th class="proj">Your Value</th><th class="ref">Antharam Ref</th><th>Unit</th></tr></thead>
+        <tbody>
+          <tr><td class="lbl">Farming Area (sft)</td><td><input type="number" id="p-farm-sft" value="100000"></td><td><span class="cc ri">155,823</span></td><td class="unit">sft</td></tr>
+          <tr><td class="lbl">3-Line Drippers</td><td><input type="number" id="p-drip3" value="50000"></td><td><span class="cc ri">47,921</span></td><td class="unit">nos.</td></tr>
+          <tr><td class="lbl">2-Line Drippers</td><td><input type="number" id="p-drip2" value="40000"></td><td><span class="cc ri">31,041</span></td><td class="unit">nos.</td></tr>
+          <tr><td class="lbl">Sprinklers</td><td><input type="number" id="p-sprink" value="200"></td><td><span class="cc ri">129</span></td><td class="unit">nos.</td></tr>
+          <tr><td class="lbl">Dripper Flow Rate</td><td><input type="number" id="p-dflow" value="4" step="0.1"></td><td><span class="cc ri">4</span></td><td class="unit">L/hour</td></tr>
+          <tr><td class="lbl">Dripper Runtime / Day</td><td><input type="number" id="p-dtime" value="30"></td><td><span class="cc ri">30</span></td><td class="unit">minutes</td></tr>
+          <tr class="tot"><td>Dripper Water / Month (cross-check)</td><td><span class="cc" id="p-drip-mo">—</span></td><td><span class="cc ri">4,737,720</span></td><td class="unit">L/mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════ 5-YEAR PROJECTION ═══════════════════ -->
+<section class="section" id="five-year">
+  <div class="section-header">📅 5-Year Projection — Occupancy Ramp-Up</div>
+  <div class="section-body">
+    <p style="font-size:12px;color:var(--grey);margin-bottom:14px">Enter occupancy % for each year. All demand and monthly analysis update automatically.</p>
+
+    <!-- Occupancy inputs -->
+    <div class="yr-grid" id="yr-grid"></div>
+
+    <!-- Yearly summary table -->
+    <div class="sub">
+      <div class="sub-title">Annual Demand & Supply Summary by Year</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th class="proj" id="yr-h0">Year 1</th>
+            <th class="proj" id="yr-h1">Year 2</th>
+            <th class="proj" id="yr-h2">Year 3</th>
+            <th class="proj" id="yr-h3">Year 4</th>
+            <th class="proj" id="yr-h4">Year 5</th>
+            <th>Unit</th>
+          </tr>
+        </thead>
+        <tbody id="yr-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ MONTHLY ANALYSIS ═══════════════════ -->
+<section class="section" id="monthly">
+  <div class="section-header">📊 Monthly Demand vs Supply Analysis</div>
+  <div class="section-body">
+    <div class="month-controls">
+      <label>Viewing Year:</label>
+      <button class="yr-btn active" data-yr="0">Year 1</button>
+      <button class="yr-btn" data-yr="1">Year 2</button>
+      <button class="yr-btn" data-yr="2">Year 3</button>
+      <button class="yr-btn" data-yr="3">Year 4</button>
+      <button class="yr-btn" data-yr="4">Year 5</button>
+      <span id="mo-occ-label" style="font-size:12px;color:var(--blue);font-weight:700;margin-left:8px"></span>
+    </div>
+
+    <table id="monthly-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Rainfall<br>(mm)</th>
+          <th class="dem">Dom<br>Demand</th>
+          <th class="dem">Irr<br>Demand</th>
+          <th class="dem">Amenities</th>
+          <th class="dem">Total<br>Demand</th>
+          <th class="sup">RWH<br>Harvest</th>
+          <th class="sup">Total<br>Supply</th>
+          <th class="bal">Net<br>Balance</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="monthly-tbody"></tbody>
+      <tfoot>
+        <tr class="tot">
+          <td><b>Annual Total</b></td>
+          <td id="mo-rain-yr">—</td>
+          <td id="mo-dom-yr">—</td>
+          <td id="mo-irr-yr">—</td>
+          <td id="mo-amen-yr">—</td>
+          <td id="mo-dem-yr">—</td>
+          <td id="mo-rwh-yr">—</td>
+          <td id="mo-sup-yr">—</td>
+          <td id="mo-bal-yr">—</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p style="font-size:11px;color:var(--grey);margin-top:10px">
+      <b>RWH-only supply.</b> Seasonal demand factors: Peak summer Mar–Jun (domestic ×1.2, irrigation ×1.3) | Monsoon Jul–Sep (domestic ×0.85, irrigation ×0.5) | Transition Oct–Feb (domestic ×1.0, irrigation ×1.1). <b>RWH Harvest</b> = Rainfall (mm) × Effective Area (m²) × Runoff coefficient. If area breakdown (section 3b) is entered, each land-use type uses its own runoff coefficient; otherwise falls back to Site Area × single Runoff Coefficient. <b>Irrigation Demand</b> is reduced each month by rainfall absorbed by Farm (85%) and Garden (70%) areas. <b>Total Supply</b> = actual water delivered via tank simulation. Rainfall data: Chevella actual records 2009–2024 (16-yr avg 849 mm/yr).
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════ DEMAND DETAIL ═══════════════════ -->
+<section class="section" id="demand-detail">
+  <div class="section-header">💧 Demand Detail (at Full Occupancy)</div>
+  <div class="section-body">
+    <div class="g2">
+      <div class="sub">
+        <div class="sub-title">A. Domestic — Monthly Breakdown</div>
+        <table>
+          <thead><tr><th>End Use</th><th class="proj">L/Month</th><th class="ref">Antharam Ref</th></tr></thead>
+          <tbody>
+            <tr class="tot"><td>Total Domestic</td><td><span class="cc" id="dd-dom-tot">—</span></td><td><span class="cc ri" id="dd-ref-dom">—</span></td></tr>
+            <tr class="sub-row"><td>↳ Drinking & Cooking (7%)</td><td><span class="cc" id="dd-drink">—</span></td><td></td></tr>
+            <tr class="sub-row"><td>↳ Bathing (33%)</td><td><span class="cc" id="dd-bath">—</span></td><td></td></tr>
+            <tr class="sub-row"><td>↳ Flushing (22%)</td><td><span class="cc" id="dd-flush">—</span></td><td></td></tr>
+            <tr class="sub-row"><td>↳ Laundry (15%)</td><td><span class="cc" id="dd-laundry">—</span></td><td></td></tr>
+            <tr class="sub-row"><td>↳ Cleaning (7%)</td><td><span class="cc" id="dd-clean">—</span></td><td></td></tr>
+            <tr class="sub-row"><td>↳ Garden / Misc (16%)</td><td><span class="cc" id="dd-garden">—</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <div class="sub-title">B. Irrigation & Amenities</div>
+        <table>
+          <thead><tr><th>Category</th><th class="proj">L/Month</th><th class="ref">Antharam Ref</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl" id="dd-irr-method-lbl">Farm Irrigation (dripper-based)</td><td><span class="cc" id="dd-irr-ratio">—</span></td><td><span class="cc ri" id="dd-ref-irr">—</span></td></tr>
+            <tr><td class="lbl">Dripper Cross-check Total</td><td><span class="cc" id="dd-irr-drip">—</span></td><td><span class="cc ri" id="dd-ref-drip">—</span></td></tr>
+            <tr class="tot"><td>Farm Irrigation Used</td><td><span class="cc" id="dd-irr-used">—</span></td><td></td></tr>
+            <tr><td class="lbl">🌾 Additional Farming Water</td><td><span class="cc" id="dd-farm-water">—</span></td><td><span class="cc ri">—</span></td></tr>
+            <tr><td class="lbl">Swimming Pool Top-up</td><td><span class="cc" id="dd-pool">—</span></td><td><span class="cc ri" id="dd-ref-pool">—</span></td></tr>
+            <tr><td class="lbl">Animal Husbandry</td><td><span class="cc" id="dd-animal">—</span></td><td><span class="cc ri">—</span></td></tr>
+            <tr><td class="lbl">Landscaping</td><td><span class="cc" id="dd-land">—</span></td><td><span class="cc ri">—</span></td></tr>
+            <tr><td class="lbl">Other Consumption</td><td><span class="cc" id="dd-other">—</span></td><td><span class="cc ri" id="dd-ref-other">—</span></td></tr>
+            <tr class="tot"><td>Total Amenities (Pool + Other)</td><td><span class="cc" id="dd-amen-tot">—</span></td><td><span class="cc ri" id="dd-ref-amen-tot">—</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="sub">
+      <div class="sub-title">Total Demand Summary</div>
+      <table>
+        <thead><tr><th>Category</th><th class="proj">Monthly (L)</th><th class="proj">Annual (L)</th><th class="proj">Daily (L)</th><th class="ref">Antharam Monthly</th></tr></thead>
+        <tbody>
+          <tr><td class="lbl">Domestic</td><td><span class="cc" id="dds-dom-mo">—</span></td><td><span class="cc" id="dds-dom-yr">—</span></td><td><span class="cc" id="dds-dom-day">—</span></td><td><span class="cc ri" id="dds-ref-dom">—</span></td></tr>
+          <tr><td class="lbl">Irrigation</td><td><span class="cc" id="dds-irr-mo">—</span></td><td><span class="cc" id="dds-irr-yr">—</span></td><td><span class="cc" id="dds-irr-day">—</span></td><td><span class="cc ri" id="dds-ref-irr">—</span></td></tr>
+          <tr><td class="lbl">Amenities (Pool+Other)</td><td><span class="cc" id="dds-amen-mo">—</span></td><td><span class="cc" id="dds-amen-yr">—</span></td><td><span class="cc" id="dds-amen-day">—</span></td><td><span class="cc ri" id="dds-ref-amen">—</span></td></tr>
+          <tr class="tot"><td>TOTAL</td><td><span class="cc" id="dds-tot-mo">—</span></td><td><span class="cc" id="dds-tot-yr">—</span></td><td><span class="cc" id="dds-tot-day">—</span></td><td><span class="cc ri" id="dds-ref-tot">—</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SUPPLY DETAIL ═══════════════════ -->
+<section class="section" id="supply-detail">
+  <div class="section-header">🔋 Supply Detail</div>
+  <div class="section-body">
+    <table>
+      <thead><tr><th>Parameter</th><th class="proj">Monthly Avg (L)</th><th class="proj">Annual (L)</th><th class="ref">Antharam Ref (L/mo)</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td colspan="5" style="background:#e3f2fd;font-weight:700;padding:7px 11px;color:#1565c0">🌧️ Rainwater Harvesting — Sole Water Source</td></tr>
+        <tr><td class="lbl">RWH Harvest (avg monthly, usable)</td><td id="sd-rwh-m">—</td><td id="sd-rwh-y">—</td><td><span class="cc ri" id="sd-ref-rwh-mo">—</span></td><td class="note">Rainfall × Site Area × Runoff, capped at storage</td></tr>
+        <tr><td class="lbl">Annual Rainfall Capture (theoretical)</td><td class="unit">—</td><td id="sd-rwh-theoretical">—</td><td><span class="cc ri" id="sd-ref-rwh-cap">—</span></td><td class="note">Before storage cap</td></tr>
+        <tr><td class="lbl">Planned RWH Storage Capacity</td><td class="unit">—</td><td id="sd-rwh-cap">—</td><td></td><td class="note">Total installed</td></tr>
+        <tr><td colspan="5" style="background:#f5f5f5;font-weight:700;padding:7px 11px">📐 Required Storage — Rippl Method (all 16 years: 2009–2024)</td></tr>
+        <tr><td class="lbl">Required — Average Year (2009–2024 avg)</td><td class="unit">—</td><td id="sd-req-avg">—</td><td></td><td class="note">Based on 16-yr avg monthly pattern</td></tr>
+        <tr><td class="lbl">Required — Worst Year (driest on record, 2009–2024)</td><td class="unit">—</td><td id="sd-req-worst">—</td><td></td><td class="note">Design basis</td></tr>
+        <tr><td class="lbl">Required — Best Year (wettest on record)</td><td class="unit">—</td><td id="sd-req-best">—</td><td></td><td class="note">Minimum possible</td></tr>
+        <tr class="tot"><td>RWH Months Coverage (planned storage)</td><td class="unit">—</td><td id="sd-rwh-cov">—</td><td></td><td class="note">Storage ÷ Monthly avg demand</td></tr>
+        <tr class="tot" style="border-top:3px solid var(--blue)">
+          <td style="font-size:14px">⚡ TOTAL SUPPLY (= RWH only)</td>
+          <td id="sd-tot-m" style="font-size:14px;font-weight:800"></td>
+          <td id="sd-tot-y" style="font-size:14px;font-weight:800"></td>
+          <td><span class="cc ri" id="sd-ref-tot-sup">—</span></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════ WATER BALANCE ═══════════════════ -->
+<section class="section" id="balance">
+  <div class="section-header">⚖️ Water Balance — Metrics & RWH Guidance</div>
+  <div class="section-body">
+    <div class="g2">
+      <div class="sub">
+        <div class="sub-title">Key Metrics</div>
+        <table>
+          <thead><tr><th>Metric</th><th class="proj">Project</th><th class="ref">Antharam Ref</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Overall Self-Sufficiency</td><td><span class="cc" id="m-self">—</span></td><td><span class="cc ri">—</span></td><td id="m-self-st">—</td></tr>
+            <tr><td class="lbl">Domestic Self-Sufficiency</td><td><span class="cc" id="m-dom-self">—</span></td><td><span class="cc ri">—</span></td><td id="m-dom-st">—</td></tr>
+            <tr><td class="lbl">Irrigation Self-Sufficiency</td><td><span class="cc" id="m-irr-self">—</span></td><td><span class="cc ri">—</span></td><td id="m-irr-st">—</td></tr>
+            <tr><td class="lbl">External Dependency</td><td><span class="cc" id="m-ext">—</span></td><td><span class="cc ri">—</span></td><td id="m-ext-st">—</td></tr>
+            <tr><td class="lbl">LPCD</td><td><span class="cc" id="m-lpcd">—</span></td><td><span class="cc ri">68.46</span></td><td id="m-lpcd-st">—</td></tr>
+            <tr><td class="lbl">Water / House / Month</td><td><span class="cc" id="m-per-house">—</span></td><td><span class="cc ri">8,215</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="sub">
+        <div class="sub-title">RWH Storage — Required vs Planned</div>
+        <table>
+          <thead><tr><th>Parameter</th><th class="proj">Value</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Required — Average Year (Rippl)</td><td><span class="cc" id="rwh-sug">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Required — Worst Year Design Basis</td><td><span class="cc" id="rwh-3mo">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Your Planned Storage</td><td><span class="cc" id="rwh-cap">—</span></td><td class="unit">L</td></tr>
+            <tr><td class="lbl">Storage Gap (Planned − Worst Year Required)</td><td><span class="cc" id="rwh-gap">—</span></td><td class="unit" id="rwh-gap-unit">L</td></tr>
+            <tr><td class="lbl">Months of Avg Demand Covered</td><td><span class="cc" id="rwh-mos">—</span></td><td class="unit">months</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="balance-alerts" style="margin-top:14px"></div>
+    <div class="sub" style="display:none">
+    </div>
+      </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SEASONS = ['Dry Season','Dry Season','Pre-summer','Pre-summer','Pre-monsoon','Monsoon Onset','SW Monsoon','SW Monsoon','SW Monsoon','NE Monsoon','Retreating Monsoon','Dry Season'];
+const DEMAND_PRESSURE = ['🔴 Peak','🔴 Peak','🔴 Peak (Max)','🔴 Peak (Max)','🔴 Peak','⚠️ High','✅ Low','✅ Low','✅ Low','⚠️ Moderate','⚠️ Moderate','🔴 High'];
+const RWH_POT = ['🔴 Nil','🔴 Nil','🔴 Minimal','🔴 Very Low','⚠️ Low','⚠️ Moderate','✅ High','✅ Peak','✅ High','⚠️ Moderate','⚠️ Low','🔴 Low'];
+// Seasonal demand multipliers — Domestic
+const DOM_FACTOR  = [1.0, 1.0, 1.2, 1.2, 1.2, 1.2, 0.85, 0.85, 0.85, 1.0, 1.0, 1.0];
+// Seasonal demand multipliers — Irrigation (monsoon reduces need, summer increases)
+const IRR_FACTOR  = [1.1, 1.1, 1.3, 1.3, 1.2, 0.8, 0.5, 0.5, 0.6, 0.9, 1.0, 1.1];
+// Amenities scale with domestic factor
+// ── Rainfall presets — Chevella actual records (2009–2024) ────────────────────
+// Design basis: WORST YEAR (2018, 570 mm) — designing for scarcity, not abundance
+const RAIN_PRESETS = {
+  worst:  {label:'Worst Year 2018 (570 mm)',  mm:[0,0,1.4,33.6,61.0,117.3,91.7,121.4,74.4,22.3,0,47.2]},
+  avg:    {label:'16-yr Average 2009–2024 (849 mm)', mm:[1.9,3.5,7.2,23.4,36.8,120.0,158.8,173.1,191.2,106.9,21.3,5.3]},
+  y2011:  {label:'2011 (584 mm)',  mm:[0,22.8,2.4,1.9,2.1,50.1,175.4,204.8,67.2,49.0,8.2,0]},
+  y2015:  {label:'2015 (615 mm)',  mm:[0.3,0,27.1,78.1,30.2,139.5,47.9,93.1,142.0,56.6,0.3,0]},
+  y2014:  {label:'2014 (637 mm)',  mm:[0,0.4,39.8,22.0,69.6,52.5,129.8,164.1,102.2,23.2,33.1,0.2]},
+  y2009:  {label:'2009 (658 mm)',  mm:[0,0,2.1,15.1,17.0,63.6,52.5,255.6,150.6,59.3,37.8,4.4]},
+  y2022:  {label:'2022 (715 mm)',  mm:[0,0,5.2,18.5,42.3,98.7,145.2,168.3,125.6,85.4,22.8,3.0]},
+  y2023:  {label:'2023 (781 mm)',  mm:[1.5,0,12.4,25.6,35.8,110.2,165.8,142.5,148.7,95.3,38.2,5.0]},
+  y2019:  {label:'2019 (874 mm)',  mm:[14.2,0.5,0.4,20.3,34.6,94.5,132.1,146.2,258.3,169.7,0,2.8]},
+  y2024:  {label:'2024 (903 mm)',  mm:[0.8,3.2,8.5,30.2,55.4,135.6,185.4,195.2,165.8,78.5,35.6,8.8]},
+  y2021:  {label:'2021 (1008 mm)', mm:[0.7,1.7,0,12.1,59.6,149.0,242.3,160.0,279.1,73.6,29.7,0]},
+  y2013:  {label:'2013 (1018 mm)', mm:[2.2,18.7,0,40.3,17.2,147.1,225.0,125.4,179.9,244.5,18.0,0]},
+  y2017:  {label:'2017 (1039 mm)', mm:[0,0,7.1,18.5,30.2,225.2,143.6,184.4,199.9,229.4,0.4,0]},
+  y2016:  {label:'2016 (1053 mm)', mm:[0.6,0,1.6,8.3,90.4,87.6,159.0,126.3,533.2,43.6,0.9,1.8]},
+  y2010:  {label:'2010 (1168 mm)', mm:[6.0,2.7,0,7.1,27.1,168.1,311.0,283.4,211.2,77.0,62.5,11.8]},
+  y2020:  {label:'2020 (1232 mm)', mm:[2.5,6.4,8.0,22.4,14.6,145.5,124.3,278.4,303.8,319.0,7.5,0]},
+};
+let RAIN_MM = [...RAIN_PRESETS.worst.mm]; // Default: WORST YEAR (design for scarcity)
+
+// 16-year actual monthly rainfall data — Chevella, Rangareddy (IMD station), mm
+// Source: Chevella daily rainfall records 2009–2024
+const CHEVELLA_YEARS = [
+  {yr:2009,mm:[0,0,2.1,15.1,17.0,63.6,52.5,255.6,150.6,59.3,37.8,4.4]},
+  {yr:2010,mm:[6.0,2.7,0,7.1,27.1,168.1,311.0,283.4,211.2,77.0,62.5,11.8]},
+  {yr:2011,mm:[0,22.8,2.4,1.9,2.1,50.1,175.4,204.8,67.2,49.0,8.2,0]},
+  {yr:2012,mm:[1.1,0,0,20.0,1.1,135.5,209.7,120.9,116.8,83.4,46.4,0]},
+  {yr:2013,mm:[2.2,18.7,0,40.3,17.2,147.1,225.0,125.4,179.9,244.5,18.0,0]},
+  {yr:2014,mm:[0,0.4,39.8,22.0,69.6,52.5,129.8,164.1,102.2,23.2,33.1,0.2]},
+  {yr:2015,mm:[0.3,0,27.1,78.1,30.2,139.5,47.9,93.1,142.0,56.6,0.3,0]},
+  {yr:2016,mm:[0.6,0,1.6,8.3,90.4,87.6,159.0,126.3,533.2,43.6,0.9,1.8]},
+  {yr:2017,mm:[0,0,7.1,18.5,30.2,225.2,143.6,184.4,199.9,229.4,0.4,0]},
+  {yr:2018,mm:[0,0,1.4,33.6,61.0,117.3,91.7,121.4,74.4,22.3,0,47.2]},
+  {yr:2019,mm:[14.2,0.5,0.4,20.3,34.6,94.5,132.1,146.2,258.3,169.7,0,2.8]},
+  {yr:2020,mm:[2.5,6.4,8.0,22.4,14.6,145.5,124.3,278.4,303.8,319.0,7.5,0]},
+  {yr:2021,mm:[0.7,1.7,0,12.1,59.6,149.0,242.3,160.0,279.1,73.6,29.7,0]},
+  {yr:2022,mm:[0,0,5.2,18.5,42.3,98.7,145.2,168.3,125.6,85.4,22.8,3.0]},
+  {yr:2023,mm:[1.5,0,12.4,25.6,35.8,110.2,165.8,142.5,148.7,95.3,38.2,5.0]},
+  {yr:2024,mm:[0.8,3.2,8.5,30.2,55.4,135.6,185.4,195.2,165.8,78.5,35.6,8.8]},
+];
+
+// Rippl method: minimum storage to bridge dry periods given cyclic annual pattern.
+// Returns null if annual harvest < annual demand (year is infeasible regardless of storage).
+function calcRequiredStorage(harvest, demand) {
+  const annH = harvest.reduce((s,v)=>s+v,0);
+  const annD = demand.reduce((s,v)=>s+v,0);
+  if (annH < annD) return null;
+  const net = harvest.map((h,i)=>h-demand[i]);
+  let cumNet=0, peakCumNet=0, maxDeficit=0;
+  for (let c=0;c<2;c++) for (let i=0;i<12;i++) {
+    cumNet += net[i];
+    if (cumNet>peakCumNet) peakCumNet=cumNet;
+    const def=peakCumNet-cumNet;
+    if (def>maxDeficit) maxDeficit=def;
+  }
+  return maxDeficit;
+}
+
+// Tank simulation: carries tank state month-to-month, counting every refill cycle.
+// Returns array of {supplied, tank} per month.
+function simulateTank(harvest, demand, capacity) {
+  let tank = 0;
+  // Run 2 cycles to stabilise the starting tank level
+  for (let c = 0; c < 2; c++) {
+    for (let i = 0; i < 12; i++) {
+      tank = Math.min(tank + harvest[i], capacity);
+      tank -= Math.min(demand[i], tank);
+    }
+  }
+  const monthly = [];
+  for (let i = 0; i < 12; i++) {
+    tank = Math.min(tank + harvest[i], capacity);
+    const supplied = Math.min(demand[i], tank);
+    tank -= supplied;
+    monthly.push({ supplied, tank });
+  }
+  return monthly;
+}
+
+// Occupancy rates (5 years)
+let occRates = [0.10, 0.25, 0.50, 0.75, 1.00];
+let activeYr = 0;
+
+// ══════════════════════════════════════════════
+//  UTILITY
+// ══════════════════════════════════════════════
+const $  = id => document.getElementById(id);
+const val = id => { const v = parseFloat($(id)?.value); return isNaN(v) ? 0 : v; };
+const opt = id => { const v = parseFloat($(id)?.value); return isNaN(v) ? null : v; };
+const set = (id, v) => { const el=$(id); if(el) el.textContent=v; };
+
+function fmtL(n) {
+  if (n===null||n===undefined||isNaN(n)) return '—';
+  const a = Math.abs(n);
+  const s = n < 0 ? '-' : '';
+  if (a >= 10000000) return s+(a/10000000).toFixed(2)+' Cr L';
+  if (a >= 100000)   return s+(a/100000).toFixed(2)+' lac L';
+  if (a >= 1000)     return s+(a/1000).toFixed(1)+' KL';
+  return s+Math.round(a).toLocaleString('en-IN')+' L';
+}
+function fmtN(n,d=0) { if(isNaN(n)||n===null) return '—'; return Number(n).toLocaleString('en-IN',{maximumFractionDigits:d}); }
+function fmtP(n)   { return isNaN(n)?'—':(n*100).toFixed(1)+'%'; }
+function fmtR(n)   { return isNaN(n)?'—':n.toFixed(3); }
+
+function badge(gap) {
+  if (gap >= 0)       return `<span class="badge ok">✅ Surplus</span>`;
+  if (gap < -500000)  return `<span class="badge deficit">🔴 Deficit</span>`;
+  return `<span class="badge warn">⚠️ Near</span>`;
+}
+function badgeR(ratio) {
+  if (ratio >= 1) return `<span class="badge ok">✅ Self-Sufficient</span>`;
+  return `<span class="badge deficit">🔴 Deficit</span>`;
+}
+
+// ══════════════════════════════════════════════
+//  BUILD RAINFALL TABLE
+// ══════════════════════════════════════════════
+function buildRainfallTable() {
+  const tb = $('rainfall-tbody'); tb.innerHTML = '';
+  const AVG = RAIN_PRESETS.avg.mm;
+  RAIN_MM.forEach((mm, i) => {
+    const cls = i>=6&&i<=8?'monsoon-row':i>=2&&i<=5?'peak-row':'trans-row';
+    const diff = mm - AVG[i];
+    const diffPct = AVG[i] > 0 ? (diff/AVG[i]*100) : (mm>0 ? 100 : 0);
+    const diffColor = diff >= 0 ? '#2e7d32' : '#c62828';
+    const diffStr = diff >= 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+    const diffPctStr = diff >= 0 ? `+${diffPct.toFixed(0)}%` : `${diffPct.toFixed(0)}%`;
+    tb.innerHTML += `<tr class="${cls}">
+      <td style="font-weight:500">${MONTHS[i]}</td>
+      <td><input type="number" class="ri rain-inp" data-i="${i}" value="${mm}" style="min-width:75px"></td>
+      <td style="font-size:11px;color:#546e7a;text-align:right;padding-right:14px">${AVG[i]}</td>
+      <td style="font-size:11px;font-weight:700;color:${diffColor};white-space:nowrap">${diffStr}<br><span style="font-size:10px;font-weight:400">${diffPctStr}</span></td>
+      <td>${SEASONS[i]}</td>
+      <td>${DEMAND_PRESSURE[i]}</td>
+      <td>${RWH_POT[i]}</td>
+    </tr>`;
+  });
+  document.querySelectorAll('.rain-inp').forEach(el =>
+    el.addEventListener('input', e => { RAIN_MM[+e.target.dataset.i]=parseFloat(e.target.value)||0; updateRainTotals(); recalc(); })
+  );
+  updateRainTotals();
+}
+
+function updateRainTotals() {
+  const total = RAIN_MM.reduce((s,v)=>s+v,0);
+  const avg   = RAIN_PRESETS.avg.mm.reduce((s,v)=>s+v,0);
+  const diff  = total - avg;
+  const el = $('rain-total');
+  if (el) { el.textContent = total.toFixed(1)+' mm'; el.style.color = total < avg ? '#c62828' : '#2e7d32'; }
+  const vsEl = $('rain-vs-avg');
+  if (vsEl) {
+    vsEl.textContent = (diff>=0?'+':'')+diff.toFixed(1)+' mm ('+(diff>=0?'+':'')+(diff/avg*100).toFixed(0)+'%)';
+    vsEl.style.color = diff >= 0 ? '#2e7d32' : '#c62828';
+  }
+}
+
+// ── Rainfall preset loader ────────────────────────────────────────────────────
+function applyRainPreset(key) {
+  const p = RAIN_PRESETS[key];
+  if (!p) return;
+  RAIN_MM = [...p.mm];
+  document.querySelectorAll('.rain-inp').forEach(el => {
+    const i = +el.dataset.i;
+    el.value = RAIN_MM[i];
+  });
+  // Rebuild table to refresh diff column
+  buildRainfallTable();
+  // Update label
+  const lbl = $('rain-preset-label');
+  if (lbl) {
+    const total = RAIN_MM.reduce((s,v)=>s+v,0);
+    const isWorst = key === 'worst' || total <= 600;
+    lbl.textContent = (isWorst ? '🔴 ' : key==='avg' ? '📊 ' : '📅 ') + p.label;
+    lbl.style.background = isWorst ? '#ffcdd2' : key==='avg' ? '#e0e0e0' : '#fff9c4';
+    lbl.style.color       = isWorst ? '#c62828' : key==='avg' ? '#37474f' : '#e65100';
+  }
+  recalc();
+}
+
+// ══════════════════════════════════════════════
+//  BUILD OCCUPANCY YEAR GRID
+// ══════════════════════════════════════════════
+function buildYrGrid() {
+  const g = $('yr-grid'); g.innerHTML = '';
+  occRates.forEach((r, i) => {
+    const houses = val('p-houses'), occ = val('p-occ');
+    const villas = Math.round(houses*r), pop = villas*occ;
+    g.innerHTML += `<div class="yr-card">
+      <label>Year ${i+1}</label>
+      <input type="number" class="occ-inp" data-i="${i}" value="${(r*100).toFixed(0)}" min="0" max="100" style="text-align:center;min-width:70px">
+      <div style="font-size:10px;color:var(--grey);margin-top:3px">% Occupancy</div>
+      <div class="yr-derived">
+        <span id="yc-vil-${i}">${fmtN(villas)}</span> villas<br>
+        <span id="yc-pop-${i}">${fmtN(pop)}</span> persons
+      </div>
+    </div>`;
+  });
+  document.querySelectorAll('.occ-inp').forEach(el => el.addEventListener('input', e => {
+    occRates[+e.target.dataset.i] = (parseFloat(e.target.value)||0)/100;
+    recalc();
+  }));
+}
+
+function buildYrTableSkeleton() {
+  const rows = [
+    ['occ-v','Occupied Villas','nos.'],
+    ['occ-pop','Population','persons'],
+    ['occ-dom','Annual Domestic Demand','ML/yr'],
+    ['occ-irr','Annual Irrigation Demand','ML/yr'],
+    ['occ-amen','Annual Amenities Demand','ML/yr'],
+    ['occ-dem','Total Annual Demand','ML/yr'],
+    ['occ-sup','Annual Supply (fixed)','ML/yr'],
+    ['occ-bal','Annual Balance','ML/yr'],
+  ];
+  const tb = $('yr-tbody'); tb.innerHTML = '';
+
+  // Occupancy % row — editable inputs
+  tb.innerHTML += `<tr style="background:#e8f5e9">
+    <td class="lbl" style="font-weight:700">Occupancy %</td>
+    ${[0,1,2,3,4].map(i=>`
+      <td><input type="number" id="occ-r-${i}" value="${(occRates[i]*100).toFixed(0)}"
+        min="0" max="100" class="occ-tbl-inp"
+        style="min-width:70px;text-align:center;background:#d4edda;color:#155724;font-weight:700;border-color:#7fbf7f">
+      </td>`).join('')}
+    <td class="unit">%</td>
+  </tr>`;
+
+  // Remaining calculated rows
+  rows.forEach(([id, label, unit]) => {
+    tb.innerHTML += `<tr>
+      <td class="lbl">${label}</td>
+      ${[0,1,2,3,4].map(i=>`<td id="${id}-${i}">—</td>`).join('')}
+      <td class="unit">${unit}</td>
+    </tr>`;
+  });
+
+  // Wire inputs
+  document.querySelectorAll('.occ-tbl-inp').forEach(el => {
+    el.addEventListener('input', e => {
+      const i = +e.target.id.replace('occ-r-','');
+      occRates[i] = (parseFloat(e.target.value)||0)/100;
+      // Sync yr-grid card inputs
+      const card = document.querySelector(`.occ-inp[data-i="${i}"]`);
+      if (card) card.value = e.target.value;
+      recalc();
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
+//  CORE CALCULATIONS
+// ══════════════════════════════════════════════
+
+function calcDemandMonthly(month, pop, irrBase, amenBase) {
+  const lpcd = val('p-lpcd');
+  const domOvr = opt('p-dom-ovr');
+  const irrOvr = opt('p-irr-ovr');
+  const domBase = domOvr !== null ? domOvr : lpcd*pop*30;
+  const domMo   = domBase * DOM_FACTOR[month];
+  const irrUsed = (irrOvr !== null ? irrOvr : irrBase);
+  const irrMo   = irrUsed * IRR_FACTOR[month];
+  const amenMo  = amenBase * DOM_FACTOR[month]; // amenities scale with domestic season
+  return {domMo, irrMo, amenMo, total: domMo+irrMo+amenMo};
+}
+
+function recalc() {
+  // ── Reference — read ALL from inputs
+  const refHouses     = val('ref-houses'), refOcc = val('ref-occ'), refFarm = val('ref-farm');
+  const refLpcd       = val('ref-lpcd'), refIrrPerAcre = val('ref-irr-am'), refRwhPerH = val('ref-rwh-h');
+  const refPoolMo     = val('ref-pool-mo');
+  const refOtherMo    = val('ref-other-mo');
+  const refDripXcheck = val('ref-drip-xcheck');
+  const refRwhTotal   = val('ref-rwh-total');
+  const refRwhMonthly = val('ref-rwh-monthly');
+  const refTotSupMo   = refRwhMonthly * 12; // RWH only — annual usable
+
+  const refPop         = refHouses * refOcc;
+  const refHandedOver  = val('ref-handed-over') || 79;
+  const refOccupied    = val('ref-occupied') || 38;
+  const refCurrPop     = Math.round(refOccupied * refOcc);
+  const refCurrOccPct  = refHouses > 0 ? (refOccupied / refHouses * 100).toFixed(1) : '20.9';
+  set('ref-pop',      fmtN(refPop));
+  set('ref-curr-pop', fmtN(refCurrPop) + ' persons');
+  set('ref-curr-occ', refCurrOccPct + '% (' + refOccupied + ' of ' + refHouses + ')');
+  set('ref-sup-total', fmtL(Math.round(refTotSupMo)));
+
+  const refDomMo  = refLpcd*refPop*30;
+  const refIrrMo  = refFarm*refIrrPerAcre;
+  const refAmenMo = refPoolMo + refOtherMo;
+
+  // Push ref values into display spans throughout the page
+  set('pi-ref-dom', fmtN(Math.round(refDomMo)));
+  set('pi-ref-irr', fmtN(Math.round(refIrrMo)));
+  set('pi-ref-pool', fmtL(refPoolMo));
+  set('pi-ref-other', fmtL(refOtherMo));
+  set('dd-ref-drip', fmtL(refDripXcheck));
+  set('dd-ref-pool', fmtL(refPoolMo));
+  set('dd-ref-other', fmtL(refOtherMo));
+  set('dd-ref-amen-tot', fmtL(refAmenMo));
+  set('dds-ref-amen', fmtL(refAmenMo));
+  set('sd-ref-rwh-mo', fmtL(refRwhMonthly));
+  set('sd-ref-rwh-cap', fmtL(refRwhTotal));
+  set('sd-ref-tot-sup', fmtL(Math.round(refTotSupMo)));
+  // Farming detail cross-check ref
+  const p_drip_ref = $('p-drip-mo'); // the dripper crosscheck is project-computed, not ref
+
+  // ── Project profile
+  const houses = val('p-houses'), occ = val('p-occ'), farmAcres = val('p-farm');
+  const pop    = houses*occ;
+  set('p-pop', fmtN(pop));
+
+  // Domestic base (full occupancy, average month — before seasonal factor)
+  const lpcd   = val('p-lpcd');
+  const domOvr = opt('p-dom-ovr');
+  const domBase = domOvr !== null ? domOvr : lpcd*pop*30;
+
+  // Dripper cross-check — compute FIRST so it can drive irrBase
+  const totalDrip = val('p-drip3')+val('p-drip2');
+  const dripWaterMo = totalDrip * val('p-dflow') * (val('p-dtime')/60) * 30;
+  set('p-drip-mo', fmtL(Math.round(dripWaterMo)));
+
+  // Irrigation base — priority: manual override > dripper-based > ratio-based
+  // Dripper water IS the farming water (bottom-up actual); ratio is fallback only.
+  const irrBase = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr')
+                : dripWaterMo > 0              ? dripWaterMo
+                :                                farmAcres*refIrrPerAcre;
+  // Farming group (shown under Irrigation/Farming in dashboard)
+  const farmWater = val('p-farm-water')||0; // any additional farming water beyond drip irrigation
+  const animal    = val('p-animal')||0;
+  const land      = val('p-landscape')||0;
+  const farmGrp   = farmWater+animal+land;
+  // Amenities group (pool + other — facility demand)
+  const pool      = val('p-pool')||0;
+  const otherD    = val('p-other-dem')||0;
+  const amenBase  = pool+otherD;
+
+  // ── Supply — RWH only
+  const siteA = val('p-site'), runoff = val('p-runoff');
+  const rwhCap = val('p-rwh');
+
+  // ── Area breakdown by land use (for runoff calculation)
+  const roadSqm    = val('p-area-road-sqm')    || 0;
+  const farmLuSqm  = val('p-area-farm-sqm')    || 0;
+  const terraceSqm = val('p-area-terrace-sqm') || 0;
+  const gardenSqm  = val('p-area-garden-sqm')  || 0;
+  const walkwaySqm = val('p-area-walkway-sqm') || 0;
+  const totalLuSqm = roadSqm + farmLuSqm + terraceSqm + gardenSqm + walkwaySqm;
+
+  // Convert sqm → acres for display
+  const sqmToAc = v => v > 0 ? (v / 4046.86).toFixed(3) : '—';
+  set('p-area-road-ac',    sqmToAc(roadSqm));
+  set('p-area-farm-lu-ac', sqmToAc(farmLuSqm));
+  set('p-area-terrace-ac', sqmToAc(terraceSqm));
+  set('p-area-garden-ac',  sqmToAc(gardenSqm));
+  set('p-area-walkway-ac', sqmToAc(walkwaySqm));
+
+  if (totalLuSqm > 0) {
+    set('p-area-total-sqm', fmtN(Math.round(totalLuSqm)));
+    set('p-area-total-ac',  (totalLuSqm / 4046.86).toFixed(2));
+    const effRwhSqm = roadSqm*0.85 + farmLuSqm*0.15 + terraceSqm*0.85 + gardenSqm*0.30 + walkwaySqm*0.85;
+    const effRunoffPct = (effRwhSqm / totalLuSqm * 100).toFixed(1) + '%';
+    set('p-area-eff-runoff', effRunoffPct);
+    // January (avg 1.9 mm) harvest and offset preview
+    const janMm = 1.9;
+    set('p-jan-rwh-harvest', fmtL(Math.round(janMm * effRwhSqm)));
+    const janIrrOffset = janMm * (farmLuSqm * 0.85 + gardenSqm * 0.70);
+    set('p-jan-irr-offset',  fmtL(Math.round(janIrrOffset)));
+  } else {
+    ['p-area-total-sqm','p-area-total-ac','p-area-eff-runoff','p-jan-rwh-harvest','p-jan-irr-offset'].forEach(id => set(id, '—'));
+  }
+
+  // Effective RWH area (sqm × runoff_coeff) — use area breakdown if entered, else siteA × runoff
+  const effRwhArea = totalLuSqm > 0
+    ? (roadSqm*0.85 + farmLuSqm*0.15 + terraceSqm*0.85 + gardenSqm*0.30 + walkwaySqm*0.85)
+    : siteA * 4046.86 * runoff;
+
+  // Monthly rainfall offset for irrigation demand (water absorbed by farm & garden)
+  // Farm: (1 - 0.15) = 0.85 absorbed; Garden: (1 - 0.30) = 0.70 absorbed
+  const rainfallIrrOffset = totalLuSqm > 0
+    ? RAIN_MM.map(mm => mm * (farmLuSqm * 0.85 + gardenSqm * 0.70))
+    : RAIN_MM.map(() => 0);
+
+  const monthlyRwhHarvest = RAIN_MM.map(mm => mm * effRwhArea);
+  const annRainL = monthlyRwhHarvest.reduce((s,v)=>s+v,0); // theoretical max (no storage limit)
+
+  // ── Monthly demand with seasonal factors (needed for simulation & Rippl)
+  const monthlyDemandRippl = MONTHS.map((_,i) => {
+    const domMo  = domBase * DOM_FACTOR[i];
+    const irrMo  = Math.max(0, (irrBase + farmWater + land) * IRR_FACTOR[i] + animal - rainfallIrrOffset[i]);
+    const amenMo = amenBase * DOM_FACTOR[i];
+    return domMo + irrMo + amenMo;
+  });
+
+  // ── Tank simulation: storage fills and drains each month; accounts for multiple refill cycles
+  const tankSim      = simulateTank(monthlyRwhHarvest, monthlyDemandRippl, rwhCap);
+  const annRwhUsable = tankSim.reduce((s,v) => s + v.supplied, 0);
+  const rwhMonthlyAvg = annRwhUsable / 12;
+  const totalSupplyMo = rwhMonthlyAvg;
+  const totalSupplyYr = annRwhUsable;
+
+  // ── Required storage — Rippl method
+  const reqAvg = calcRequiredStorage(monthlyRwhHarvest, monthlyDemandRippl);
+
+  // Per-year required storage across 16 historical years
+  let reqPerYear = [];
+  CHEVELLA_YEARS.forEach(({yr, mm: yrMM}) => {
+    const harv = yrMM.map(rain => rain * siteA * 4046.86 * runoff);
+    const req  = calcRequiredStorage(harv, monthlyDemandRippl);
+    reqPerYear.push({yr, req, annMM: yrMM.reduce((s,v)=>s+v,0)});
+  });
+  const feasible  = reqPerYear.filter(r => r.req !== null);
+  const reqWorst  = feasible.length ? Math.max(...feasible.map(r=>r.req)) : null;
+  const reqBest   = feasible.length ? Math.min(...feasible.map(r=>r.req)) : null;
+  const infeasCnt = reqPerYear.filter(r => r.req === null).length;
+
+  // ── Annual averages (full occupancy, no seasonal factor — base)
+  const annDomBase = domBase*12;
+  const annIrrBase = irrBase*12;
+  const annAmenBase = amenBase*12;
+  const annTotalDemBase = annDomBase+annIrrBase+annAmenBase;
+
+  // ── Annual with seasonal weighting (sum of 12 months)
+  // Irrigation/Farming row = irrBase (IRR_FACTOR) + farmWater+land (IRR_FACTOR) + animal (flat)
+  // Amenities row = pool + otherD (flat / DOM_FACTOR)
+  let annDomSeasoned=0, annIrrSeasoned=0, annAmenSeasoned=0;
+  MONTHS.forEach((_,i) => {
+    annDomSeasoned  += domBase * DOM_FACTOR[i];
+    annIrrSeasoned  += (irrBase + farmWater + land) * IRR_FACTOR[i] + animal; // farming group
+    annAmenSeasoned += amenBase * DOM_FACTOR[i]; // pool + other
+  });
+  const annTotalDemSeasoned = annDomSeasoned+annIrrSeasoned+annAmenSeasoned;
+
+  // ── Supply detail — RWH only
+  set('sd-rwh-m', fmtL(Math.round(rwhMonthlyAvg)));
+  set('sd-rwh-y', fmtL(Math.round(annRwhUsable)));
+  set('sd-rwh-theoretical', fmtL(Math.round(annRainL)));
+  set('sd-rwh-cap', fmtL(rwhCap));
+  set('sd-rwh-cov', annTotalDemBase>0 ? (rwhCap/(annTotalDemBase/12)).toFixed(2)+' months' : '—');
+  set('sd-ref-rwh-mo', fmtL(val('ref-rwh-monthly')));
+  set('sd-ref-rwh-cap', fmtL(val('ref-rwh-total')));
+  set('sd-ref-tot-sup', fmtL(val('ref-rwh-monthly')));
+  set('sd-req-avg',   reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('sd-req-worst', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  set('sd-req-best',  reqBest  !== null ? fmtL(Math.round(reqBest))  : '—');
+  set('sd-tot-m', fmtL(Math.round(totalSupplyMo)));
+  set('sd-tot-y', fmtL(Math.round(totalSupplyYr)));
+  // Project Inputs required storage display
+  set('p-req-avg',   reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('p-req-worst', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  const gap = reqWorst !== null ? rwhCap - reqWorst : null;
+  if ($('p-req-gap')) {
+    set('p-req-gap', gap !== null ? fmtL(Math.round(gap)) : '—');
+    $('p-req-gap').style.color = (gap !== null && gap >= 0) ? 'var(--green)' : 'var(--red)';
+    set('p-req-gap-unit', gap !== null ? (gap >= 0 ? '✅ Sufficient' : '🔴 Shortfall') : '');
+  }
+  // Dashboard required storage
+  set('db-req-avg',   reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('db-req-worst', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+
+  // ── Demand detail
+  set('dd-dom-tot',fmtL(Math.round(domBase)));
+  set('dd-ref-dom',fmtL(Math.round(refDomMo)));
+  set('dd-drink',fmtL(Math.round(domBase*0.07)));
+  set('dd-bath',fmtL(Math.round(domBase*0.33)));
+  set('dd-flush',fmtL(Math.round(domBase*0.22)));
+  set('dd-laundry',fmtL(Math.round(domBase*0.15)));
+  set('dd-clean',fmtL(Math.round(domBase*0.07)));
+  set('dd-garden',fmtL(Math.round(domBase*0.16)));
+  // Show which method is driving irrigation, and label accordingly
+  const usingDrip = opt('p-irr-ovr') === null && dripWaterMo > 0;
+  const usingOvr  = opt('p-irr-ovr') !== null;
+  $('dd-irr-method-lbl').textContent = usingOvr  ? 'Farm Irrigation (manual override)'
+                                     : usingDrip ? 'Farm Irrigation (dripper-based ✓)'
+                                     :              'Farm Irrigation (ratio-based fallback)';
+  set('dd-irr-ratio', fmtL(Math.round(irrBase)));   // show the actual value being used
+  set('dd-ref-irr',fmtL(Math.round(refIrrMo)));
+  set('dd-irr-drip',fmtL(Math.round(dripWaterMo))); // always show dripper calc for reference
+  set('dd-irr-used',fmtL(Math.round(irrBase)));
+  set('dd-farm-water',fmtL(farmWater));
+  set('dd-pool',fmtL(pool)); set('dd-animal',fmtL(animal)); set('dd-land',fmtL(land)); set('dd-other',fmtL(otherD));
+  set('dd-amen-tot',fmtL(amenBase));
+  // Irrigation/Farming total for summary = irrBase + farmGrp
+  const irrFarmBase = irrBase + farmGrp;
+  const totalBase = domBase + irrFarmBase + amenBase;
+  set('dds-dom-mo',fmtL(domBase)); set('dds-dom-yr',fmtL(domBase*12)); set('dds-dom-day',fmtL(domBase/30));
+  set('dds-irr-mo',fmtL(irrFarmBase)); set('dds-irr-yr',fmtL(irrFarmBase*12)); set('dds-irr-day',fmtL(irrFarmBase/30));
+  set('dds-amen-mo',fmtL(amenBase)); set('dds-amen-yr',fmtL(amenBase*12)); set('dds-amen-day',fmtL(amenBase/30));
+  set('dds-tot-mo',fmtL(totalBase));
+  set('dds-tot-yr',fmtL(totalBase*12));
+  set('dds-tot-day',fmtL(totalBase/30));
+  set('dds-ref-dom',fmtL(Math.round(refDomMo)));
+  set('dds-ref-irr',fmtL(Math.round(refIrrMo)));
+  set('dds-ref-tot',fmtL(Math.round(refDomMo+refIrrMo+refAmenMo)));
+
+  // ── Rainfall annual
+  updateRainTotals();
+
+  // ── 5-Year projection
+  occRates.forEach((rate, i) => {
+    const villas= Math.round(houses*rate);
+    const popYr = villas*occ;
+    set(`yc-vil-${i}`, fmtN(villas));
+    set(`yc-pop-${i}`, fmtN(popYr));
+    set(`yr-h${i}`, `Year ${i+1} (${(rate*100).toFixed(0)}%)`);
+
+    // Seasonal sum for this year's population
+    let yDom=0, yIrr=0, yAmen=0;
+    const domOvrY = domOvr !== null ? domOvr * (popYr/pop) : lpcd*popYr*30;
+    const farmGrpScaled = farmWater + land + animal*rate; // farming group (fixed farm, scaled animal)
+    MONTHS.forEach((_,m) => {
+      yDom  += domOvrY * DOM_FACTOR[m];
+      yIrr  += (irrBase + farmWater + land) * IRR_FACTOR[m] + animal; // irrigation + farming group
+      yAmen += (pool+otherD) * DOM_FACTOR[m]; // amenities only
+    });
+    const yTotDem = yDom+yIrr+yAmen;
+    const ySupply = totalSupplyYr;
+    const yBal    = ySupply - yTotDem;
+
+    // occ-r inputs are user-controlled — do not overwrite
+    set(`occ-v-${i}`, fmtN(villas));
+    set(`occ-pop-${i}`, fmtN(popYr));
+    set(`occ-dom-${i}`, (yDom/1000000).toFixed(3));
+    set(`occ-irr-${i}`, (yIrr/1000000).toFixed(3));
+    set(`occ-amen-${i}`, (yAmen/1000000).toFixed(3));
+    set(`occ-dem-${i}`, (yTotDem/1000000).toFixed(3));
+    set(`occ-sup-${i}`, (ySupply/1000000).toFixed(3));
+    const balEl = $(`occ-bal-${i}`);
+    if (balEl) {
+      balEl.textContent = (yBal/1000000).toFixed(3);
+      balEl.style.color = yBal>=0?'var(--green)':'var(--red)';
+    }
+  });
+
+  // ── Monthly Analysis (for active year)
+  updateMonthlyTable(activeYr, domBase, irrBase, amenBase, pop, occ, houses, totalSupplyYr);
+
+  // ── Balance metrics (full occupancy)
+  const selfSuf = annTotalDemSeasoned > 0 ? totalSupplyYr/annTotalDemSeasoned : 0;
+  set('m-self',fmtR(selfSuf)); $('m-self-st').innerHTML=badgeR(selfSuf);
+  set('m-dom-self',fmtR(selfSuf)); $('m-dom-st').innerHTML=badgeR(selfSuf);
+  set('m-irr-self',fmtR(selfSuf)); $('m-irr-st').innerHTML=badgeR(selfSuf);
+  set('m-ext','0%'); if($('m-ext-st')) $('m-ext-st').innerHTML=`<span class="badge ok">✅ None</span>`;
+  set('m-lpcd',lpcd.toFixed(1)); $('m-lpcd-st').innerHTML=lpcd>100?`<span class="badge warn">⚠️ High</span>`:`<span class="badge ok">✅ Efficient</span>`;
+  set('m-per-house',fmtN(houses>0?Math.round(domBase/houses):0));
+
+  // RWH sizing guidance
+  set('rwh-sug',  reqAvg  !== null ? fmtL(Math.round(reqAvg))   : '⚠️ Infeasible');
+  set('rwh-3mo',  reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  set('rwh-cap',  fmtL(rwhCap));
+  const storageGap = reqWorst !== null ? rwhCap - reqWorst : null;
+  if ($('rwh-gap')) {
+    set('rwh-gap', storageGap !== null ? fmtL(Math.round(storageGap)) : '—');
+    $('rwh-gap').style.color = (storageGap !== null && storageGap >= 0) ? 'var(--green)' : 'var(--red)';
+    set('rwh-gap-unit', storageGap !== null ? (storageGap >= 0 ? '✅ Sufficient' : '🔴 Shortfall') : '');
+  }
+  set('rwh-mos', (domBase+irrBase+amenBase)>0 ? (rwhCap/((domBase+irrBase+amenBase))).toFixed(2)+' months' : '—');
+
+
+  // ── Dashboard
+  set('kpi-dem',fmtL(Math.round(annTotalDemSeasoned)));
+  set('kpi-sup',fmtL(Math.round(totalSupplyYr)));
+  const totalGap = totalSupplyYr - annTotalDemSeasoned;
+  set('kpi-gap',fmtL(Math.round(totalGap)));
+  set('kpi-gap-sub', totalGap>=0?'✅ Surplus (with adequate storage)':'🔴 Deficit');
+  $('kpi-gap-card').className='kpi '+(totalGap>=0?'g':'r');
+  set('kpi-self',fmtR(selfSuf));
+  $('kpi-self-card').className='kpi '+(selfSuf>=1?'g':'r');
+  set('kpi-lpcd',lpcd.toFixed(1));
+  // Required Storage KPI
+  set('kpi-req', reqWorst !== null ? fmtL(Math.round(reqWorst)) : '⚠️ Infeasible');
+  const reqOk = reqWorst !== null && rwhCap >= reqWorst;
+  if($('kpi-req-card')) $('kpi-req-card').className='kpi '+(reqOk?'g':'r');
+  set('kpi-req-sub', reqWorst !== null ? (reqOk ? '✅ Planned storage is sufficient' : '🔴 Need '+fmtL(Math.round(reqWorst-rwhCap))+' more') : 'Annual harvest insufficient in some years');
+
+  // ── Dashboard — Demand breakdown (no per-category supply split)
+  const pctDom = annTotalDemSeasoned > 0 ? (annDomSeasoned/annTotalDemSeasoned*100).toFixed(1)+'%' : '—';
+  const pctIrr = annTotalDemSeasoned > 0 ? (annIrrSeasoned/annTotalDemSeasoned*100).toFixed(1)+'%' : '—';
+  const pctOth = annTotalDemSeasoned > 0 ? (annAmenSeasoned/annTotalDemSeasoned*100).toFixed(1)+'%' : '—';
+  set('db-dom-d',fmtL(Math.round(annDomSeasoned)));  set('db-dom-mo',fmtL(Math.round(annDomSeasoned/12)));  set('db-dom-pct',pctDom);
+  set('db-irr-d',fmtL(Math.round(annIrrSeasoned)));  set('db-irr-mo',fmtL(Math.round(annIrrSeasoned/12)));  set('db-irr-pct',pctIrr);
+  set('db-oth-d',fmtL(Math.round(annAmenSeasoned))); set('db-oth-mo',fmtL(Math.round(annAmenSeasoned/12))); set('db-oth-pct',pctOth);
+  set('db-tot-d',fmtL(Math.round(annTotalDemSeasoned))); set('db-tot-mo',fmtL(Math.round(annTotalDemSeasoned/12)));
+
+  // ── Dashboard — Supply: RWH only
+  set('db-rwh-mo', fmtL(Math.round(rwhMonthlyAvg)));
+  set('db-rwh-yr', fmtL(Math.round(annRwhUsable)));
+  set('db-sup-mo', fmtL(Math.round(totalSupplyMo)));
+  set('db-tot-s',  fmtL(Math.round(totalSupplyYr)));
+
+  // Net balance bar
+  set('db-tot-g', fmtL(Math.round(totalGap)));
+  $('db-tot-st').innerHTML = badge(totalGap);
+  const balBar = $('db-balance-bar');
+  balBar.style.background = totalGap>=0 ? 'var(--green-light)' : 'var(--red-light)';
+  balBar.style.border      = totalGap>=0 ? '1px solid #a5d6a7' : '1px solid #ef9a9a)';
+  $('db-tot-g').style.color = totalGap>=0 ? 'var(--green)' : 'var(--red)';
+
+  // Alerts
+  let al='';
+  if(infeasCnt>0) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text"><b>${infeasCnt} of 16 historical years (2009–2024)</b> had insufficient annual rainfall to meet full-occupancy demand, regardless of storage size. Consider demand reduction for those years.</div></div>`;
+  if(reqWorst !== null && rwhCap < reqWorst) al+=`<div class="alert error"><div>🔴</div><div class="alert-text">Planned storage (${fmtL(rwhCap)}) is <b>${fmtL(Math.round(reqWorst-rwhCap))} short</b> of the worst-year requirement (${fmtL(Math.round(reqWorst))}). Increase storage to ensure self-sufficiency in the driest years.</div></div>`;
+  else if(reqWorst !== null) al+=`<div class="alert ok"><div>✅</div><div class="alert-text">Planned storage is sufficient for all 16 historical years. Surplus over worst year: <b>${fmtL(Math.round(rwhCap-reqWorst))}</b>.</div></div>`;
+  if(totalGap<0) al+=`<div class="alert warn"><div>⚠️</div><div class="alert-text">With average rainfall &amp; current storage cap, annual usable RWH (${fmtL(Math.round(totalSupplyYr))}) is less than demand (${fmtL(Math.round(annTotalDemSeasoned))}). Increase storage or reduce demand.</div></div>`;
+  $('dash-alerts').innerHTML = al;
+  $('balance-alerts').innerHTML = al;
+  scheduleAutoSave();
+}
+
+function updateMonthlyTable(yrIdx, domBase, irrBase, amenBase, fullPop, occ, houses, totalSupplyYr) {
+  const rate = occRates[yrIdx];
+  const villas = Math.round(houses*rate);
+  const pop = villas*occ;
+  const domOvr = opt('p-dom-ovr');
+  const lpcd = val('p-lpcd');
+  // Scale domestic demand by occupancy
+  const domScaled = domOvr !== null ? domOvr*(pop/fullPop) : lpcd*pop*30;
+  // Farming group (irrigation/farming in dashboard) — fixed farm water, scale animal/land partly
+  const pool=val('p-pool'), farmWaterM=val('p-farm-water')||0, animalM=val('p-animal'), landM=val('p-landscape'), otherD=val('p-other-dem');
+  const amenScaled = (pool+otherD); // amenities only = pool + other
+
+  const siteA=val('p-site'), runoff=val('p-runoff');
+  const rwhCap=val('p-rwh'); // storage capacity cap
+
+  // Area breakdown for runoff (same logic as recalc)
+  const roadSqmM    = val('p-area-road-sqm')    || 0;
+  const farmLuSqmM  = val('p-area-farm-sqm')    || 0;
+  const terraceSqmM = val('p-area-terrace-sqm') || 0;
+  const gardenSqmM  = val('p-area-garden-sqm')  || 0;
+  const walkwaySqmM = val('p-area-walkway-sqm') || 0;
+  const totalLuSqmM = roadSqmM + farmLuSqmM + terraceSqmM + gardenSqmM + walkwaySqmM;
+  const effRwhAreaM = totalLuSqmM > 0
+    ? (roadSqmM*0.85 + farmLuSqmM*0.15 + terraceSqmM*0.85 + gardenSqmM*0.30 + walkwaySqmM*0.85)
+    : siteA * 4046.86 * runoff;
+  const rainIrrOffsetM = totalLuSqmM > 0
+    ? RAIN_MM.map(mm => mm * (farmLuSqmM * 0.85 + gardenSqmM * 0.70))
+    : RAIN_MM.map(() => 0);
+
+  $('mo-occ-label').textContent = `${(rate*100).toFixed(0)}% occupancy — ${fmtN(villas)} villas / ${fmtN(pop)} persons`;
+
+  const tb = $('monthly-tbody'); tb.innerHTML='';
+  let totRain=0, totDom=0, totIrr=0, totAmen=0, totDem=0, totRWH=0, totSup=0, totBal=0;
+
+  // Same priority as recalc(): override > dripper-based > ratio-based
+  const dripMo = (val('p-drip3')+val('p-drip2')) * val('p-dflow') * (val('p-dtime')/60) * 30;
+  const irrBaseM = (opt('p-irr-ovr') !== null) ? opt('p-irr-ovr')
+                 : dripMo > 0                  ? dripMo
+                 :                               val('p-farm')*val('ref-irr-am');
+  // Pre-compute tank simulation for monthly table (accounts for multiple refill cycles)
+  const moHarvest = RAIN_MM.map(mm => mm * effRwhAreaM);
+  const moDemand  = MONTHS.map((_,i) => {
+    const domMo  = domScaled * DOM_FACTOR[i];
+    const irrMo  = Math.max(0, (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM - rainIrrOffsetM[i]);
+    const amenMo = amenScaled * DOM_FACTOR[i];
+    return domMo + irrMo + amenMo;
+  });
+  const moTankSim = simulateTank(moHarvest, moDemand, rwhCap);
+
+  MONTHS.forEach((m, i) => {
+    const domMo   = domScaled * DOM_FACTOR[i];
+    // Irrigation/Farming = field irrigation + farming water + landscaping (seasonal) + animal (flat)
+    // Rainfall absorbed by farm & garden is subtracted from irrigation demand
+    const irrMo   = Math.max(0, (irrBaseM + farmWaterM + landM) * IRR_FACTOR[i] + animalM - rainIrrOffsetM[i]);
+    const amenMo  = amenScaled * DOM_FACTOR[i]; // pool + other
+    const demMo   = domMo+irrMo+amenMo;
+    const rwhHarv = moHarvest[i]; // raw harvest (theoretical, no storage cap)
+    const supMo   = moTankSim[i].supplied; // actual supply from tank simulation
+    const balMo   = supMo-demMo;
+    const cls     = i>=6&&i<=8?'monsoon-row':i>=2&&i<=5?'peak-row':'trans-row';
+    const balColor = balMo>=0?'style="color:var(--green);font-weight:700"':'style="color:var(--red);font-weight:700"';
+
+    tb.innerHTML += `<tr class="${cls}">
+      <td style="font-weight:600;white-space:nowrap">${m}</td>
+      <td>${RAIN_MM[i]}</td>
+      <td>${fmtL(Math.round(domMo))}</td>
+      <td>${fmtL(Math.round(irrMo))}</td>
+      <td>${fmtL(Math.round(amenMo))}</td>
+      <td style="font-weight:700">${fmtL(Math.round(demMo))}</td>
+      <td>${fmtL(Math.round(rwhHarv))}</td>
+      <td style="font-weight:700">${fmtL(Math.round(supMo))}</td>
+      <td ${balColor}>${fmtL(Math.round(balMo))}</td>
+      <td>${badge(balMo)}</td>
+    </tr>`;
+    totRain+=RAIN_MM[i]; totDom+=domMo; totIrr+=irrMo; totAmen+=amenMo; totDem+=demMo;
+    totRWH+=rwhHarv; totSup+=supMo; totBal+=balMo;
+  });
+
+  set('mo-rain-yr',totRain+' mm');
+  set('mo-dom-yr',fmtL(Math.round(totDom)));
+  set('mo-irr-yr',fmtL(Math.round(totIrr)));
+  set('mo-amen-yr',fmtL(Math.round(totAmen)));
+  set('mo-dem-yr',fmtL(Math.round(totDem)));
+  set('mo-rwh-yr',fmtL(Math.round(totRWH)));
+  set('mo-sup-yr',fmtL(Math.round(totSup)));
+  const balEl = $('mo-bal-yr');
+  if(balEl){balEl.textContent=fmtL(Math.round(totBal));balEl.style.color=totBal>=0?'var(--green)':'var(--red)';}
+}
+
+// ══════════════════════════════════════════════
+//  NAV SCROLL
+// ══════════════════════════════════════════════
+window.addEventListener('scroll', () => {
+  let cur='';
+  document.querySelectorAll('section[id]').forEach(s => { if(window.scrollY>=s.offsetTop-130) cur=s.id; });
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href')==='#'+cur));
+});
+
+// Year button clicks
+document.querySelectorAll('.yr-btn').forEach(btn => btn.addEventListener('click', function() {
+  document.querySelectorAll('.yr-btn').forEach(b=>b.classList.remove('active'));
+  this.classList.add('active');
+  activeYr = +this.dataset.yr;
+  recalc();
+}));
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+buildRainfallTable();
+buildYrGrid();
+buildYrTableSkeleton();
+// ── Auto-fill system ──────────────────────────────────────────────────────────
+// Fields that can be auto-derived from reference benchmarks.
+const AUTO_FIELDS = ['p-lpcd','p-pool','p-other-dem','p-rwh'];
+// Scale inputs: changing these triggers auto-fill.
+const SCALE_INPUTS = ['p-houses','p-occ','p-site','p-farm'];
+// Fields whose changes should re-trigger auto-fill (reference data).
+// Any id starting with "ref-" also triggers.
+const manualOverrides = new Set(); // fields the user has manually edited
+let isAutoFilling = false;
+
+function autoFillFromRef() {
+  isAutoFilling = true;
+  const refPop  = val('ref-houses') * val('ref-occ');
+  const projPop = val('p-houses')   * val('p-occ');
+  const popScale = refPop > 0 ? projPop / refPop : 1;
+
+  const targets = {
+    'p-lpcd':      val('ref-lpcd'),                                   // same LPCD standard
+    'p-pool':      val('ref-pool-mo'),                                // same pool (fixed asset)
+    'p-other-dem': Math.round(val('ref-other-mo') * popScale),       // scales with population
+    'p-rwh':       Math.round(val('ref-rwh-h') * val('p-houses')),   // RWH storage per house
+  };
+
+  Object.entries(targets).forEach(([id, v]) => {
+    if (!manualOverrides.has(id)) {
+      $(id).value = v;
+      $(id).style.background = '#e8f5e9'; // light green = auto-computed
+    }
+  });
+  isAutoFilling = false;
+  recalc();
+}
+
+function resetAutoFills() {
+  manualOverrides.clear();
+  AUTO_FIELDS.forEach(id => { $(id).style.background = ''; }); // clear before re-fill
+  autoFillFromRef();
+}
+
+// ── Persistence: localStorage + URL sharing + JSON export/import ─────────────
+const STORAGE_KEY = 'saptapatha_water_v1';
+
+function getAllInputValues() {
+  const data = { _activeYr: activeYr, _manualOverrides: [...manualOverrides], _rainMM: [...RAIN_MM] };
+  // All regular inputs with IDs (skip occ/rain — handled separately)
+  document.querySelectorAll('input[type=number], input[type=text]').forEach(el => {
+    if (el.id && !el.classList.contains('occ-inp') && !el.classList.contains('rain-inp'))
+      data[el.id] = el.value;
+  });
+  // 5-year occupancy inputs (data-i = 0..4)
+  document.querySelectorAll('.occ-inp').forEach(el => { data[`occ_${el.dataset.i}`] = el.value; });
+  // Rainfall inputs (data-i = 0..11)
+  document.querySelectorAll('.rain-inp').forEach(el => { data[`rain_${el.dataset.i}`] = el.value; });
+  return data;
+}
+
+function applyInputValues(data) {
+  if (!data) return;
+  // Regular inputs
+  Object.entries(data).forEach(([key, val]) => {
+    if (key.startsWith('_') || key.startsWith('occ_') || key.startsWith('rain_')) return;
+    const el = document.getElementById(key);
+    if (el) el.value = val;
+  });
+  // 5-year occupancy
+  for (let i = 0; i < 5; i++) {
+    const v = data[`occ_${i}`];
+    if (v !== undefined) {
+      const el = document.querySelector(`.occ-inp[data-i="${i}"]`);
+      if (el) { el.value = v; occRates[i] = (parseFloat(v) || 0) / 100; }
+    }
+  }
+  // Rainfall — prefer _rainMM array if present, fall back to individual keys
+  if (data._rainMM && data._rainMM.length === 12) {
+    RAIN_MM = [...data._rainMM];
+    document.querySelectorAll('.rain-inp').forEach(el => { el.value = RAIN_MM[+el.dataset.i]; });
+    updateRainTotals();
+  } else {
+    for (let i = 0; i < 12; i++) {
+      const v = data[`rain_${i}`];
+      if (v !== undefined) {
+        const el = document.querySelector(`.rain-inp[data-i="${i}"]`);
+        if (el) { el.value = v; RAIN_MM[i] = parseFloat(v) || RAIN_MM[i]; }
+      }
+    }
+  }
+  // Active year button
+  if (data._activeYr !== undefined) {
+    activeYr = +data._activeYr;
+    document.querySelectorAll('.yr-btn').forEach(btn =>
+      btn.classList.toggle('active', +btn.dataset.yr === activeYr));
+  }
+  // Restore manual overrides & backgrounds
+  if (data._manualOverrides) {
+    data._manualOverrides.forEach(id => {
+      manualOverrides.add(id);
+      const el = document.getElementById(id);
+      if (el) el.style.background = '#fff9c4'; // yellow = user-set
+    });
+  }
+  // Green background for auto-filled fields not manually overridden
+  AUTO_FIELDS.forEach(id => {
+    if (!manualOverrides.has(id)) {
+      const el = document.getElementById(id);
+      if (el) el.style.background = '#e8f5e9';
+    }
+  });
+}
+
+// ── localStorage ──
+let autoSaveTimer;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(getAllInputValues()));
+      showSaveStatus('✅ Saved', '#4caf50');
+    } catch(e) { showSaveStatus('⚠️ Save failed', '#ef9a9a'); }
+  }, 1000);
+}
+
+function loadFromLocalStorage() {
+  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; }
+  catch(e) { return null; }
+}
+
+function clearSavedData() {
+  if (!confirm('Reset all inputs to defaults and clear saved data?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  history.replaceState(null, '', location.pathname);
+  location.reload();
+}
+
+// ── URL sharing ──
+function generateShareURL() {
+  const json = JSON.stringify(getAllInputValues());
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  return `${location.origin}${location.pathname}?d=${encodeURIComponent(b64)}`;
+}
+
+function copyShareURL() {
+  const url = generateShareURL();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url)
+      .then(() => showSaveStatus('🔗 Link copied!', '#4fc3f7'))
+      .catch(() => prompt('Copy this link:', url));
+  } else { prompt('Copy this link:', url); }
+}
+
+function loadFromURL() {
+  try {
+    const d = new URLSearchParams(location.search).get('d');
+    if (!d) return null;
+    return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(d)))));
+  } catch(e) { return null; }
+}
+
+// ── JSON export / import ──
+function exportJSON() {
+  const data = getAllInputValues();
+  data._exported = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: `saptapatha_water_${new Date().toISOString().slice(0,10)}.json`
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+  showSaveStatus('⬇️ Exported!', '#80cbc4');
+}
+
+function importJSON(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      applyInputValues(JSON.parse(e.target.result));
+      recalc();
+      showSaveStatus('⬆️ Imported & saved!', '#80cbc4');
+    } catch(err) { alert('Invalid file. Use a JSON exported from this dashboard.'); }
+  };
+  reader.readAsText(file);
+}
+
+// ── Status indicator ──
+let statusTimer;
+function showSaveStatus(msg, color) {
+  const el = document.getElementById('save-indicator');
+  if (!el) return;
+  el.textContent = msg; el.style.color = color || 'rgba(255,255,255,.5)';
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => {
+    el.textContent = '💾 Auto-save on'; el.style.color = 'rgba(255,255,255,.5)';
+  }, 3000);
+}
+
+// ── Init sequence ──
+// 1. First run autoFillFromRef → builds dynamic DOM elements (rain-inp, occ-inp) via recalc()
+autoFillFromRef();
+// 2. Load saved data: URL params take priority over localStorage
+const _savedData = loadFromURL() || loadFromLocalStorage();
+if (_savedData) {
+  applyInputValues(_savedData);
+  recalc(); // re-run with restored values
+  showSaveStatus('✅ Restored', '#4caf50');
+} else {
+  showSaveStatus('💾 Auto-save on', 'rgba(255,255,255,.5)');
+}
+
+// Attach change listeners — smart version
+document.querySelectorAll('input[type=number],input[type=text],select').forEach(el => {
+  if (el.classList.contains('occ-inp') || el.classList.contains('rain-inp')) return;
+  el.addEventListener('input', e => {
+    const id = e.target.id;
+    if (AUTO_FIELDS.includes(id) && !isAutoFilling) {
+      manualOverrides.add(id);
+      $(id).style.background = '#fff9c4';
+    }
+    if (SCALE_INPUTS.includes(id) || id.startsWith('ref-')) {
+      autoFillFromRef();
+    } else {
+      recalc();
+    }
+  });
+});
+</script>
+</body>
+</html>
