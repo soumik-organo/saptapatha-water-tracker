@@ -212,16 +212,55 @@
 
     <!-- Rainfall inputs -->
     <div class="sub">
-      <div class="sub-title">Monthly Rainfall — Chevella Mandal, Rangareddy (IMD Normals — Editable)</div>
+      <div class="sub-title">Monthly Rainfall — Chevella Mandal, Rangareddy (Actual Records 2009–2024)</div>
+
+      <!-- Design basis selector -->
+      <div style="background:#ffebee;border:1px solid #ef9a9a;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:#c62828;white-space:nowrap">📐 Design Basis:</span>
+        <span id="rain-preset-label" style="font-size:12px;font-weight:700;color:#c62828;background:#ffcdd2;padding:3px 10px;border-radius:12px;white-space:nowrap">🔴 Worst Year 2018 — 570 mm</span>
+        <span style="font-size:11px;color:#78909c;font-style:italic">Design for scarcity, not abundance</span>
+      </div>
+
+      <!-- Year preset buttons -->
+      <div style="margin-bottom:8px;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;font-weight:700;color:var(--grey);margin-right:2px">Quick Load:</span>
+        <button onclick="applyRainPreset('worst')"  class="rain-preset-btn" style="background:#c62828;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">🔴 Worst (2018)</button>
+        <button onclick="applyRainPreset('y2011')"  class="rain-preset-btn" style="background:#e53935;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2011</button>
+        <button onclick="applyRainPreset('y2015')"  class="rain-preset-btn" style="background:#e53935;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2015</button>
+        <button onclick="applyRainPreset('y2014')"  class="rain-preset-btn" style="background:#ef6c00;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2014</button>
+        <button onclick="applyRainPreset('y2009')"  class="rain-preset-btn" style="background:#ef6c00;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2009</button>
+        <button onclick="applyRainPreset('y2022')"  class="rain-preset-btn" style="background:#f9a825;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2022</button>
+        <button onclick="applyRainPreset('y2023')"  class="rain-preset-btn" style="background:#f9a825;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2023</button>
+        <button onclick="applyRainPreset('y2019')"  class="rain-preset-btn" style="background:#558b2f;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2019</button>
+        <button onclick="applyRainPreset('y2024')"  class="rain-preset-btn" style="background:#2e7d32;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2024</button>
+        <button onclick="applyRainPreset('y2021')"  class="rain-preset-btn" style="background:#1b5e20;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2021</button>
+        <button onclick="applyRainPreset('y2013')"  class="rain-preset-btn" style="background:#1b5e20;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2013</button>
+        <button onclick="applyRainPreset('y2017')"  class="rain-preset-btn" style="background:#1565c0;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2017</button>
+        <button onclick="applyRainPreset('y2016')"  class="rain-preset-btn" style="background:#1565c0;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2016</button>
+        <button onclick="applyRainPreset('y2010')"  class="rain-preset-btn" style="background:#0d47a1;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2010</button>
+        <button onclick="applyRainPreset('y2020')"  class="rain-preset-btn" style="background:#0d47a1;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer">2020 (Wettest)</button>
+        <button onclick="applyRainPreset('avg')"    class="rain-preset-btn" style="background:#546e7a;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">📊 16-yr Avg</button>
+      </div>
+
       <table id="rainfall-table">
         <thead>
           <tr>
-            <th>Month</th><th class="proj">Rainfall (mm)</th><th>Season</th><th>Demand Pressure</th><th>RWH Potential</th>
+            <th>Month</th>
+            <th class="proj">Design Rainfall (mm)</th>
+            <th style="background:#eceff1;color:#546e7a;font-size:10px">16-yr Avg (mm)</th>
+            <th style="background:#eceff1;color:#546e7a;font-size:10px">vs Avg</th>
+            <th>Season</th><th>Demand Pressure</th><th>RWH Potential</th>
           </tr>
         </thead>
         <tbody id="rainfall-tbody"></tbody>
         <tfoot>
-          <tr class="tot"><td>Annual Total</td><td id="rain-total">—</td><td colspan="3"><span style="font-size:11px;color:var(--grey)">Source: IMD Normals, Rangareddy District / Chevella Mandal</span></td></tr>
+          <tr class="tot">
+            <td>Annual Total</td>
+            <td id="rain-total" style="font-weight:800;color:#c62828">—</td>
+            <td style="font-size:11px;color:#546e7a">849 mm avg</td>
+            <td id="rain-vs-avg" style="font-size:11px;font-weight:700">—</td>
+            <td colspan="3"><span style="font-size:11px;color:var(--grey)">Source: Chevella daily records 2009–2024 | Design default = Worst Year 2018</span></td>
+          </tr>
         </tfoot>
       </table>
     </div>
@@ -737,8 +776,8 @@
         <tr><td class="lbl">RWH Harvest (avg monthly, usable)</td><td id="sd-rwh-m">—</td><td id="sd-rwh-y">—</td><td><span class="cc ri" id="sd-ref-rwh-mo">—</span></td><td class="note">Rainfall × Site Area × Runoff, capped at storage</td></tr>
         <tr><td class="lbl">Annual Rainfall Capture (theoretical)</td><td class="unit">—</td><td id="sd-rwh-theoretical">—</td><td><span class="cc ri" id="sd-ref-rwh-cap">—</span></td><td class="note">Before storage cap</td></tr>
         <tr><td class="lbl">Planned RWH Storage Capacity</td><td class="unit">—</td><td id="sd-rwh-cap">—</td><td></td><td class="note">Total installed</td></tr>
-        <tr><td colspan="5" style="background:#f5f5f5;font-weight:700;padding:7px 11px">📐 Required Storage — Rippl Method (across 16 years)</td></tr>
-        <tr><td class="lbl">Required — Average Year</td><td class="unit">—</td><td id="sd-req-avg">—</td><td></td><td class="note">16-yr avg rainfall pattern</td></tr>
+        <tr><td colspan="5" style="background:#f5f5f5;font-weight:700;padding:7px 11px">📐 Required Storage — Rippl Method (all 16 years: 2009–2024)</td></tr>
+        <tr><td class="lbl">Required — Average Year (2009–2024 avg)</td><td class="unit">—</td><td id="sd-req-avg">—</td><td></td><td class="note">Based on 16-yr avg monthly pattern</td></tr>
         <tr><td class="lbl">Required — Worst Year (driest on record, 2009–2024)</td><td class="unit">—</td><td id="sd-req-worst">—</td><td></td><td class="note">Design basis</td></tr>
         <tr><td class="lbl">Required — Best Year (wettest on record)</td><td class="unit">—</td><td id="sd-req-best">—</td><td></td><td class="note">Minimum possible</td></tr>
         <tr class="tot"><td>RWH Months Coverage (planned storage)</td><td class="unit">—</td><td id="sd-rwh-cov">—</td><td></td><td class="note">Storage ÷ Monthly avg demand</td></tr>
@@ -808,7 +847,27 @@ const DOM_FACTOR  = [1.0, 1.0, 1.2, 1.2, 1.2, 1.2, 0.85, 0.85, 0.85, 1.0, 1.0, 1
 // Seasonal demand multipliers — Irrigation (monsoon reduces need, summer increases)
 const IRR_FACTOR  = [1.1, 1.1, 1.3, 1.3, 1.2, 0.8, 0.5, 0.5, 0.6, 0.9, 1.0, 1.1];
 // Amenities scale with domestic factor
-let RAIN_MM = [1.9,3.5,7.2,23.4,36.8,120.0,158.8,173.1,191.2,106.9,21.3,5.3]; // 16-yr Chevella actual avg (2009–2024)
+// ── Rainfall presets — Chevella actual records (2009–2024) ────────────────────
+// Design basis: WORST YEAR (2018, 570 mm) — designing for scarcity, not abundance
+const RAIN_PRESETS = {
+  worst:  {label:'Worst Year 2018 (570 mm)',  mm:[0,0,1.4,33.6,61.0,117.3,91.7,121.4,74.4,22.3,0,47.2]},
+  avg:    {label:'16-yr Average 2009–2024 (849 mm)', mm:[1.9,3.5,7.2,23.4,36.8,120.0,158.8,173.1,191.2,106.9,21.3,5.3]},
+  y2011:  {label:'2011 (584 mm)',  mm:[0,22.8,2.4,1.9,2.1,50.1,175.4,204.8,67.2,49.0,8.2,0]},
+  y2015:  {label:'2015 (615 mm)',  mm:[0.3,0,27.1,78.1,30.2,139.5,47.9,93.1,142.0,56.6,0.3,0]},
+  y2014:  {label:'2014 (637 mm)',  mm:[0,0.4,39.8,22.0,69.6,52.5,129.8,164.1,102.2,23.2,33.1,0.2]},
+  y2009:  {label:'2009 (658 mm)',  mm:[0,0,2.1,15.1,17.0,63.6,52.5,255.6,150.6,59.3,37.8,4.4]},
+  y2022:  {label:'2022 (715 mm)',  mm:[0,0,5.2,18.5,42.3,98.7,145.2,168.3,125.6,85.4,22.8,3.0]},
+  y2023:  {label:'2023 (781 mm)',  mm:[1.5,0,12.4,25.6,35.8,110.2,165.8,142.5,148.7,95.3,38.2,5.0]},
+  y2019:  {label:'2019 (874 mm)',  mm:[14.2,0.5,0.4,20.3,34.6,94.5,132.1,146.2,258.3,169.7,0,2.8]},
+  y2024:  {label:'2024 (903 mm)',  mm:[0.8,3.2,8.5,30.2,55.4,135.6,185.4,195.2,165.8,78.5,35.6,8.8]},
+  y2021:  {label:'2021 (1008 mm)', mm:[0.7,1.7,0,12.1,59.6,149.0,242.3,160.0,279.1,73.6,29.7,0]},
+  y2013:  {label:'2013 (1018 mm)', mm:[2.2,18.7,0,40.3,17.2,147.1,225.0,125.4,179.9,244.5,18.0,0]},
+  y2017:  {label:'2017 (1039 mm)', mm:[0,0,7.1,18.5,30.2,225.2,143.6,184.4,199.9,229.4,0.4,0]},
+  y2016:  {label:'2016 (1053 mm)', mm:[0.6,0,1.6,8.3,90.4,87.6,159.0,126.3,533.2,43.6,0.9,1.8]},
+  y2010:  {label:'2010 (1168 mm)', mm:[6.0,2.7,0,7.1,27.1,168.1,311.0,283.4,211.2,77.0,62.5,11.8]},
+  y2020:  {label:'2020 (1232 mm)', mm:[2.5,6.4,8.0,22.4,14.6,145.5,124.3,278.4,303.8,319.0,7.5,0]},
+};
+let RAIN_MM = [...RAIN_PRESETS.worst.mm]; // Default: WORST YEAR (design for scarcity)
 
 // 16-year actual monthly rainfall data — Chevella, Rangareddy (IMD station), mm
 // Source: Chevella daily rainfall records 2009–2024
@@ -909,19 +968,64 @@ function badgeR(ratio) {
 // ══════════════════════════════════════════════
 function buildRainfallTable() {
   const tb = $('rainfall-tbody'); tb.innerHTML = '';
+  const AVG = RAIN_PRESETS.avg.mm;
   RAIN_MM.forEach((mm, i) => {
     const cls = i>=6&&i<=8?'monsoon-row':i>=2&&i<=5?'peak-row':'trans-row';
+    const diff = mm - AVG[i];
+    const diffPct = AVG[i] > 0 ? (diff/AVG[i]*100) : (mm>0 ? 100 : 0);
+    const diffColor = diff >= 0 ? '#2e7d32' : '#c62828';
+    const diffStr = diff >= 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+    const diffPctStr = diff >= 0 ? `+${diffPct.toFixed(0)}%` : `${diffPct.toFixed(0)}%`;
     tb.innerHTML += `<tr class="${cls}">
       <td style="font-weight:500">${MONTHS[i]}</td>
       <td><input type="number" class="ri rain-inp" data-i="${i}" value="${mm}" style="min-width:75px"></td>
+      <td style="font-size:11px;color:#546e7a;text-align:right;padding-right:14px">${AVG[i]}</td>
+      <td style="font-size:11px;font-weight:700;color:${diffColor};white-space:nowrap">${diffStr}<br><span style="font-size:10px;font-weight:400">${diffPctStr}</span></td>
       <td>${SEASONS[i]}</td>
       <td>${DEMAND_PRESSURE[i]}</td>
       <td>${RWH_POT[i]}</td>
     </tr>`;
   });
   document.querySelectorAll('.rain-inp').forEach(el =>
-    el.addEventListener('input', e => { RAIN_MM[+e.target.dataset.i]=parseFloat(e.target.value)||0; recalc(); })
+    el.addEventListener('input', e => { RAIN_MM[+e.target.dataset.i]=parseFloat(e.target.value)||0; updateRainTotals(); recalc(); })
   );
+  updateRainTotals();
+}
+
+function updateRainTotals() {
+  const total = RAIN_MM.reduce((s,v)=>s+v,0);
+  const avg   = RAIN_PRESETS.avg.mm.reduce((s,v)=>s+v,0);
+  const diff  = total - avg;
+  const el = $('rain-total');
+  if (el) { el.textContent = total.toFixed(1)+' mm'; el.style.color = total < avg ? '#c62828' : '#2e7d32'; }
+  const vsEl = $('rain-vs-avg');
+  if (vsEl) {
+    vsEl.textContent = (diff>=0?'+':'')+diff.toFixed(1)+' mm ('+(diff>=0?'+':'')+(diff/avg*100).toFixed(0)+'%)';
+    vsEl.style.color = diff >= 0 ? '#2e7d32' : '#c62828';
+  }
+}
+
+// ── Rainfall preset loader ────────────────────────────────────────────────────
+function applyRainPreset(key) {
+  const p = RAIN_PRESETS[key];
+  if (!p) return;
+  RAIN_MM = [...p.mm];
+  document.querySelectorAll('.rain-inp').forEach(el => {
+    const i = +el.dataset.i;
+    el.value = RAIN_MM[i];
+  });
+  // Rebuild table to refresh diff column
+  buildRainfallTable();
+  // Update label
+  const lbl = $('rain-preset-label');
+  if (lbl) {
+    const total = RAIN_MM.reduce((s,v)=>s+v,0);
+    const isWorst = key === 'worst' || total <= 600;
+    lbl.textContent = (isWorst ? '🔴 ' : key==='avg' ? '📊 ' : '📅 ') + p.label;
+    lbl.style.background = isWorst ? '#ffcdd2' : key==='avg' ? '#e0e0e0' : '#fff9c4';
+    lbl.style.color       = isWorst ? '#c62828' : key==='avg' ? '#37474f' : '#e65100';
+  }
+  recalc();
 }
 
 // ══════════════════════════════════════════════
@@ -1240,8 +1344,7 @@ function recalc() {
   set('dds-ref-tot',fmtL(Math.round(refDomMo+refIrrMo+refAmenMo)));
 
   // ── Rainfall annual
-  const annRainMM = RAIN_MM.reduce((s,m)=>s+m,0);
-  set('rain-total', annRainMM+' mm');
+  updateRainTotals();
 
   // ── 5-Year projection
   occRates.forEach((rate, i) => {
@@ -1509,7 +1612,7 @@ function resetAutoFills() {
 const STORAGE_KEY = 'saptapatha_water_v1';
 
 function getAllInputValues() {
-  const data = { _activeYr: activeYr, _manualOverrides: [...manualOverrides] };
+  const data = { _activeYr: activeYr, _manualOverrides: [...manualOverrides], _rainMM: [...RAIN_MM] };
   // All regular inputs with IDs (skip occ/rain — handled separately)
   document.querySelectorAll('input[type=number], input[type=text]').forEach(el => {
     if (el.id && !el.classList.contains('occ-inp') && !el.classList.contains('rain-inp'))
@@ -1538,12 +1641,18 @@ function applyInputValues(data) {
       if (el) { el.value = v; occRates[i] = (parseFloat(v) || 0) / 100; }
     }
   }
-  // Rainfall
-  for (let i = 0; i < 12; i++) {
-    const v = data[`rain_${i}`];
-    if (v !== undefined) {
-      const el = document.querySelector(`.rain-inp[data-i="${i}"]`);
-      if (el) { el.value = v; RAIN_MM[i] = parseFloat(v) || RAIN_MM[i]; }
+  // Rainfall — prefer _rainMM array if present, fall back to individual keys
+  if (data._rainMM && data._rainMM.length === 12) {
+    RAIN_MM = [...data._rainMM];
+    document.querySelectorAll('.rain-inp').forEach(el => { el.value = RAIN_MM[+el.dataset.i]; });
+    updateRainTotals();
+  } else {
+    for (let i = 0; i < 12; i++) {
+      const v = data[`rain_${i}`];
+      if (v !== undefined) {
+        const el = document.querySelector(`.rain-inp[data-i="${i}"]`);
+        if (el) { el.value = v; RAIN_MM[i] = parseFloat(v) || RAIN_MM[i]; }
+      }
     }
   }
   // Active year button
