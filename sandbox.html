@@ -918,7 +918,7 @@
 
 <!-- ═══════════════════════════════ SECTION 6: RIPPL SCAN ═══════════════════════════════ -->
 <div class="section" id="sec-rippl">
-  <div class="section-header">📊 6 — Rippl Scan Across All 16 Years</div>
+  <div class="section-header" id="rippl-scan-hdr">📊 6 — Rippl Scan Across All 16 Years</div>
   <div class="section-body">
     <div class="help" style="margin-bottom:12px">The Rippl Method calculates the minimum storage required for each historical year. Use the <strong>worst year</strong> for conservative design. Sorted driest to wettest.</div>
     <table>
@@ -1602,7 +1602,15 @@ function updateRipplTable(){
   if(!tbody) return;
   const plannedCap = $v('stor-cap');
   let worstRippl = 0, worstYear = null;
-  tbody.innerHTML = YEARS_BY_RAIN.map(yr => {
+
+  // Use fetched location data when available; fall back to Chevella baseline
+  const sourceYears = LOC_RAIN_YEARS ? LOC_RAIN_YEARS.years : CHEVELLA_YEARS;
+  const sortedYears = [...sourceYears].sort((a,b) =>
+    a.mm.reduce((s,v)=>s+v,0) - b.mm.reduce((s,v)=>s+v,0)
+  );
+  const minRainTotal = Math.min(...sourceYears.map(y => y.mm.reduce((a,b)=>a+b,0)));
+
+  tbody.innerHTML = sortedYears.map(yr => {
     const { months } = calcMonthlyForRain(yr.mm);
     const demand12  = months.map(m=>m.demand);
     const harvest12 = months.map(m=>m.harvest);
@@ -1612,7 +1620,7 @@ function updateRipplTable(){
     const rippl = ripplStorage(demand12, harvest12);
     if(rippl > worstRippl){ worstRippl = rippl; worstYear = yr.yr; }
     const feasible = annHar >= annDem;
-    const isWorst = (rainTotal === Math.min(...CHEVELLA_YEARS.map(y=>y.mm.reduce((a,b)=>a+b,0))));
+    const isWorst = (rainTotal === minRainTotal);
     const isDesign = yr.yr === parseInt($v('proj-year')||2018);
     let rowClass = isDesign ? 'rippl-design' : isWorst ? 'rippl-worst' : '';
     const feasIcon = feasible ? '🟢' : (rippl > annDem*0.5 ? '🟡' : '🔴');
@@ -1629,9 +1637,19 @@ function updateRipplTable(){
   setText('kpi-worst-rippl', fmtL(worstRippl));
   const coverage = worstRippl > 0 ? Math.min(100, plannedCap / worstRippl * 100).toFixed(0) : 100;
   const sufficient = plannedCap >= worstRippl;
-  setText('kpi-worst-note', worstYear + ' was worst (' + coverage + '% covered by your ' + fmtL(plannedCap) + ' tank)');
+  const srcLabel = LOC_RAIN_YEARS ? ' — location data' : ' — Chevella baseline';
+  setText('kpi-worst-note', worstYear + ' was worst (' + coverage + '% covered by your ' + fmtL(plannedCap) + ' tank' + srcLabel + ')');
   const worstCard = document.getElementById('kpi-worst-card');
   if(worstCard) worstCard.className = 'kpi-card ' + (sufficient ? 'kpi-teal' : 'kpi-crimson');
+
+  // Update section header with data source
+  const ripplHdr = document.getElementById('rippl-scan-hdr');
+  if(ripplHdr) {
+    const src = LOC_RAIN_YEARS
+      ? sourceYears.length + ' yrs — Location Data (' + LOC_RAIN_YEARS.coords.lat.toFixed(3) + '°N, ' + LOC_RAIN_YEARS.coords.lng.toFixed(3) + '°E)'
+      : sourceYears.length + ' yrs — Chevella Baseline';
+    ripplHdr.textContent = '📊 6 — Rippl Scan: ' + src;
+  }
 }
 
 function updateOccupancySection(){
@@ -1914,7 +1932,8 @@ async function fetchLocationRainfall() {
     const years = aggregateDailyToYears(data.daily.time, data.daily.precipitation_sum, startYear, endYear);
     LOC_RAIN_YEARS = { coords, years };
 
-    renderLocationResults();
+    refreshAll();                                          // updates Net-Zero KPIs + Rippl table
+    renderLocationResults();                              // updates location section cards + table
     document.getElementById('loc-results').style.display = '';
     statusEl.textContent = `✅ ${years.length} years loaded (${startYear}–${endYear}) | ${coords.lat.toFixed(3)}°N, ${coords.lng.toFixed(3)}°E`;
   } catch(e) {
