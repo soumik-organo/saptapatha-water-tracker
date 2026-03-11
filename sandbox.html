@@ -406,6 +406,12 @@
           <td></td>
         </tr>
         <tr>
+          <td class="lbl">Drip System Efficiency</td>
+          <td><input type="number" id="d-drip-eff" value="90" min="50" max="100" step="1" oninput="refreshAll()"></td>
+          <td class="unit">%</td>
+          <td class="note">90% = IS standard. Tank pumps gross ÷ efficiency — more drawn than delivered to plants.</td>
+        </tr>
+        <tr>
           <td class="lbl">Number of Sprinklers</td>
           <td><input type="number" id="d-sprink" value="0" min="0" oninput="refreshAll()"></td>
           <td class="unit">count</td>
@@ -423,11 +429,17 @@
           <td class="unit">hrs/day</td>
           <td></td>
         </tr>
+        <tr>
+          <td class="lbl">Sprinkler System Efficiency</td>
+          <td><input type="number" id="d-sprink-eff" value="70" min="30" max="95" step="1" oninput="refreshAll()"></td>
+          <td class="unit">%</td>
+          <td class="note">70% = IS standard. Lower than drip due to wind drift &amp; evaporation losses during application.</td>
+        </tr>
         <tr class="tot">
-          <td class="lbl">Monthly Irrigation Demand (peak)</td>
+          <td class="lbl">Monthly Irrigation Demand (pump withdrawal)</td>
           <td id="d-irr-monthly">—</td>
           <td class="unit">Litres/month (avg)</td>
-          <td class="note">Actual varies with seasonal factor; reduced by rainfall</td>
+          <td class="note">Efficiency-adjusted pump demand — higher than plant delivery; varies seasonally; reduced by rainfall</td>
         </tr>
       </table>
     </div>
@@ -446,6 +458,18 @@
           <td><input type="number" id="d-misc" value="0" min="0" oninput="refreshAll()"></td>
           <td class="unit">Litres/day</td>
           <td></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="sub">
+      <div class="sub-title">2F — Water System Parameters</div>
+      <table>
+        <tr>
+          <td class="lbl">System Distribution Loss</td>
+          <td><input type="number" id="d-sys-loss" value="10" min="0" max="30" step="1" oninput="refreshAll()"></td>
+          <td class="unit">%</td>
+          <td class="note">Pipe leakage, open-channel losses &amp; metering error. IS 1172 guideline: 10–15%. Applied to all demands (domestic, irrigation, livestock).</td>
         </tr>
       </table>
     </div>
@@ -515,7 +539,7 @@
         </tbody>
       </table>
       <div class="help" style="margin-top:8px">If no areas entered, a single site area + runoff coefficient can be used below as a fallback.</div>
-      <div class="grid-4" style="margin-top:10px">
+      <div class="grid-3" style="margin-top:10px">
         <div class="field">
           <label>Fallback: Total Site Area (Acres)</label>
           <input type="number" id="a-site-ac" value="5" min="0" step="0.01" oninput="refreshAll()">
@@ -529,10 +553,22 @@
           <input type="number" id="a-harvest-eff" value="85" min="50" max="100" step="1" oninput="refreshAll()">
           <div class="fhelp">IS 15797: deduct ~15% for first-flush losses &amp; conveyance. Use 95–100% for underground tanks.</div>
         </div>
+      </div>
+      <div class="grid-3" style="margin-top:10px">
         <div class="field">
           <label>Planned Storage Tank Capacity</label>
           <input type="number" id="stor-cap" value="11000000" min="0" oninput="refreshAll()">
           <div class="fhelp">Litres — what you plan to build</div>
+        </div>
+        <div class="field">
+          <label>Groundwater Recharge Fraction (%)</label>
+          <input type="number" id="a-recharge-frac" value="25" min="0" max="50" step="1" oninput="refreshAll()">
+          <div class="fhelp">% of gross harvest diverted to percolation pits / check dams before entering tank. Typical range: 20–40%.</div>
+        </div>
+        <div class="field">
+          <label>Tank Evaporation Rate (%/month base)</label>
+          <input type="number" id="a-evap-rate" value="4" min="0" max="10" step="0.5" oninput="refreshAll()">
+          <div class="fhelp">Monthly evaporation from stored water, modulated by season. Telangana open tank avg: 3–5%/month. Underground: use 0.5–1%.</div>
         </div>
       </div>
     </div>
@@ -690,6 +726,18 @@
         <div class="k-unit">Litres (conservative design)</div>
         <div class="k-note" id="kpi-worst-note">Rippl across all historical years</div>
       </div>
+      <div class="kpi-card kpi-green">
+        <div class="k-label">Annual Groundwater Recharge</div>
+        <div class="k-val" id="kpi-recharge">—</div>
+        <div class="k-unit">Litres/year</div>
+        <div class="k-note" id="kpi-recharge-note">Diverted to percolation pits / check dams</div>
+      </div>
+      <div class="kpi-card kpi-teal">
+        <div class="k-label">System Water Efficiency</div>
+        <div class="k-val" id="kpi-sys-eff">—</div>
+        <div class="k-unit">% usefully consumed</div>
+        <div class="k-note" id="kpi-sys-eff-note">Useful demand ÷ (demand + recharge + evap)</div>
+      </div>
     </div>
 
     <table>
@@ -705,6 +753,8 @@
         <tr><td class="lbl">Rippl Required Storage (design year)</td><td id="res-rippl">—</td><td class="unit">L</td><td class="note">Minimum tank to achieve net-zero</td></tr>
         <tr><td class="lbl">Planned Tank Capacity</td><td id="res-planned">—</td><td class="unit">L</td><td></td></tr>
         <tr class="tot"><td class="lbl">Storage Coverage</td><td id="res-coverage">—</td><td class="unit">%</td><td class="note">Planned / Required</td></tr>
+        <tr><td class="lbl">System Distribution Loss</td><td id="res-sys-loss">—</td><td class="unit">L/yr</td><td class="note">Pipe leakage &amp; distribution losses (% of base demand applied to all uses)</td></tr>
+        <tr><td class="lbl">Groundwater Recharge</td><td id="res-recharge">—</td><td class="unit">L/yr</td><td class="note">Gross harvest diverted to groundwater before entering tank</td></tr>
       </tbody>
     </table>
     <div class="sub-title" style="margin-top:18px">Tank Flow-Through Simulation (Design Year)</div>
@@ -716,6 +766,8 @@
         <tr><td class="lbl">Tank Dry Months</td><td id="res-tank-dry" class="val-orange">—</td><td class="unit">months</td><td class="note">Months when tank is empty — need external supply</td></tr>
         <tr><td class="lbl">Peak Tank Level</td><td id="res-tank-peak">—</td><td class="unit">L</td><td class="note">Maximum water stored at any point during the year</td></tr>
         <tr class="tot"><td class="lbl">External Supplement Required</td><td id="res-supplement">—</td><td class="unit">L/yr</td><td class="note">Water needed from borewells/tankers/municipal supply</td></tr>
+        <tr><td class="lbl">Tank Evaporation Loss (annual)</td><td id="res-evap">—</td><td class="unit">L/yr</td><td class="note">Evaporated from stored water (seasonally weighted — high Apr–May, low monsoon)</td></tr>
+        <tr><td class="lbl">Annual Overflow / Spill</td><td id="res-overflow">—</td><td class="unit">L/yr</td><td class="note">Harvest lost when tank is already at capacity — reduce recharge or enlarge tank</td></tr>
       </tbody>
     </table>
   </div>
@@ -923,6 +975,7 @@
           <th>Harvest (L)</th>
           <th>Net (L)</th>
           <th>Tank Level (L)</th>
+          <th>Evap (L)</th>
           <th>Status</th>
           <th style="width:120px">D vs H</th>
         </tr>
@@ -936,6 +989,7 @@
           <td id="m-ann-har">—</td>
           <td id="m-ann-net">—</td>
           <td>—</td>
+          <td id="m-ann-evap">—</td>
           <td id="m-ann-status">—</td>
           <td></td>
         </tr>
@@ -1020,6 +1074,10 @@ const YEARS_BY_RAIN = [...CHEVELLA_YEARS].sort((a,b) =>
 // Seasonal demand multipliers
 const DOM_FACTOR  = [1.0,1.0,1.2,1.2,1.2,1.2,0.85,0.85,0.85,1.0,1.0,1.0];
 const IRR_FACTOR  = [1.1,1.1,1.3,1.3,1.2,0.8,0.5,0.5,0.6,0.9,1.0,1.1];
+
+// Seasonal evaporation multipliers — Telangana climate (mean ≈ 1.0 over year)
+// High Apr–May (hot & dry), low Jun–Sep (monsoon cloud cover & humidity)
+const EVAP_SEASONAL = [0.90, 0.95, 1.20, 1.40, 1.35, 0.75, 0.65, 0.65, 0.75, 0.90, 0.95, 0.90];
 
 // Active rainfall array
 let RAIN_MM = [...CHEVELLA_YEARS.find(y=>y.yr===2018).mm];
@@ -1208,9 +1266,19 @@ function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
   // Harvest collection efficiency (first-flush + conveyance losses). Default 85%.
   const harvestEff = Math.min(1, Math.max(0, ($v('a-harvest-eff') !== undefined ? $v('a-harvest-eff') : 85) / 100));
 
-  // Per-day base demands (before seasonal / diversity)
-  const dripPerDay   = drip * dripR * dripH;
-  const sprinkPerDay = sprink * sprinkR * sprinkH;
+  // NEW: Irrigation system efficiency — pump must draw more than plants receive
+  const dripEff   = Math.max(0.01, ($v('d-drip-eff')   !== undefined ? $v('d-drip-eff')   : 90) / 100);
+  const sprinkEff = Math.max(0.01, ($v('d-sprink-eff') !== undefined ? $v('d-sprink-eff') : 70) / 100);
+
+  // NEW: System distribution loss (pipe leakage etc). Applied to all demands.
+  const sysLossRate = ($v('d-sys-loss') !== undefined ? $v('d-sys-loss') : 10) / 100;
+
+  // NEW: Groundwater recharge fraction — diverts from gross harvest before tank
+  const rechargeFrac = Math.min(0.5, Math.max(0, ($v('a-recharge-frac') !== undefined ? $v('a-recharge-frac') : 25) / 100));
+
+  // Per-day base demands — divide by efficiency so pump withdrawal = plant need / efficiency
+  const dripPerDay   = (drip  * dripR  * dripH)  / dripEff;
+  const sprinkPerDay = (sprink * sprinkR * sprinkH) / sprinkEff;
   const irrPerDay    = dripPerDay + sprinkPerDay;
 
   const months = MONTHS.map((m, i) => {
@@ -1226,6 +1294,7 @@ function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
     const dom = pop * lpcd * days * DOM_FACTOR[i] * divFactor;
 
     // Irrigation: schedule-driven — runs regardless of who is home.
+    //   Efficiency already embedded in irrPerDay (pump withdrawal > plant delivery).
     //   Gross demand reduced only by physical rainfall absorption, NOT by diversity.
     const rainOffset = rainMM[i] * (aFarm * 0.85 + aGarden * 0.70);
     const irrGross   = irrPerDay * days * IRR_FACTOR[i];
@@ -1237,15 +1306,30 @@ function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
     // Misc: occupancy-linked uses (cleaning, community services).
     const misc = miscPerDay * days * divFactor;
 
-    const demand  = dom + irr + animal + misc;
+    // Sub-total before system loss
+    const baseDemand = dom + irr + animal + misc;
+
+    // Apply system distribution loss to all demands
+    const demand = baseDemand * (1 + sysLossRate);
 
     // Harvest: apply collection efficiency (first-flush + conveyance loss)
-    const harvest = rainMM[i] * effHarvestArea * harvestEff;
+    const harvestGross = rainMM[i] * effHarvestArea * harvestEff;
 
-    return { month: m, dom, irr, irrGross, rainOffset, demand, harvest, net: harvest - demand, divFactor, animal, misc };
+    // Split harvest: recharge diverted to groundwater, remainder goes to tank
+    const recharge = harvestGross * rechargeFrac;
+    const harvest  = harvestGross - recharge;
+
+    return {
+      month: m,
+      dom, irr, irrGross, rainOffset,
+      baseDemand, demand,
+      harvestGross, recharge, harvest,
+      net: harvest - demand,
+      divFactor, animal, misc
+    };
   });
 
-  const irrBase = irrPerDay * 30; // for display only (avg month)
+  const irrBase = irrPerDay * 30; // for display only (avg month, pump withdrawal)
   const domBase = pop * lpcd * 30; // for display only (avg month, before diversity)
   return { months, effHarvestArea, irrBase, domBase, totalAreaSqm };
 }
@@ -1254,6 +1338,31 @@ function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
 function calcMonthly(rainMM) { return calcMonthlyCore(rainMM); }
 function calcMonthlyWith(rainMM) { return calcMonthlyCore(rainMM); }
 function calcMonthlyForRain(rainMM) { return calcMonthlyCore(rainMM); }
+
+// ═══════════════════════════════════════════════════════════════════
+// TANK SIMULATION (with overflow tracking + seasonal evaporation)
+// ═══════════════════════════════════════════════════════════════════
+function tankSimulationFrom(months, tankCap, evapRateMonthly, startTank) {
+  let tank = startTank ?? 0;
+  let dryMonths = 0, peakTank = 0, totalEvap = 0, totalOverflow = 0;
+  const tankMonths = months.map((m, i) => {
+    const gross    = tank + m.harvest - m.demand;
+    const overflow = Math.max(0, gross - tankCap);
+    const capped   = Math.min(tankCap, Math.max(0, gross));
+    const evap     = capped * evapRateMonthly * EVAP_SEASONAL[i];
+    tank = Math.max(0, capped - evap);
+    if(tank <= 0) dryMonths++;
+    peakTank = Math.max(peakTank, tank);
+    totalEvap += evap;
+    totalOverflow += overflow;
+    return { tankEnd: tank, evap, overflow };
+  });
+  return { tankMonths, dryMonths, peakTank, totalEvap, totalOverflow };
+}
+
+function tankSimulation(months, tankCap, evapRateMonthly) {
+  return tankSimulationFrom(months, tankCap, evapRateMonthly, 0);
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // REFRESH ALL OUTPUTS
@@ -1272,8 +1381,12 @@ function refreshAll() {
   const annIrrGross = months.reduce((s,m)=>s+m.irrGross,0);
   const annIrrOffset= months.reduce((s,m)=>s+m.rainOffset,0);
   const annIrrNet   = months.reduce((s,m)=>s+m.irr,0);
-  const annBalance  = annHarvest - annDemand;
-  const selfSuff    = annDemand > 0 ? (annHarvest / annDemand) * 100 : 0;
+  const annBalance     = annHarvest - annDemand;
+  const annBaseDemand  = months.reduce((s,m) => s + m.baseDemand, 0);
+  const annSysLoss     = months.reduce((s,m) => s + (m.demand - m.baseDemand), 0);
+  const annRecharge    = months.reduce((s,m) => s + m.recharge, 0);
+  const annHarvestGross= months.reduce((s,m) => s + m.harvestGross, 0);
+  const selfSuff       = annDemand > 0 ? (annHarvest / annDemand) * 100 : 0;
 
   const demand12  = months.map(m=>m.demand);
   const harvest12 = months.map(m=>m.harvest);
@@ -1293,15 +1406,12 @@ function refreshAll() {
     : (permPct_ > 0 ? 'Fixed occupancy: '+(permPct_*100).toFixed(0)+'%' : 'Full occupancy (no diversity)'));
   setText('d-irr-monthly', fmt(irrBase) + ' L');
 
-  // Tank simulation — how the tank works as a flow-through buffer
-  let tank = 0, dryMonths = 0, peakTank = 0;
-  months.forEach(m => {
-    tank = Math.min(planned, Math.max(0, tank + m.harvest - m.demand));
-    if(tank === 0) dryMonths++;
-    peakTank = Math.max(peakTank, tank);
-  });
+  // Tank simulation — how the tank works as a flow-through buffer (with evaporation + overflow)
+  const evapRateMonthly = ($v('a-evap-rate') !== undefined ? $v('a-evap-rate') : 4) / 100;
+  const { tankMonths, dryMonths, peakTank, totalEvap, totalOverflow } =
+    tankSimulation(months, planned, evapRateMonthly);
   const wetMonths = 12 - dryMonths;
-  const peakUtil = planned > 0 ? (peakTank / planned * 100) : 0;
+  const peakUtil  = planned > 0 ? (peakTank / planned * 100) : 0;
 
   // KPI cards
   setText('kpi-rippl', fmtL(rippl));
@@ -1317,6 +1427,12 @@ function refreshAll() {
   setText('kpi-harvest', fmtL(annHarvest));
   setText('kpi-harvest-note', 'Eff. area: '+Math.round(effHarvestArea).toLocaleString()+' m2');
   setText('kpi-demand', fmtL(annDemand));
+  setText('kpi-recharge', fmtL(annRecharge));
+  setText('kpi-recharge-note', 'Recharge: ' + ($v('a-recharge-frac')||25) + '% of ' + fmtL(annHarvestGross) + ' gross harvest');
+  const totalSystem = annDemand + annRecharge + totalEvap;
+  const sysEff = totalSystem > 0 ? (annBaseDemand / totalSystem * 100) : 100;
+  setText('kpi-sys-eff', sysEff.toFixed(1) + '%');
+  setText('kpi-sys-eff-note', 'Useful demand ÷ (demand + recharge + tank evap)');
 
   // Results table
   setText('res-dom-ann', fmt(annDomDem));
@@ -1331,12 +1447,17 @@ function refreshAll() {
   setText('res-planned', fmt(planned));
   const cov = document.getElementById('res-coverage');
   if(cov){ cov.textContent = fmtPct(coverage); cov.className = coverage >= 100 ? 'val-green' : 'val-red'; }
+  const sysLossPct = annBaseDemand > 0 ? (annSysLoss / annBaseDemand * 100) : 0;
+  setText('res-sys-loss', fmt(annSysLoss) + '  (' + sysLossPct.toFixed(1) + '% of base)');
+  setText('res-recharge', fmt(annRecharge));
   // Tank simulation results
   setText('res-tank-active', wetMonths+' of 12 months');
   setText('res-tank-dry', dryMonths+' months');
   setText('res-tank-peak', fmtL(peakTank)+' ('+peakUtil.toFixed(0)+'% utilized)');
   const suppEl = document.getElementById('res-supplement');
   if(suppEl){ suppEl.textContent = annBalance >= 0 ? 'None — fully self-sufficient' : fmtL(Math.abs(annBalance))+'/yr'; suppEl.className = annBalance >= 0 ? 'val-green' : 'val-orange'; }
+  setText('res-evap', fmt(totalEvap));
+  setText('res-overflow', fmt(totalOverflow));
 
   // Banner — tank-centric messaging (storage is a flow-through buffer, not a reservoir)
   const banner = document.getElementById('feasibility-banner');
@@ -1364,7 +1485,7 @@ function refreshAll() {
   }
 
   updateRainTable(months);
-  updateMonthlyTable(months, planned);
+  updateMonthlyTable(months, planned, tankMonths);
   updateRipplTable();
   renderLocationResults();
   if(monthlyMode === '5yr') updateOccupancySection();
@@ -1547,7 +1668,7 @@ function getRainForProjectionYear(yr) {
   return match ? match.mm : RAIN_MM;
 }
 
-function updateMonthlyTable(months, tankCap){
+function updateMonthlyTable(months, tankCap, tankMonths){
   if(monthlyMode === '5yr') {
     updateMonthlyTable5Yr(tankCap);
     return;
@@ -1558,10 +1679,9 @@ function updateMonthlyTable(months, tankCap){
   if(!tbody) return;
   if(tfoot) tfoot.style.display = '';
 
-  let tank = 0;
   const maxBar = Math.max(...months.map(m=>Math.max(m.demand,m.harvest)),1);
   tbody.innerHTML = months.map((m,i) => {
-    tank = Math.min(tankCap, Math.max(0, tank + m.harvest - m.demand));
+    const tm   = tankMonths ? tankMonths[i] : { tankEnd: 0, evap: 0 };
     const surp = m.net >= 0;
     const dPct = Math.round(m.demand/maxBar*100);
     const hPct = Math.round(m.harvest/maxBar*100);
@@ -1571,7 +1691,8 @@ function updateMonthlyTable(months, tankCap){
       '<td>'+fmt(m.demand)+'</td>'+
       '<td>'+fmt(m.harvest)+'</td>'+
       '<td class="'+(surp?'val-green':'val-red')+'">'+(surp?'+':'')+fmt(m.net)+'</td>'+
-      '<td>'+fmt(tank)+'</td>'+
+      '<td>'+fmt(tm.tankEnd)+'</td>'+
+      '<td class="val-orange">'+fmt(tm.evap)+'</td>'+
       '<td><span class="badge '+(surp?'badge-surplus':'badge-deficit')+'">'+(surp?'Surplus':'Deficit')+'</span></td>'+
       '<td class="bar-cell">'+
         '<div class="bar-wrap"><div class="bar-h bar-dem" style="width:'+dPct+'%"></div></div>'+
@@ -1579,15 +1700,17 @@ function updateMonthlyTable(months, tankCap){
       '</td></tr>';
   }).join('');
 
-  const annDem = months.reduce((s,m)=>s+m.demand,0);
-  const annHar = months.reduce((s,m)=>s+m.harvest,0);
-  const annNet = annHar - annDem;
-  const avgDiv = months.reduce((s,m)=>s+m.divFactor,0)/12;
+  const annDem  = months.reduce((s,m)=>s+m.demand,0);
+  const annHar  = months.reduce((s,m)=>s+m.harvest,0);
+  const annNet  = annHar - annDem;
+  const avgDiv  = months.reduce((s,m)=>s+m.divFactor,0)/12;
+  const annEvap = tankMonths ? tankMonths.reduce((s,t)=>s+t.evap,0) : 0;
   setText('m-ann-div', (avgDiv*100).toFixed(0)+'%');
   setText('m-ann-dem', fmt(annDem));
   setText('m-ann-har', fmt(annHar));
   const mNet = document.getElementById('m-ann-net');
   if(mNet){ mNet.textContent=(annNet>=0?'+':'')+fmt(annNet); mNet.className=annNet>=0?'val-green':'val-red'; }
+  setText('m-ann-evap', fmt(annEvap));
   const mSt = document.getElementById('m-ann-status');
   if(mSt){ mSt.innerHTML='<span class="badge '+(annNet>=0?'badge-surplus':'badge-deficit')+'">'+(annNet>=0?'Surplus':'Deficit')+'</span>'; }
 }
@@ -1603,10 +1726,11 @@ function updateMonthlyTable5Yr(tankCap) {
   const basePop = $v('d-pop');
   const baseDrip = $v('d-drip');
   const baseSprink = $v('d-sprink');
+  const evapRateMonthly = ($v('a-evap-rate') !== undefined ? $v('a-evap-rate') : 4) / 100;
 
-  let tank = 0;
+  let tankCarryover = 0;
   let html = '';
-  let grandDem = 0, grandHar = 0;
+  let grandDem = 0, grandHar = 0, grandEvap = 0;
 
   // Collect all 60 months' data for maxBar calculation
   const allData = [];
@@ -1629,19 +1753,24 @@ function updateMonthlyTable5Yr(tankCap) {
 
   for(const yearData of allData) {
     const { projYr, months, pop, grownPop, occPct, rainTotal, rainLabel } = yearData;
-    let yrDem = 0, yrHar = 0;
+    let yrDem = 0, yrHar = 0, yrEvap = 0;
+
+    // Run tank simulation for this year, carrying tank level from previous year
+    const { tankMonths } = tankSimulationFrom(months, tankCap, evapRateMonthly, tankCarryover);
+    tankCarryover = tankMonths[11].tankEnd; // carry end-of-year tank into next year
 
     // Year header row
-    html += '<tr class="yr-sep"><td colspan="8">'+projYr+' — Pop: '+pop.toLocaleString()+' ('+Math.round(occPct*100)+'% of '+grownPop.toLocaleString()+') | Rainfall: '+rainLabel+'</td></tr>';
+    html += '<tr class="yr-sep"><td colspan="9">'+projYr+' — Pop: '+pop.toLocaleString()+' ('+Math.round(occPct*100)+'% of '+grownPop.toLocaleString()+') | Rainfall: '+rainLabel+'</td></tr>';
 
     for(let i = 0; i < 12; i++) {
-      const m = months[i];
-      tank = Math.min(tankCap, Math.max(0, tank + m.harvest - m.demand));
+      const m  = months[i];
+      const tm = tankMonths[i];
       const surp = m.net >= 0;
       const dPct = Math.round(m.demand/maxBar*100);
       const hPct = Math.round(m.harvest/maxBar*100);
       yrDem += m.demand;
       yrHar += m.harvest;
+      yrEvap += tm.evap;
 
       html += '<tr>'+
         '<td class="lbl">'+m.month+' '+projYr+'</td>'+
@@ -1649,7 +1778,8 @@ function updateMonthlyTable5Yr(tankCap) {
         '<td>'+fmt(m.demand)+'</td>'+
         '<td>'+fmt(m.harvest)+'</td>'+
         '<td class="'+(surp?'val-green':'val-red')+'">'+(surp?'+':'')+fmt(m.net)+'</td>'+
-        '<td>'+fmt(tank)+'</td>'+
+        '<td>'+fmt(tm.tankEnd)+'</td>'+
+        '<td class="val-orange">'+fmt(tm.evap)+'</td>'+
         '<td><span class="badge '+(surp?'badge-surplus':'badge-deficit')+'">'+(surp?'Surplus':'Deficit')+'</span></td>'+
         '<td class="bar-cell">'+
           '<div class="bar-wrap"><div class="bar-h bar-dem" style="width:'+dPct+'%"></div></div>'+
@@ -1663,12 +1793,14 @@ function updateMonthlyTable5Yr(tankCap) {
       '<td>'+fmt(yrDem)+'</td>'+
       '<td>'+fmt(yrHar)+'</td>'+
       '<td class="'+(yrNet>=0?'val-green':'val-red')+'">'+(yrNet>=0?'+':'')+fmt(yrNet)+'</td>'+
-      '<td>'+fmt(tank)+'</td>'+
+      '<td>'+fmt(tankCarryover)+'</td>'+
+      '<td class="val-orange">'+fmt(yrEvap)+'</td>'+
       '<td><span class="badge '+(yrNet>=0?'badge-surplus':'badge-deficit')+'">'+(yrNet>=0?'Surplus':'Deficit')+'</span></td>'+
       '<td></td></tr>';
 
     grandDem += yrDem;
     grandHar += yrHar;
+    grandEvap += yrEvap;
   }
 
   // Grand total row
@@ -1678,7 +1810,8 @@ function updateMonthlyTable5Yr(tankCap) {
     '<td>'+fmt(grandDem)+'</td>'+
     '<td>'+fmt(grandHar)+'</td>'+
     '<td class="'+(grandNet>=0?'val-green':'val-red')+'">'+(grandNet>=0?'+':'')+fmt(grandNet)+'</td>'+
-    '<td>'+fmt(tank)+'</td>'+
+    '<td>'+fmt(tankCarryover)+'</td>'+
+    '<td class="val-orange">'+fmt(grandEvap)+'</td>'+
     '<td><span class="badge '+(grandNet>=0?'badge-surplus':'badge-deficit')+'">'+(grandNet>=0?'Surplus':'Deficit')+'</span></td>'+
     '<td></td></tr>';
 
@@ -1864,7 +1997,9 @@ const FIELDS = [
   'd-sprink','d-sprink-rate','d-sprink-hrs',
   'd-animal','d-misc',
   'a-road','a-farm','a-terrace','a-garden','a-walk',
-  'a-site-ac','a-runoff','stor-cap',
+  'a-site-ac','a-runoff','a-harvest-eff','stor-cap',
+  'd-drip-eff','d-sprink-eff','d-sys-loss','a-recharge-frac','a-evap-rate',
+  'd-comm-type','d-perm-pct',
   'proj-growth','proj-irr-growth',
   'sc-ref-label','sc-ref-acres','sc-ref-houses','sc-ref-bhk','sc-ref-area','sc-ref-pph',
   'sc-ref-sqm','sc-ref-drip','sc-ref-sprink','sc-ref-water',
