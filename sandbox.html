@@ -158,6 +158,7 @@
 
 <nav id="main-nav">
   <a href="#sec-setup" class="active">⚙️ Setup</a>
+  <a href="#sec-location">📍 Location</a>
   <a href="#sec-scaling">📐 Scaling</a>
   <a href="#sec-demand">📋 Demand</a>
   <a href="#sec-rainfall">🌧️ Rainfall</a>
@@ -184,6 +185,60 @@
       <div class="field">
         <label>Design Year (worst-case year)</label>
         <input type="number" id="proj-year" value="2018" oninput="refreshAll()">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SECTION 1A: LOCATION RAINFALL LOOKUP ═══════════════════════════════ -->
+<div class="section" id="sec-location">
+  <div class="section-header">📍 1A — Location Rainfall Lookup</div>
+  <div class="section-body">
+    <div class="help" style="margin-bottom:12px">Paste a Google Maps link for your project site. Fetches 20 years of daily rainfall from Open-Meteo and computes worst-case Rippl storage using your current demand inputs — updates live as you change population, LPCD or areas.</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <input type="text" id="loc-url" placeholder="https://www.google.com/maps/@17.3850,78.4867,15z"
+             style="flex:1;min-width:280px;padding:7px 10px;border-radius:4px;border:1px solid #b0bec5;font-size:13px">
+      <button id="loc-fetch-btn" class="btn btn-primary" onclick="fetchLocationRainfall()">📡 Fetch Rainfall →</button>
+    </div>
+    <div id="loc-status" style="font-size:12px;color:#546e7a;min-height:18px;margin-bottom:8px"></div>
+    <div id="loc-results" style="display:none">
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi-card kpi-blue">
+          <div class="k-label">Worst Design Year</div>
+          <div class="k-val" id="loc-worst-year">—</div>
+          <div class="k-unit" id="loc-worst-mm">— mm</div>
+          <div class="k-note">Highest Rippl storage year in dataset</div>
+        </div>
+        <div class="kpi-card kpi-teal">
+          <div class="k-label">20-Year Avg Rainfall</div>
+          <div class="k-val" id="loc-avg-rain">—</div>
+          <div class="k-unit">mm/year</div>
+          <div class="k-note" id="loc-range-note">—</div>
+        </div>
+        <div class="kpi-card kpi-crimson" id="loc-tank-card">
+          <div class="k-label">Recommended Tank</div>
+          <div class="k-val" id="loc-tank-size">—</div>
+          <div class="k-unit">Litres (Rippl, worst year)</div>
+          <div class="k-note" id="loc-tank-note">—</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
+              <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
+              <th>Annual (mm)</th>
+              <th>Rippl Storage</th>
+            </tr>
+          </thead>
+          <tbody id="loc-rain-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="applyLocationData()">✅ Set as Design Rainfall →</button>
+        <span id="loc-apply-note" style="font-size:11px;color:#546e7a"></span>
       </div>
     </div>
   </div>
@@ -1262,6 +1317,7 @@ function refreshAll() {
   updateRainTable(months);
   updateMonthlyTable(months, planned);
   updateRipplTable();
+  renderLocationResults();
   if(monthlyMode === '5yr') updateOccupancySection();
   saveState();
 }
@@ -1790,7 +1846,7 @@ function resetAll(){
 // SCROLL SPY
 // ═══════════════════════════════════════════════════════════════════
 function setupScrollSpy(){
-  const sections = ['sec-setup','sec-scaling','sec-demand','sec-rainfall','sec-results','sec-monthly','sec-rippl'];
+  const sections = ['sec-setup','sec-location','sec-scaling','sec-demand','sec-rainfall','sec-results','sec-monthly','sec-rippl'];
   const links = document.querySelectorAll('nav a');
   window.addEventListener('scroll', ()=>{
     let current = sections[0];
@@ -1810,6 +1866,136 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshAll();
   setupScrollSpy();
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// SECTION 1A — LOCATION RAINFALL LOOKUP
+// ═══════════════════════════════════════════════════════════════════
+let LOC_RAIN_YEARS = null;
+
+function parseGoogleMapsURL(url) {
+  // Format: @LAT,LNG,zoom  (most common)
+  let m = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  // Format: ?q=LAT,LNG
+  m = url.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  // Format: ll=LAT,LNG
+  m = url.match(/ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
+  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  return null;
+}
+
+async function fetchLocationRainfall() {
+  const url = document.getElementById('loc-url').value.trim();
+  const statusEl = document.getElementById('loc-status');
+  const btn = document.getElementById('loc-fetch-btn');
+
+  const coords = parseGoogleMapsURL(url);
+  if (!coords) {
+    statusEl.textContent = '❌ Could not read coordinates. Ensure URL contains @LAT,LNG (e.g. google.com/maps/@17.385,78.487,15z)';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Loading…';
+  statusEl.textContent = `📍 ${coords.lat.toFixed(4)}°N, ${coords.lng.toFixed(4)}°E — fetching 20-year rainfall…`;
+  document.getElementById('loc-results').style.display = 'none';
+
+  try {
+    const endYear = new Date().getFullYear() - 1;
+    const startYear = endYear - 19;
+    const apiUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${coords.lat}&longitude=${coords.lng}&start_date=${startYear}-01-01&end_date=${endYear}-12-31&daily=precipitation_sum&timezone=UTC`;
+
+    const resp = await fetch(apiUrl);
+    if (!resp.ok) throw new Error('API returned HTTP ' + resp.status);
+    const data = await resp.json();
+    if (!data.daily) throw new Error('No rainfall data in response');
+
+    const years = aggregateDailyToYears(data.daily.time, data.daily.precipitation_sum, startYear, endYear);
+    LOC_RAIN_YEARS = { coords, years };
+
+    renderLocationResults();
+    document.getElementById('loc-results').style.display = '';
+    statusEl.textContent = `✅ ${years.length} years loaded (${startYear}–${endYear}) | ${coords.lat.toFixed(3)}°N, ${coords.lng.toFixed(3)}°E`;
+  } catch(e) {
+    statusEl.textContent = '❌ Fetch failed: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📡 Fetch Rainfall →';
+  }
+}
+
+function aggregateDailyToYears(times, precip, startYear, endYear) {
+  const yData = {};
+  for (let y = startYear; y <= endYear; y++) yData[y] = [0,0,0,0,0,0,0,0,0,0,0,0];
+  for (let i = 0; i < times.length; i++) {
+    const d = new Date(times[i]);
+    const y = d.getFullYear(), mo = d.getMonth();
+    if (yData[y]) yData[y][mo] += (precip[i] || 0);
+  }
+  return Object.entries(yData).map(([yr, mm]) => ({
+    yr: parseInt(yr),
+    mm: mm.map(v => Math.round(v * 10) / 10),
+    total: Math.round(mm.reduce((a,b)=>a+b,0) * 10) / 10
+  })).sort((a,b) => a.yr - b.yr);
+}
+
+function renderLocationResults() {
+  if (!LOC_RAIN_YEARS) return;
+  const { years } = LOC_RAIN_YEARS;
+  const planned = $v('stor-cap');
+
+  const withRippl = years.map(y => {
+    const { months } = calcMonthlyCore(y.mm);
+    const demand12  = months.map(m => m.demand);
+    const harvest12 = months.map(m => m.harvest);
+    return { ...y, rippl: ripplStorage(demand12, harvest12) };
+  });
+
+  const worst   = withRippl.reduce((a,b) => b.rippl > a.rippl ? b : a);
+  const annuals = years.map(y => y.total);
+  const avgRain = Math.round(annuals.reduce((a,b)=>a+b,0) / annuals.length);
+  const minRain = Math.min(...annuals), maxRain = Math.max(...annuals);
+
+  setText('loc-worst-year', worst.yr + '');
+  setText('loc-worst-mm',   worst.total.toFixed(0) + ' mm');
+  setText('loc-avg-rain',   avgRain + '');
+  setText('loc-range-note', 'Range: ' + minRain.toFixed(0) + '–' + maxRain.toFixed(0) + ' mm over 20 years');
+  setText('loc-tank-size',  fmtL(worst.rippl));
+  setText('loc-tank-note',  'Worst year: ' + worst.yr + ' (' + worst.total.toFixed(0) + ' mm)');
+
+  const locCard = document.getElementById('loc-tank-card');
+  if (locCard) locCard.className = 'kpi-card ' + (planned >= worst.rippl ? 'kpi-teal' : 'kpi-crimson');
+
+  const tbody = document.getElementById('loc-rain-tbody');
+  tbody.innerHTML = [...withRippl].sort((a,b) => a.total - b.total).map(y => {
+    const isWorst = (y.yr === worst.yr);
+    const ok = y.rippl <= planned;
+    return '<tr' + (isWorst ? ' class="rippl-worst"' : '') + '>' +
+      '<td class="lbl">' + y.yr + (isWorst ? ' ⚠️' : '') + '</td>' +
+      y.mm.map(v => '<td>' + v.toFixed(0) + '</td>').join('') +
+      '<td><strong>' + y.total.toFixed(0) + '</strong></td>' +
+      '<td class="' + (ok ? 'rippl-good' : 'rippl-bad') + '">' + fmtL(y.rippl) + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+function applyLocationData() {
+  const noteEl = document.getElementById('loc-apply-note');
+  if (!LOC_RAIN_YEARS) { noteEl.textContent = 'No data loaded yet.'; return; }
+
+  const { years } = LOC_RAIN_YEARS;
+  const withRippl = years.map(y => {
+    const { months } = calcMonthlyCore(y.mm);
+    return { ...y, rippl: ripplStorage(months.map(m=>m.demand), months.map(m=>m.harvest)) };
+  });
+  const worst = withRippl.reduce((a,b) => b.rippl > a.rippl ? b : a);
+
+  RAIN_MM = [...worst.mm];
+  refreshAll();
+  document.getElementById('sec-results')?.scrollIntoView({ behavior:'smooth' });
+  noteEl.textContent = `✅ Design rainfall set to ${worst.yr} (${worst.total.toFixed(0)} mm) — Net-Zero section updated.`;
+}
 </script>
 </body>
 </html>
