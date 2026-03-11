@@ -62,6 +62,7 @@
   .kpi-orange{background:linear-gradient(135deg,#e65100,#fb8c00);color:#fff}
   .kpi-teal{background:linear-gradient(135deg,#00695c,#00897b);color:#fff}
   .kpi-purple{background:linear-gradient(135deg,#4527a0,#7b1fa2);color:#fff}
+  .kpi-crimson{background:linear-gradient(135deg,#880e4f,#c2185b);color:#fff}
 
   .banner{border-radius:8px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px;font-size:14px;font-weight:600}
   .banner.ok{background:#e8f5e9;border-left:5px solid #2e7d32;color:#1b5e20}
@@ -599,6 +600,12 @@
         <div class="k-val" id="kpi-demand">—</div>
         <div class="k-unit">Litres/year</div>
         <div class="k-note">Tank cycles through this — does NOT need to hold it all</div>
+      </div>
+      <div class="kpi-card kpi-crimson" id="kpi-worst-card">
+        <div class="k-label">Tank Needed — Worst Year</div>
+        <div class="k-val" id="kpi-worst-rippl">—</div>
+        <div class="k-unit">Litres (conservative design)</div>
+        <div class="k-note" id="kpi-worst-note">Rippl across all historical years</div>
       </div>
     </div>
 
@@ -1538,6 +1545,7 @@ function updateRipplTable(){
   const tbody = document.getElementById('rippl-tbody');
   if(!tbody) return;
   const plannedCap = $v('stor-cap');
+  let worstRippl = 0, worstYear = null;
   tbody.innerHTML = YEARS_BY_RAIN.map(yr => {
     const { months } = calcMonthlyForRain(yr.mm);
     const demand12  = months.map(m=>m.demand);
@@ -1546,6 +1554,7 @@ function updateRipplTable(){
     const annDem = demand12.reduce((a,b)=>a+b,0);
     const rainTotal = yr.mm.reduce((a,b)=>a+b,0);
     const rippl = ripplStorage(demand12, harvest12);
+    if(rippl > worstRippl){ worstRippl = rippl; worstYear = yr.yr; }
     const feasible = annHar >= annDem;
     const isWorst = (rainTotal === Math.min(...CHEVELLA_YEARS.map(y=>y.mm.reduce((a,b)=>a+b,0))));
     const isDesign = yr.yr === parseInt($v('proj-year')||2018);
@@ -1559,6 +1568,14 @@ function updateRipplTable(){
       '<td class="'+(rippl<=plannedCap?'rippl-good':'rippl-bad')+'">'+fmt(rippl)+'</td>'+
       '<td>'+feasIcon+' '+(feasible?'Yes':'No')+' — harvest '+(feasible?'>':'<')+' demand</td></tr>';
   }).join('');
+
+  // Update worst-year KPI card
+  setText('kpi-worst-rippl', fmtL(worstRippl));
+  const coverage = worstRippl > 0 ? Math.min(100, plannedCap / worstRippl * 100).toFixed(0) : 100;
+  const sufficient = plannedCap >= worstRippl;
+  setText('kpi-worst-note', worstYear + ' was worst (' + coverage + '% covered by your ' + fmtL(plannedCap) + ' tank)');
+  const worstCard = document.getElementById('kpi-worst-card');
+  if(worstCard) worstCard.className = 'kpi-card ' + (sufficient ? 'kpi-teal' : 'kpi-crimson');
 }
 
 function updateOccupancySection(){
