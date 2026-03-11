@@ -1702,13 +1702,27 @@ function updateOccupancySection(){
 // ═══════════════════════════════════════════════════════════════════
 // RAINFALL PRESETS
 // ═══════════════════════════════════════════════════════════════════
+function getActiveYears(){
+  return LOC_RAIN_YEARS ? LOC_RAIN_YEARS.years : CHEVELLA_YEARS;
+}
+
+function getActiveAvgMM(){
+  const yrs = getActiveYears();
+  return MONTHS.map((_,i) => {
+    const sum = yrs.reduce((s,y) => s + y.mm[i], 0);
+    return Math.round(sum / yrs.length * 10) / 10;
+  });
+}
+
 function buildRainPresetButtons(){
   const container = document.getElementById('rain-preset-btns');
   if(!container) return;
-  const totals = CHEVELLA_YEARS.map(y => y.mm.reduce((a,b)=>a+b,0));
+  const yrs = getActiveYears();
+  const totals = yrs.map(y => y.mm.reduce((a,b)=>a+b,0));
   const minTot = Math.min(...totals), maxTot = Math.max(...totals);
-  const sorted = [...CHEVELLA_YEARS].sort((a,b)=>a.mm.reduce((s,v)=>s+v,0)-b.mm.reduce((s,v)=>s+v,0));
-  let html = '<button class="dry" onclick="applyRainPreset(\'avg\')" id="rbtn-avg">📊 16-yr Avg</button>';
+  const sorted = [...yrs].sort((a,b)=>a.mm.reduce((s,v)=>s+v,0)-b.mm.reduce((s,v)=>s+v,0));
+  const avgLabel = (LOC_RAIN_YEARS ? yrs.length+'-yr Avg 📍' : yrs.length+'-yr Avg');
+  let html = '<button class="'+(LOC_RAIN_YEARS?'wet':'dry')+'" onclick="applyRainPreset(\'avg\')" id="rbtn-avg">📊 '+avgLabel+'</button>';
   sorted.forEach(yr => {
     const total = yr.mm.reduce((a,b)=>a+b,0);
     const pct = (total-minTot)/(maxTot-minTot);
@@ -1720,8 +1734,13 @@ function buildRainPresetButtons(){
 }
 
 function applyRainPreset(key){
-  if(key==='avg'){ RAIN_MM=[...AVG_MM]; activePreset='avg'; }
-  else { const yr=CHEVELLA_YEARS.find(y=>y.yr===parseInt(key)); if(yr){RAIN_MM=[...yr.mm]; activePreset=String(key);} }
+  if(key==='avg'){
+    RAIN_MM = getActiveAvgMM();
+    activePreset = 'avg';
+  } else {
+    const yr = getActiveYears().find(y=>y.yr===parseInt(key));
+    if(yr){ RAIN_MM=[...yr.mm]; activePreset=String(key); }
+  }
   markActivePreset();
   document.querySelectorAll('#rain-tbody tr').forEach(tr=>{
     const i=parseInt(tr.dataset.idx);
@@ -1932,6 +1951,7 @@ async function fetchLocationRainfall() {
     const years = aggregateDailyToYears(data.daily.time, data.daily.precipitation_sum, startYear, endYear);
     LOC_RAIN_YEARS = { coords, years };
 
+    buildRainPresetButtons();                             // rebuild year buttons from location data
     refreshAll();                                          // updates Net-Zero KPIs + Rippl table
     renderLocationResults();                              // updates location section cards + table
     document.getElementById('loc-results').style.display = '';
