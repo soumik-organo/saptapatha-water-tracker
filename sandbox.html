@@ -315,9 +315,9 @@
         </tr>
         <tr>
           <td class="lbl">Domestic Water Demand (LPCD)</td>
-          <td><input type="number" id="d-lpcd" value="135" min="0" oninput="refreshAll()"></td>
+          <td><input type="number" id="d-lpcd" value="200" min="0" oninput="refreshAll()"></td>
           <td class="unit">L/person/day</td>
-          <td class="note">BIS standard 135 LPCD for urban; 70 for rural</td>
+          <td class="note">BIS: 135 urban, 70 rural | Project standard: 200 (drinking + cooking + bathing + washing + flushing + cleaning)</td>
         </tr>
         <tr class="tot">
           <td class="lbl">Monthly Domestic Demand (at full occupancy)</td>
@@ -606,9 +606,9 @@
       <thead><tr><th>Metric</th><th>Value</th><th>Unit</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td class="lbl">Annual Domestic Demand</td><td id="res-dom-ann">—</td><td class="unit">L/yr</td><td class="note">Pop × LPCD × days × seasonal × diversity</td></tr>
-        <tr><td class="lbl">Annual Irrigation Demand (gross)</td><td id="res-irr-gross">—</td><td class="unit">L/yr</td><td class="note">Before rainfall offset</td></tr>
+        <tr><td class="lbl">Annual Irrigation Demand (gross)</td><td id="res-irr-gross">—</td><td class="unit">L/yr</td><td class="note">Before rainfall offset × diversity</td></tr>
         <tr><td class="lbl">Annual Rainfall Irrigation Offset</td><td id="res-irr-offset">—</td><td class="unit">L/yr</td><td class="note">Rain absorbed by Farm + Garden areas</td></tr>
-        <tr><td class="lbl">Annual Irrigation Demand (net)</td><td id="res-irr-net">—</td><td class="unit">L/yr</td><td class="note">After subtracting rainfall</td></tr>
+        <tr><td class="lbl">Annual Irrigation Demand (net)</td><td id="res-irr-net">—</td><td class="unit">L/yr</td><td class="note">After rainfall offset × diversity</td></tr>
         <tr><td class="lbl">Total Annual Demand (net)</td><td id="res-total-dem">—</td><td class="unit">L/yr</td><td></td></tr>
         <tr><td class="lbl">Total Annual RWH Harvest</td><td id="res-harvest">—</td><td class="unit">L/yr</td><td class="note">Sum of monthly harvests</td></tr>
         <tr><td class="lbl">Annual Net Water Balance</td><td id="res-net-balance">—</td><td class="unit">L/yr</td><td class="note">Harvest - Demand (positive = surplus)</td></tr>
@@ -1124,14 +1124,14 @@ function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
     // Domestic: pop × lpcd × days × seasonal × diversity
     const dom = pop * lpcd * days * DOM_FACTOR[i] * divFactor;
 
-    // Irrigation: irr/day × days × seasonal - rainfall offset  (diversity does NOT affect irrigation)
+    // Irrigation: irr/day × days × seasonal - rainfall offset × diversity
     const rainOffset = rainMM[i] * (aFarm * 0.85 + aGarden * 0.70);
     const irrGross = irrPerDay * days * IRR_FACTOR[i];
-    const irr = Math.max(0, irrGross - rainOffset);
+    const irr = Math.max(0, irrGross - rainOffset) * divFactor;
 
-    // Other uses (not diversified — animals/construction need water regardless)
-    const animal = animalPerDay * days;
-    const misc   = miscPerDay * days;
+    // Other uses — scaled by diversity (occupancy drives all consumption)
+    const animal = animalPerDay * days * divFactor;
+    const misc   = miscPerDay * days * divFactor;
 
     const demand  = dom + irr + animal + misc;
     const harvest = rainMM[i] * effHarvestArea;
