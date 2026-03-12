@@ -1341,7 +1341,7 @@ function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
     // Irrigation: schedule-driven — runs regardless of who is home.
     //   Efficiency already embedded in irrPerDay (pump withdrawal > plant delivery).
     //   Gross demand reduced only by physical rainfall absorption, NOT by diversity.
-    const rainOffset = rainMM[i] * (aFarm * 0.85 + aGarden * 0.70);
+    const rainOffset = rainMM[i] * Math.max(0, totalAreaSqm - effHarvestArea); // absorbed = Σ area×(1−RC)
     const irrGross   = irrPerDay * days * IRR_FACTOR[i];
     const irr        = Math.max(0, irrGross - rainOffset);   // ← no divFactor
 
