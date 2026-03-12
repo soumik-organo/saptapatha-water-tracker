@@ -178,7 +178,7 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
 <div class="section" id="sec-setup">
   <div class="section-header">⚙️ 1 — Project Setup</div>
   <div class="section-body">
-    <div class="grid-3" style="margin-bottom:16px">
+    <div class="grid-4" style="margin-bottom:16px">
       <div class="field">
         <label>Project Name</label>
         <input type="text" id="proj-name" value="My Project" oninput="refreshAll()">
@@ -190,6 +190,10 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
       <div class="field">
         <label>Design Year (worst-case year)</label>
         <input type="number" id="proj-year" value="2018" oninput="refreshAll()">
+      </div>
+      <div class="field">
+        <label>Handover Year (5-yr projection start)</label>
+        <input type="number" id="p5-handover-year" value="2028" min="2000" max="2100" oninput="refreshAll()">
       </div>
     </div>
   </div>
@@ -828,7 +832,7 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap">
       <div style="display:flex;border:2px solid var(--border);border-radius:6px;overflow:hidden">
         <button class="toggle-btn active" id="tbtn-single" onclick="setMonthlyMode('single')">📅 Single Year</button>
-        <button class="toggle-btn" id="tbtn-5yr" onclick="setMonthlyMode('5yr')">📊 5-Year Projection (2028–2032)</button>
+        <button class="toggle-btn" id="tbtn-5yr" onclick="setMonthlyMode('5yr')">📊 5-Year Projection</button>
       </div>
       <span class="help" style="margin:0" id="monthly-mode-hint">Showing current rainfall selection</span>
     </div>
@@ -840,39 +844,39 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
       <div class="help" style="margin-bottom:10px">Enter occupancy % for each year. All demand, supply, and monthly analysis update automatically.</div>
       <div class="occ-cards">
         <div class="occ-card">
-          <div class="occ-label">Year 1</div>
-          <input type="number" id="p5-occ-2028" value="10" min="0" max="100" step="5" oninput="refreshAll()">
+          <div class="occ-label">Year 1 <span id="p5-occ-yr-y0" style="font-size:0.8em;opacity:0.7"></span></div>
+          <input type="number" id="p5-occ-y0" value="10" min="0" max="100" step="5" oninput="refreshAll()">
           <div class="occ-unit">% Occupancy</div>
-          <div class="occ-detail" id="p5-villas-2028">— villas</div>
-          <div class="occ-detail" id="p5-persons-2028">— persons</div>
+          <div class="occ-detail" id="p5-villas-y0">— villas</div>
+          <div class="occ-detail" id="p5-persons-y0">— persons</div>
         </div>
         <div class="occ-card">
-          <div class="occ-label">Year 2</div>
-          <input type="number" id="p5-occ-2029" value="25" min="0" max="100" step="5" oninput="refreshAll()">
+          <div class="occ-label">Year 2 <span id="p5-occ-yr-y1" style="font-size:0.8em;opacity:0.7"></span></div>
+          <input type="number" id="p5-occ-y1" value="25" min="0" max="100" step="5" oninput="refreshAll()">
           <div class="occ-unit">% Occupancy</div>
-          <div class="occ-detail" id="p5-villas-2029">— villas</div>
-          <div class="occ-detail" id="p5-persons-2029">— persons</div>
+          <div class="occ-detail" id="p5-villas-y1">— villas</div>
+          <div class="occ-detail" id="p5-persons-y1">— persons</div>
         </div>
         <div class="occ-card">
-          <div class="occ-label">Year 3</div>
-          <input type="number" id="p5-occ-2030" value="50" min="0" max="100" step="5" oninput="refreshAll()">
+          <div class="occ-label">Year 3 <span id="p5-occ-yr-y2" style="font-size:0.8em;opacity:0.7"></span></div>
+          <input type="number" id="p5-occ-y2" value="50" min="0" max="100" step="5" oninput="refreshAll()">
           <div class="occ-unit">% Occupancy</div>
-          <div class="occ-detail" id="p5-villas-2030">— villas</div>
-          <div class="occ-detail" id="p5-persons-2030">— persons</div>
+          <div class="occ-detail" id="p5-villas-y2">— villas</div>
+          <div class="occ-detail" id="p5-persons-y2">— persons</div>
         </div>
         <div class="occ-card">
-          <div class="occ-label">Year 4</div>
-          <input type="number" id="p5-occ-2031" value="75" min="0" max="100" step="5" oninput="refreshAll()">
+          <div class="occ-label">Year 4 <span id="p5-occ-yr-y3" style="font-size:0.8em;opacity:0.7"></span></div>
+          <input type="number" id="p5-occ-y3" value="75" min="0" max="100" step="5" oninput="refreshAll()">
           <div class="occ-unit">% Occupancy</div>
-          <div class="occ-detail" id="p5-villas-2031">— villas</div>
-          <div class="occ-detail" id="p5-persons-2031">— persons</div>
+          <div class="occ-detail" id="p5-villas-y3">— villas</div>
+          <div class="occ-detail" id="p5-persons-y3">— persons</div>
         </div>
         <div class="occ-card">
-          <div class="occ-label">Year 5</div>
-          <input type="number" id="p5-occ-2032" value="100" min="0" max="100" step="5" oninput="refreshAll()">
+          <div class="occ-label">Year 5 <span id="p5-occ-yr-y4" style="font-size:0.8em;opacity:0.7"></span></div>
+          <input type="number" id="p5-occ-y4" value="100" min="0" max="100" step="5" oninput="refreshAll()">
           <div class="occ-unit">% Occupancy</div>
-          <div class="occ-detail" id="p5-villas-2032">— villas</div>
-          <div class="occ-detail" id="p5-persons-2032">— persons</div>
+          <div class="occ-detail" id="p5-villas-y4">— villas</div>
+          <div class="occ-detail" id="p5-persons-y4">— persons</div>
         </div>
       </div>
 
@@ -881,24 +885,24 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
       <div class="help" style="margin-bottom:8px">Tank carries over month-to-month across all 60 months.</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
         <div class="field" style="min-width:140px">
-          <label>2028 Rainfall</label>
-          <select id="p5-rain-2028" onchange="refreshAll()"></select>
+          <label id="p5-rain-lbl-y0">Year 1 Rainfall</label>
+          <select id="p5-rain-y0" onchange="refreshAll()"></select>
         </div>
         <div class="field" style="min-width:140px">
-          <label>2029 Rainfall</label>
-          <select id="p5-rain-2029" onchange="refreshAll()"></select>
+          <label id="p5-rain-lbl-y1">Year 2 Rainfall</label>
+          <select id="p5-rain-y1" onchange="refreshAll()"></select>
         </div>
         <div class="field" style="min-width:140px">
-          <label>2030 Rainfall</label>
-          <select id="p5-rain-2030" onchange="refreshAll()"></select>
+          <label id="p5-rain-lbl-y2">Year 3 Rainfall</label>
+          <select id="p5-rain-y2" onchange="refreshAll()"></select>
         </div>
         <div class="field" style="min-width:140px">
-          <label>2031 Rainfall</label>
-          <select id="p5-rain-2031" onchange="refreshAll()"></select>
+          <label id="p5-rain-lbl-y3">Year 4 Rainfall</label>
+          <select id="p5-rain-y3" onchange="refreshAll()"></select>
         </div>
         <div class="field" style="min-width:140px">
-          <label>2032 Rainfall</label>
-          <select id="p5-rain-2032" onchange="refreshAll()"></select>
+          <label id="p5-rain-lbl-y4">Year 5 Rainfall</label>
+          <select id="p5-rain-y4" onchange="refreshAll()"></select>
         </div>
         <div style="border-left:2px solid var(--border);padding-left:10px;display:flex;gap:10px">
           <div class="field" style="min-width:90px">
@@ -918,94 +922,94 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
         <thead>
           <tr>
             <th>Metric</th>
-            <th id="p5h-2028" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 1 (10%)</th>
-            <th id="p5h-2029" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 2 (25%)</th>
-            <th id="p5h-2030" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 3 (50%)</th>
-            <th id="p5h-2031" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 4 (75%)</th>
-            <th id="p5h-2032" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 5 (100%)</th>
+            <th id="p5h-y0" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 1 (10%)</th>
+            <th id="p5h-y1" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 2 (25%)</th>
+            <th id="p5h-y2" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 3 (50%)</th>
+            <th id="p5h-y3" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 4 (75%)</th>
+            <th id="p5h-y4" style="background:#e3f2fd;color:#1565c0;text-align:center">Year 5 (100%)</th>
             <th>Unit</th>
           </tr>
         </thead>
         <tbody>
           <tr style="background:#e8f5e9">
             <td class="lbl"><strong>Occupancy %</strong></td>
-            <td style="text-align:center"><div class="occ-val" id="p5s-occ-2028">10</div></td>
-            <td style="text-align:center"><div class="occ-val" id="p5s-occ-2029">25</div></td>
-            <td style="text-align:center"><div class="occ-val" id="p5s-occ-2030">50</div></td>
-            <td style="text-align:center"><div class="occ-val" id="p5s-occ-2031">75</div></td>
-            <td style="text-align:center"><div class="occ-val" id="p5s-occ-2032">100</div></td>
+            <td style="text-align:center"><div class="occ-val" id="p5s-occ-y0">10</div></td>
+            <td style="text-align:center"><div class="occ-val" id="p5s-occ-y1">25</div></td>
+            <td style="text-align:center"><div class="occ-val" id="p5s-occ-y2">50</div></td>
+            <td style="text-align:center"><div class="occ-val" id="p5s-occ-y3">75</div></td>
+            <td style="text-align:center"><div class="occ-val" id="p5s-occ-y4">100</div></td>
             <td class="unit">%</td>
           </tr>
           <tr>
             <td class="lbl">Occupied Villas</td>
-            <td id="p5s-villas-2028">—</td>
-            <td id="p5s-villas-2029">—</td>
-            <td id="p5s-villas-2030">—</td>
-            <td id="p5s-villas-2031">—</td>
-            <td id="p5s-villas-2032">—</td>
+            <td id="p5s-villas-y0">—</td>
+            <td id="p5s-villas-y1">—</td>
+            <td id="p5s-villas-y2">—</td>
+            <td id="p5s-villas-y3">—</td>
+            <td id="p5s-villas-y4">—</td>
             <td class="unit">nos.</td>
           </tr>
           <tr>
             <td class="lbl">Population</td>
-            <td id="p5s-pop-2028">—</td>
-            <td id="p5s-pop-2029">—</td>
-            <td id="p5s-pop-2030">—</td>
-            <td id="p5s-pop-2031">—</td>
-            <td id="p5s-pop-2032">—</td>
+            <td id="p5s-pop-y0">—</td>
+            <td id="p5s-pop-y1">—</td>
+            <td id="p5s-pop-y2">—</td>
+            <td id="p5s-pop-y3">—</td>
+            <td id="p5s-pop-y4">—</td>
             <td class="unit">persons</td>
           </tr>
           <tr>
             <td class="lbl">Annual Domestic Demand</td>
-            <td id="p5s-dom-2028">—</td>
-            <td id="p5s-dom-2029">—</td>
-            <td id="p5s-dom-2030">—</td>
-            <td id="p5s-dom-2031">—</td>
-            <td id="p5s-dom-2032">—</td>
+            <td id="p5s-dom-y0">—</td>
+            <td id="p5s-dom-y1">—</td>
+            <td id="p5s-dom-y2">—</td>
+            <td id="p5s-dom-y3">—</td>
+            <td id="p5s-dom-y4">—</td>
             <td class="unit">Cr/yr</td>
           </tr>
           <tr>
             <td class="lbl">Annual Irrigation Demand</td>
-            <td id="p5s-irr-2028">—</td>
-            <td id="p5s-irr-2029">—</td>
-            <td id="p5s-irr-2030">—</td>
-            <td id="p5s-irr-2031">—</td>
-            <td id="p5s-irr-2032">—</td>
+            <td id="p5s-irr-y0">—</td>
+            <td id="p5s-irr-y1">—</td>
+            <td id="p5s-irr-y2">—</td>
+            <td id="p5s-irr-y3">—</td>
+            <td id="p5s-irr-y4">—</td>
             <td class="unit">Cr/yr</td>
           </tr>
           <tr>
             <td class="lbl">Annual Amenities Demand</td>
-            <td id="p5s-other-2028">—</td>
-            <td id="p5s-other-2029">—</td>
-            <td id="p5s-other-2030">—</td>
-            <td id="p5s-other-2031">—</td>
-            <td id="p5s-other-2032">—</td>
+            <td id="p5s-other-y0">—</td>
+            <td id="p5s-other-y1">—</td>
+            <td id="p5s-other-y2">—</td>
+            <td id="p5s-other-y3">—</td>
+            <td id="p5s-other-y4">—</td>
             <td class="unit">Cr/yr</td>
           </tr>
           <tr class="tot">
             <td class="lbl">Total Annual Demand</td>
-            <td id="p5s-total-2028">—</td>
-            <td id="p5s-total-2029">—</td>
-            <td id="p5s-total-2030">—</td>
-            <td id="p5s-total-2031">—</td>
-            <td id="p5s-total-2032">—</td>
+            <td id="p5s-total-y0">—</td>
+            <td id="p5s-total-y1">—</td>
+            <td id="p5s-total-y2">—</td>
+            <td id="p5s-total-y3">—</td>
+            <td id="p5s-total-y4">—</td>
             <td class="unit">Cr/yr</td>
           </tr>
           <tr>
             <td class="lbl">Annual Supply (fixed)</td>
-            <td id="p5s-supply-2028">—</td>
-            <td id="p5s-supply-2029">—</td>
-            <td id="p5s-supply-2030">—</td>
-            <td id="p5s-supply-2031">—</td>
-            <td id="p5s-supply-2032">—</td>
+            <td id="p5s-supply-y0">—</td>
+            <td id="p5s-supply-y1">—</td>
+            <td id="p5s-supply-y2">—</td>
+            <td id="p5s-supply-y3">—</td>
+            <td id="p5s-supply-y4">—</td>
             <td class="unit">Cr/yr</td>
           </tr>
           <tr class="tot">
             <td class="lbl">Annual Balance</td>
-            <td id="p5s-balance-2028">—</td>
-            <td id="p5s-balance-2029">—</td>
-            <td id="p5s-balance-2030">—</td>
-            <td id="p5s-balance-2031">—</td>
-            <td id="p5s-balance-2032">—</td>
+            <td id="p5s-balance-y0">—</td>
+            <td id="p5s-balance-y1">—</td>
+            <td id="p5s-balance-y2">—</td>
+            <td id="p5s-balance-y3">—</td>
+            <td id="p5s-balance-y4">—</td>
             <td class="unit">Cr/yr</td>
           </tr>
         </tbody>
@@ -1695,25 +1699,31 @@ function setMonthlyMode(mode) {
   refreshAll();
 }
 
+function getHandoverYear() {
+  return parseInt(document.getElementById('p5-handover-year')?.value) || 2028;
+}
+
 function build5YrRainSelectors() {
   // 5 driest years as defaults for conservative design
   const sorted = [...CHEVELLA_YEARS].sort((a,b)=>a.mm.reduce((s,v)=>s+v,0)-b.mm.reduce((s,v)=>s+v,0));
-  const defaults = {2028: sorted[0].yr, 2029: sorted[1].yr, 2030: sorted[2].yr, 2031: sorted[3].yr, 2032: sorted[4].yr};
 
-  for(let yr = 2028; yr <= 2032; yr++) {
-    const sel = document.getElementById('p5-rain-'+yr);
+  for(let y = 0; y < 5; y++) {
+    const sel = document.getElementById('p5-rain-y'+y);
     if(!sel) continue;
-    let html = '<option value="avg">16-yr Average ('+AVG_TOTAL.toFixed(0)+' mm)</option>';
-    CHEVELLA_YEARS.forEach(cy => {
-      const tot = cy.mm.reduce((a,b)=>a+b,0);
-      html += '<option value="'+cy.yr+'"'+(cy.yr===defaults[yr]?' selected':'')+'>'+cy.yr+' ('+tot.toFixed(0)+' mm)</option>';
-    });
-    sel.innerHTML = html;
+    // Only rebuild if empty (preserve user selections)
+    if(sel.options.length === 0) {
+      let html = '<option value="avg">16-yr Average ('+AVG_TOTAL.toFixed(0)+' mm)</option>';
+      CHEVELLA_YEARS.forEach(cy => {
+        const tot = cy.mm.reduce((a,b)=>a+b,0);
+        html += '<option value="'+cy.yr+'"'+(cy.yr===sorted[y].yr?' selected':'')+'>'+cy.yr+' ('+tot.toFixed(0)+' mm)</option>';
+      });
+      sel.innerHTML = html;
+    }
   }
 }
 
-function getRainForProjectionYear(yr) {
-  const sel = document.getElementById('p5-rain-'+yr);
+function getRainForProjectionYear(idx) {
+  const sel = document.getElementById('p5-rain-y'+idx);
   if(!sel) return RAIN_MM;
   const val = sel.value;
   if(val === 'avg') return AVG_MM;
@@ -1786,18 +1796,19 @@ function updateMonthlyTable5Yr(tankCap) {
   let grandDem = 0, grandHar = 0, grandEvap = 0;
 
   // Collect all 60 months' data for maxBar calculation
+  const handoverYr = getHandoverYear();
   const allData = [];
   for(let y = 0; y < 5; y++) {
-    const projYr = 2028 + y;
-    const rainMM = getRainForProjectionYear(projYr);
-    const occPct = ($v('p5-occ-'+projYr) || 100) / 100; // occupancy fraction
+    const projYr = handoverYr + y;
+    const rainMM = getRainForProjectionYear(y);
+    const occPct = ($v('p5-occ-y'+y) || 100) / 100; // occupancy fraction
     const grownPop = Math.round(basePop * Math.pow(1+popGrowth, y));
     const pop = Math.round(grownPop * occPct); // effective population after occupancy
     const drip = Math.round(baseDrip * Math.pow(1+irrGrowth, y));
     const sprink = Math.round(baseSprink * Math.pow(1+irrGrowth, y));
     const { months } = calcMonthlyCore(rainMM, pop, drip, sprink);
     const rainTotal = rainMM.reduce((a,b)=>a+b,0);
-    const selEl = document.getElementById('p5-rain-'+projYr);
+    const selEl = document.getElementById('p5-rain-y'+y);
     const rainLabel = selEl ? selEl.options[selEl.selectedIndex].text : '';
     allData.push({ projYr, months, pop, grownPop, occPct, rainTotal, rainLabel });
   }
@@ -1929,23 +1940,36 @@ function updateRipplTable(){
 function updateOccupancySection(){
   const totalHouses = $v('sc-new-houses') || 174;
   const pph = $v('sc-new-pph') || 3;
+  const handoverYr = getHandoverYear();
+
+  // Update button and panel title
+  const btn5yr = document.getElementById('tbtn-5yr');
+  if(btn5yr) btn5yr.textContent = '📊 5-Year Projection ('+handoverYr+'–'+(handoverYr+4)+')';
 
   for(let y = 0; y < 5; y++) {
-    const projYr = 2028 + y;
-    const occPct = ($v('p5-occ-'+projYr) || 0) / 100;
+    const projYr = handoverYr + y;
+    const occPct = ($v('p5-occ-y'+y) || 0) / 100;
     const villas = Math.ceil(totalHouses * occPct);
     const persons = villas * pph;
 
+    // Update year labels on occ cards
+    const yrSpan = document.getElementById('p5-occ-yr-y'+y);
+    if(yrSpan) yrSpan.textContent = '('+projYr+')';
+
+    // Update rainfall labels
+    const rainLbl = document.getElementById('p5-rain-lbl-y'+y);
+    if(rainLbl) rainLbl.textContent = projYr+' Rainfall';
+
     // Update cards
-    setText('p5-villas-'+projYr, villas + ' villas');
-    setText('p5-persons-'+projYr, persons + ' persons');
+    setText('p5-villas-y'+y, villas + ' villas');
+    setText('p5-persons-y'+y, persons + ' persons');
 
     // Update summary table header
-    const hdr = document.getElementById('p5h-'+projYr);
-    if(hdr) hdr.textContent = 'Year '+(y+1)+' ('+Math.round(occPct*100)+'%)';
+    const hdr = document.getElementById('p5h-y'+y);
+    if(hdr) hdr.textContent = projYr+' — Year '+(y+1)+' ('+Math.round(occPct*100)+'%)';
 
     // Update summary table occupancy display
-    setText('p5s-occ-'+projYr, Math.round(occPct*100));
+    setText('p5s-occ-y'+y, Math.round(occPct*100));
 
     // Calculate annual demand/supply using current rainfall
     const { months } = calcMonthlyCore(RAIN_MM, persons);
@@ -1957,15 +1981,15 @@ function updateOccupancySection(){
     const annBalance= annHarvest - annDemand;
 
     // Update summary table cells (in Cr = 1e7)
-    setText('p5s-villas-'+projYr, villas);
-    setText('p5s-pop-'+projYr, persons);
-    setText('p5s-dom-'+projYr, (annDom/1e7).toFixed(3));
-    setText('p5s-irr-'+projYr, (annIrr/1e7).toFixed(3));
-    setText('p5s-other-'+projYr, (annOther/1e7).toFixed(3));
-    setText('p5s-total-'+projYr, (annDemand/1e7).toFixed(3));
-    setText('p5s-supply-'+projYr, (annHarvest/1e7).toFixed(3));
+    setText('p5s-villas-y'+y, villas);
+    setText('p5s-pop-y'+y, persons);
+    setText('p5s-dom-y'+y, (annDom/1e7).toFixed(3));
+    setText('p5s-irr-y'+y, (annIrr/1e7).toFixed(3));
+    setText('p5s-other-y'+y, (annOther/1e7).toFixed(3));
+    setText('p5s-total-y'+y, (annDemand/1e7).toFixed(3));
+    setText('p5s-supply-y'+y, (annHarvest/1e7).toFixed(3));
 
-    const balEl = document.getElementById('p5s-balance-'+projYr);
+    const balEl = document.getElementById('p5s-balance-y'+y);
     if(balEl) {
       balEl.textContent = (annBalance/1e7).toFixed(3);
       balEl.className = annBalance >= 0 ? 'val-green' : 'val-red';
@@ -2067,8 +2091,9 @@ const FIELDS = [
   'sc-ref-label','sc-ref-acres','sc-ref-houses','sc-ref-bhk','sc-ref-area','sc-ref-pph',
   'sc-ref-sqm','sc-ref-drip','sc-ref-sprink','sc-ref-water',
   'sc-new-label','sc-new-acres','sc-new-houses','sc-new-bhk','sc-new-area','sc-new-pph',
-  'p5-rain-2028','p5-rain-2029','p5-rain-2030','p5-rain-2031','p5-rain-2032',
-  'p5-occ-2028','p5-occ-2029','p5-occ-2030','p5-occ-2031','p5-occ-2032'
+  'p5-handover-year',
+  'p5-rain-y0','p5-rain-y1','p5-rain-y2','p5-rain-y3','p5-rain-y4',
+  'p5-occ-y0','p5-occ-y1','p5-occ-y2','p5-occ-y3','p5-occ-y4'
 ];
 
 function gatherState(){
