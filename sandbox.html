@@ -480,69 +480,111 @@ var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length
     </div>
 
     <div class="sub">
-      <div class="sub-title">2D — Site Area Breakdown (for harvest & irrigation offset)</div>
-      <div class="help" style="margin-bottom:10px">Enter area in Sq.Metres. Runoff coefficients are fixed by surface type. Rainfall landing on Farm & Garden areas directly offsets irrigation demand.</div>
+      <div class="sub-title">2D — Site Area Breakdown (for harvest calculation)</div>
+      <div class="help" style="margin-bottom:10px">Enter up to 10 surface types with their area (Sq.Metres) and runoff coefficient manually. The runoff coefficient (0–1) determines how much rainfall becomes harvestable runoff. Typical values: <strong>Paved Road = 0.85 · Open Farm = 0.15 · Terrace = 0.85 · Garden = 0.30 · Walkway = 0.85</strong></div>
+      <div style="overflow-x:auto">
       <table>
         <thead>
           <tr>
-            <th>Surface Type</th>
+            <th>#</th>
+            <th>Surface Type Name</th>
             <th>Area (Sq.Mtr)</th>
             <th>→ Acres</th>
-            <th>Runoff Coeff.</th>
-            <th>Harvest Contribution</th>
-            <th>Role in Irrigation</th>
+            <th>Runoff Coeff. (0–1)</th>
+            <th>Annual Harvest Contribution</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td class="lbl">Road / Paved</td>
-            <td><input type="number" id="a-road" value="0" min="0" oninput="refreshAll()"></td>
-            <td id="a-road-ac" class="unit">—</td>
-            <td>0.85</td>
-            <td class="note">85% harvested</td>
-            <td class="note">No irrigation</td>
+            <td class="lbl">1</td>
+            <td><input type="text" id="a-surf-name-1" placeholder="e.g. Road / Paved" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-1" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-1" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-1" value="0.85" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-1" class="note">—</td>
           </tr>
           <tr>
-            <td class="lbl">Farm / Open Land</td>
-            <td><input type="number" id="a-farm" value="0" min="0" oninput="refreshAll()"></td>
-            <td id="a-farm-ac" class="unit">—</td>
-            <td>0.15</td>
-            <td class="note">15% harvested</td>
-            <td class="note">85% absorbed → offsets irr.</td>
+            <td class="lbl">2</td>
+            <td><input type="text" id="a-surf-name-2" placeholder="e.g. Farm / Open Land" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-2" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-2" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-2" value="0.15" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-2" class="note">—</td>
           </tr>
           <tr>
-            <td class="lbl">House Terrace</td>
-            <td><input type="number" id="a-terrace" value="0" min="0" oninput="refreshAll()"></td>
-            <td id="a-terrace-ac" class="unit">—</td>
-            <td>0.85</td>
-            <td class="note">85% harvested</td>
-            <td class="note">No irrigation</td>
+            <td class="lbl">3</td>
+            <td><input type="text" id="a-surf-name-3" placeholder="e.g. House Terrace" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-3" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-3" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-3" value="0.85" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-3" class="note">—</td>
           </tr>
           <tr>
-            <td class="lbl">House Garden</td>
-            <td><input type="number" id="a-garden" value="0" min="0" oninput="refreshAll()"></td>
-            <td id="a-garden-ac" class="unit">—</td>
-            <td>0.30</td>
-            <td class="note">30% harvested</td>
-            <td class="note">70% absorbed → offsets irr.</td>
+            <td class="lbl">4</td>
+            <td><input type="text" id="a-surf-name-4" placeholder="e.g. House Garden" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-4" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-4" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-4" value="0.30" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-4" class="note">—</td>
           </tr>
           <tr>
-            <td class="lbl">Cluster Walkway / Track</td>
-            <td><input type="number" id="a-walk" value="0" min="0" oninput="refreshAll()"></td>
-            <td id="a-walk-ac" class="unit">—</td>
-            <td>0.85</td>
-            <td class="note">85% harvested</td>
-            <td class="note">No irrigation</td>
+            <td class="lbl">5</td>
+            <td><input type="text" id="a-surf-name-5" placeholder="e.g. Cluster Walkway" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-5" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-5" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-5" value="0.85" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-5" class="note">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">6</td>
+            <td><input type="text" id="a-surf-name-6" placeholder="e.g. Green Roof" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-6" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-6" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-6" value="0.50" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-6" class="note">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">7</td>
+            <td><input type="text" id="a-surf-name-7" placeholder="e.g. Parking Lot" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-7" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-7" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-7" value="0.85" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-7" class="note">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">8</td>
+            <td><input type="text" id="a-surf-name-8" placeholder="e.g. Sports Court" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-8" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-8" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-8" value="0.85" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-8" class="note">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">9</td>
+            <td><input type="text" id="a-surf-name-9" placeholder="e.g. Unpaved Path" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-9" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-9" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-9" value="0.25" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-9" class="note">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">10</td>
+            <td><input type="text" id="a-surf-name-10" placeholder="e.g. Water Body" style="width:100%;min-width:140px" oninput="refreshAll()"></td>
+            <td><input type="number" id="a-surf-sqm-10" value="0" min="0" oninput="refreshAll()"></td>
+            <td id="a-surf-ac-10" class="unit">—</td>
+            <td><input type="number" id="a-surf-rc-10" value="0.00" min="0" max="1" step="0.01" oninput="refreshAll()"></td>
+            <td id="a-surf-harv-10" class="note">—</td>
           </tr>
           <tr class="tot">
-            <td class="lbl">Total Site Area</td>
+            <td class="lbl" colspan="2">Total Site Area</td>
             <td id="a-total-sqm">0</td>
             <td id="a-total-ac" class="unit">—</td>
             <td id="a-eff-rc" class="unit">eff. RC: —</td>
-            <td colspan="2" id="a-ann-harvest" class="note">—</td>
+            <td id="a-ann-harvest" class="note">—</td>
           </tr>
         </tbody>
       </table>
+      </div>
       <div class="help" style="margin-top:8px">If no areas entered, a single site area + runoff coefficient can be used below as a fallback.</div>
       <div class="grid-3" style="margin-top:10px">
         <div class="field">
@@ -1248,17 +1290,15 @@ function calcMonthlyCore(rainMM, popOverride, dripOverride, sprinkOverride) {
   const animalPerDay = $v('d-animal');
   const miscPerDay   = $v('d-misc');
 
-  const aRoad    = $v('a-road');
-  const aFarm    = $v('a-farm');
-  const aTerrace = $v('a-terrace');
-  const aGarden  = $v('a-garden');
-  const aWalk    = $v('a-walk');
-  const totalAreaSqm = aRoad + aFarm + aTerrace + aGarden + aWalk;
-
-  let effHarvestArea;
-  if(totalAreaSqm > 0) {
-    effHarvestArea = aRoad*0.85 + aFarm*0.15 + aTerrace*0.85 + aGarden*0.30 + aWalk*0.85;
-  } else {
+  let totalAreaSqm = 0;
+  let effHarvestArea = 0;
+  for(let _i=1; _i<=10; _i++){
+    const _sqm = $v('a-surf-sqm-'+_i) || 0;
+    const _rc  = parseFloat(document.getElementById('a-surf-rc-'+_i)?.value) || 0;
+    totalAreaSqm += _sqm;
+    effHarvestArea += _sqm * _rc;
+  }
+  if(totalAreaSqm <= 0){
     effHarvestArea = $v('a-site-ac') * 4046.86 * $v('a-runoff');
   }
 
@@ -1507,20 +1547,28 @@ function updateHeader(){
 }
 
 function updateAreaAcres(){
-  const a = {road:$v('a-road'), farm:$v('a-farm'), terrace:$v('a-terrace'), garden:$v('a-garden'), walk:$v('a-walk')};
-  const total = a.road+a.farm+a.terrace+a.garden+a.walk;
   const toAc = sqm => (sqm/4046.86).toFixed(3)+' ac';
-  setText('a-road-ac', a.road>0?toAc(a.road):'—');
-  setText('a-farm-ac', a.farm>0?toAc(a.farm):'—');
-  setText('a-terrace-ac', a.terrace>0?toAc(a.terrace):'—');
-  setText('a-garden-ac', a.garden>0?toAc(a.garden):'—');
-  setText('a-walk-ac', a.walk>0?toAc(a.walk):'—');
-  setText('a-total-sqm', total>0?fmt(total)+' m2':'0');
-  setText('a-total-ac', total>0?toAc(total):'—');
+  let total = 0;
+  let effHarvestSum = 0;
+  for(let i=1; i<=10; i++){
+    const sqm = $v('a-surf-sqm-'+i) || 0;
+    const rc  = parseFloat(document.getElementById('a-surf-rc-'+i)?.value) || 0;
+    total += sqm;
+    effHarvestSum += sqm * rc;
+    setText('a-surf-ac-'+i, sqm > 0 ? toAc(sqm) : '—');
+    if(sqm > 0){
+      const ann = RAIN_MM.reduce((s,mm) => s + mm * sqm * rc, 0);
+      setText('a-surf-harv-'+i, fmtL(ann) + '/yr');
+    } else {
+      setText('a-surf-harv-'+i, '—');
+    }
+  }
+  setText('a-total-sqm', total > 0 ? fmt(total)+' m²' : '0');
+  setText('a-total-ac',  total > 0 ? toAc(total) : '—');
   if(total > 0){
-    const effRC = (a.road*0.85+a.farm*0.15+a.terrace*0.85+a.garden*0.30+a.walk*0.85)/total;
+    const effRC = effHarvestSum / total;
     setText('a-eff-rc', 'eff. RC: '+effRC.toFixed(2));
-    const ann = RAIN_MM.reduce((s,mm)=>s+mm*(a.road*0.85+a.farm*0.15+a.terrace*0.85+a.garden*0.30+a.walk*0.85),0);
+    const ann = RAIN_MM.reduce((s,mm) => s + mm * effHarvestSum, 0);
     setText('a-ann-harvest', 'Annual harvest ~ '+fmtL(ann));
   } else {
     setText('a-eff-rc','eff. RC: —');
@@ -2001,7 +2049,17 @@ const FIELDS = [
   'd-pop','d-lpcd','d-drip','d-drip-rate','d-drip-hrs',
   'd-sprink','d-sprink-rate','d-sprink-hrs',
   'd-animal','d-misc',
-  'a-road','a-farm','a-terrace','a-garden','a-walk',
+  // Dynamic surface rows (10 × 3 fields each)
+  'a-surf-name-1','a-surf-sqm-1','a-surf-rc-1',
+  'a-surf-name-2','a-surf-sqm-2','a-surf-rc-2',
+  'a-surf-name-3','a-surf-sqm-3','a-surf-rc-3',
+  'a-surf-name-4','a-surf-sqm-4','a-surf-rc-4',
+  'a-surf-name-5','a-surf-sqm-5','a-surf-rc-5',
+  'a-surf-name-6','a-surf-sqm-6','a-surf-rc-6',
+  'a-surf-name-7','a-surf-sqm-7','a-surf-rc-7',
+  'a-surf-name-8','a-surf-sqm-8','a-surf-rc-8',
+  'a-surf-name-9','a-surf-sqm-9','a-surf-rc-9',
+  'a-surf-name-10','a-surf-sqm-10','a-surf-rc-10',
   'a-site-ac','a-runoff','a-harvest-eff','stor-cap',
   'd-drip-eff','d-sprink-eff','d-sys-loss','a-recharge-frac','a-evap-rate',
   'd-comm-type','d-perm-pct',
@@ -2025,6 +2083,27 @@ function gatherState(){
 
 function applyState(state){
   FIELDS.forEach(id => { const el=document.getElementById(id); if(el && state[id]!==undefined) el.value=state[id]; });
+  // Migrate legacy surface fields (a-road, a-farm, a-terrace, a-garden, a-walk) → new dynamic rows
+  const legacySurfaces = [
+    {key:'a-road',    name:'Road / Paved',         rc:'0.85'},
+    {key:'a-farm',    name:'Farm / Open Land',      rc:'0.15'},
+    {key:'a-terrace', name:'House Terrace',          rc:'0.85'},
+    {key:'a-garden',  name:'House Garden',           rc:'0.30'},
+    {key:'a-walk',    name:'Cluster Walkway / Track',rc:'0.85'},
+  ];
+  const hasLegacy = legacySurfaces.some(s => state[s.key] !== undefined && parseFloat(state[s.key]) > 0);
+  const hasNew    = state['a-surf-sqm-1'] !== undefined;
+  if(hasLegacy && !hasNew){
+    legacySurfaces.forEach((s, idx) => {
+      const i = idx + 1;
+      const nameEl = document.getElementById('a-surf-name-'+i);
+      const sqmEl  = document.getElementById('a-surf-sqm-'+i);
+      const rcEl   = document.getElementById('a-surf-rc-'+i);
+      if(nameEl) nameEl.value = s.name;
+      if(sqmEl)  sqmEl.value  = state[s.key] || '0';
+      if(rcEl)   rcEl.value   = s.rc;
+    });
+  }
   if(state._rainMM && Array.isArray(state._rainMM)) {
     RAIN_MM = state._rainMM;
     document.querySelectorAll('#rain-tbody tr').forEach(tr => {
@@ -2174,6 +2253,35 @@ async function fetchLocationRainfall() {
   btn.textContent = '⏳ Loading…';
   statusEl.textContent = `📍 ${coords.lat.toFixed(4)}°N, ${coords.lng.toFixed(4)}°E — fetching 20-year rainfall…`;
   document.getElementById('loc-results').style.display = 'none';
+
+  // Auto-fill location name via Nominatim reverse geocoding
+  try {
+    const geoResp = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&zoom=10`,
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'SaptapathaWaterTracker/1.0' } }
+    );
+    if(geoResp.ok){
+      const geoData = await geoResp.json();
+      if(geoData && geoData.address){
+        const addr = geoData.address;
+        const place = addr.village || addr.town || addr.suburb || addr.city_district || addr.city || addr.county || '';
+        const state_name = addr.state || '';
+        const locName = [place, state_name].filter(Boolean).join(', ');
+        if(locName.trim()){
+          const locEl = document.getElementById('proj-loc');
+          if(locEl){
+            const old = locEl.value.trim();
+            if(!old || old === 'Chevella, Telangana'){
+              locEl.value = locName;
+            } else if(old !== locName && confirm(`Update location name to "${locName}"?`)){
+              locEl.value = locName;
+            }
+            refreshAll();
+          }
+        }
+      }
+    }
+  } catch(e){ /* silently fail — geocoding is best-effort */ }
 
   try {
     const endYear = new Date().getFullYear() - 1;
